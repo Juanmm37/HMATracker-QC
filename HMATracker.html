@@ -274,7 +274,7 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
       <td>${r.date}</td>
       <td><strong>${r.contractNo||'—'}</strong></td>
       <td><strong>${r.mixNo||'—'}</strong></td>
-      <td style="font-size:11px">${r.jmf?.mixDesignNo||'—'}</td>
+      <td style="font-size:11px">${r.mixDesignNo||r.jmf?.mixDesignNo||(r.jmfId?db.jmfs.find(j=>j.id===r.jmfId)?.mixDesignNo:'')||'—'}</td>
       <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType}</span></td>
       ${!mini?`<td style="text-align:center">${r.lot||'—'}</td><td style="text-align:center">${r.subLot||'—'}</td>`:''}
       <td style="text-align:center">${r.sampleId||'—'}</td>
