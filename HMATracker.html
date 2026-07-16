@@ -836,7 +836,7 @@ function renderJMFForm(){
   const sieves=getSieves(fam);
   const mixOpts=(MIX_TYPES[fam]||[]).map(m=>`<option value="${m}" ${jmf.mixType===m?'selected':''}>${m}</option>`).join('');
   const gradRows=sieves.map(s=>`<div class="jmf-row"><span>${SL[s]||s}</span>
-    <input type="number" step="0.1" min="0" max="100" id="jg-${s}" value="${jmf.gradation&&jmf.gradation[s]||''}" placeholder="JMF %">
+    <input type="number" step="0.1" min="0" max="100" id="jg-${s}" value="${jmf.gradation&&jmf.gradation[s]||''}" placeholder="JMF %" style="text-align:center">
     <span style="font-size:11px;color:#888;text-align:center">±${getGradTol(s,true)||'n/a'}%</span>
   </div>`).join('');
   let gyrationSection='';
