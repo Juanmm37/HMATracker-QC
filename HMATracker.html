@@ -208,7 +208,7 @@ function renderDashboard(){
   return`
   <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="metric-card"><div class="metric-label">Total tests (2026)</div><div class="metric-value">${season.length}</div></div>
-    <div class="metric-card"><div class="metric-label">Active JMFs</div><div class="metric-value">${db.jmfs.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Active Mix Designs</div><div class="metric-value">${db.jmfs.length}</div></div>
     <div class="metric-card"><div class="metric-label">Active contracts</div><div class="metric-value">${contracts.length}</div></div>
   </div>
   ${contracts.length>0?`<div class="card card-blue">
@@ -368,7 +368,7 @@ function editRecord(id){
 }
 
 function renderEntry(){
-  if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No JMFs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add JMFs first</button></div></div>`;
+  if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No Mix Designs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add Mix Designs first</button></div></div>`;
   if(entryStep===1)return renderStep1();
   if(entryStep===2)return renderStep2();
   if(entryStep===3)return renderStep3();
@@ -390,19 +390,24 @@ function renderStep1(){
     <button class="type-btn ${fam==='Marshall'?'active-ms':''}" onclick="setEntryFamily('Marshall')">Marshall</button>
     <button class="type-btn ${fam==='SMA'?'active-sma':''}" onclick="setEntryFamily('SMA')">SMA</button>
   </div>
+  <div style="display:grid;grid-template-columns:1fr 72px 1fr 72px;gap:10px;margin-bottom:10px">
+    <div class="form-group"><label>Date sampled</label><input type="date" id="e-date-sampled" value="${entryData.dateSampled||new Date().toISOString().split('T')[0]}" style="width:100%"></div>
+    <div class="form-group"><label>By</label><input type="text" id="e-by-sampled" value="${entryData.bySampled||''}" maxlength="4" placeholder="A.M." style="width:100%;text-transform:uppercase"></div>
+    <div class="form-group"><label>Date tested</label><input type="date" id="e-date-tested" value="${entryData.dateTested||new Date().toISOString().split('T')[0]}" style="width:100%"></div>
+    <div class="form-group"><label>By</label><input type="text" id="e-by-tested" value="${entryData.byTested||''}" maxlength="4" placeholder="A.M." style="width:100%;text-transform:uppercase"></div>
+  </div>
   <div class="form-grid">
-    <div class="form-group"><label>Date</label><input type="date" id="e-date" value="${entryData.date||new Date().toISOString().split('T')[0]}"></div>
     <div class="form-group"><label>Season</label><input type="text" id="e-season" value="${entryData.season||'2026'}"></div>
     <div class="form-group"><label>Contract no.</label><input type="text" id="e-contract" value="${entryData.contractNo||''}" placeholder="e.g. 26-030"></div>
     <div class="form-group"><label>Job / project name</label><input type="text" id="e-job" value="${entryData.job||''}" placeholder="e.g. KW Cornerstone"></div>
     <div class="form-group"><label>Location</label><input type="text" id="e-location" value="${entryData.location||''}" placeholder="e.g. 10 Goodrich Dr"></div>
-    <div class="form-group"><label>Technician</label><input type="text" id="e-tech" value="${entryData.tech||''}" placeholder="Dave"></div>
+    <div class="form-group"><label>Technician</label><input type="text" id="e-tech" value="${entryData.tech||''}" placeholder="initials"></div>
     <div class="form-group"><label>Lot (optional)</label><input type="text" id="e-lot" value="${entryData.lot||''}" placeholder="e.g. 1"></div>
-    <div class="form-group"><label>Sub-lot (optional, 1–10)</label><input type="number" id="e-sublot" value="${entryData.subLot||''}" min="1" max="10" placeholder="e.g. 3"></div>
+    <div class="form-group"><label>Sub-lot (optional)</label><input type="number" id="e-sublot" value="${entryData.subLot||''}" min="1" max="10" placeholder="e.g. 3"></div>
     <div class="form-group"><label>Sample ID</label><input type="text" id="e-sampleid" value="${entryData.sampleId||''}" placeholder="e.g. 26015"></div>
   </div>
   <div class="form-grid">
-    <div class="form-group" style="grid-column:1/3"><label>Select JMF</label><select id="e-jmf">${jmfOpts}</select></div>
+    <div class="form-group" style="grid-column:1/3"><label>Select Mix Design</label><select id="e-jmf">${jmfOpts}</select></div>
     <div class="form-group"><label>Mix type</label><select id="e-mixtype">${mixOpts}</select></div>
   </div>
   <div class="row" style="margin-top:8px">
@@ -416,7 +421,7 @@ function step1Next(){
   const jmfId=document.getElementById('e-jmf').value;
   const jmf=jmfId?db.jmfs.find(j=>j.id===jmfId):null;
   entryData={...entryData,
-    date:document.getElementById('e-date').value,season:document.getElementById('e-season').value,
+    dateSampled:document.getElementById('e-date-sampled').value,bySampled:(document.getElementById('e-by-sampled').value||'').toUpperCase(),dateTested:document.getElementById('e-date-tested').value,byTested:(document.getElementById('e-by-tested').value||'').toUpperCase(),date:document.getElementById('e-date-sampled').value,season:document.getElementById('e-season').value,
     contractNo:document.getElementById('e-contract').value,
     job:document.getElementById('e-job').value,location:document.getElementById('e-location').value,
     tech:document.getElementById('e-tech').value,
@@ -431,11 +436,11 @@ function step1Next(){
 function renderStep2(){
   const jmf=entryData.jmf;const sieves=getSieves(entryData.testFamily);const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;
   const prevCR=entryData.cumRetained||{};
-  const sieveRows=sieves.map(s=>{
+  const sieveRows=sieves.map((s,idx)=>{
     const jv=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]).toFixed(1):'—';
     const tol=getGradTol(s,isSurface);const prev=prevCR[s]||'';
     return`<tr><td class="left">${SL[s]||s}</td>
-      <td><input type="number" step="0.1" min="0" id="cr-${s}" value="${prev}" placeholder="0.0" oninput="recalcGrad()" style="width:84px;text-align:center;padding:4px 6px;font-size:12px"></td>
+      <td><input type="number" step="0.1" min="0" id="cr-${s}" data-sieve-idx="${idx}" value="${prev}" placeholder="0.0" oninput="recalcGrad()" onkeydown="sieveKeydown(event,${idx})" style="width:84px;text-align:center;padding:4px 6px;font-size:12px"></td>
       <td id="pct-pass-${s}" class="cell-na" style="font-weight:600">—</td>
       <td>${jv}</td><td>${tol?'±'+tol+'%':'—'}</td>
       <td id="diff-${s}" class="cell-na">—</td>
@@ -445,16 +450,16 @@ function renderStep2(){
   <div class="step-indicator">Step 2 of 3</div>
   <div class="section-title">Extraction & gradation &nbsp;<span class="badge badge-${entryData.testFamily==='Marshall'?'ms':entryData.testFamily==='SMA'?'sma':'sp'}">${entryData.testFamily}</span>&nbsp;<span style="font-size:12px;color:#888">${entryData.mixType}</span></div>
   <div class="form-grid" style="margin-bottom:4px">
-    <div class="form-group"><label>Total mass of test portion (g)</label><input type="number" step="0.1" id="e-mass-orig" value="${entryData.massOrig||''}" placeholder="e.g. 1524.7" oninput="recalcGrad()"></div>
-    <div class="form-group"><label>Dry mass after extraction (g)</label><input type="number" step="0.1" id="e-mass-dry" value="${entryData.massDry||''}" placeholder="e.g. 1448.0" oninput="recalcGrad()"></div>
-    <div class="form-group"><label>JMF AC% target</label><input type="number" step="0.01" id="e-jmf-ac" value="${entryData.jmfAC||jmf?.acTarget||''}" oninput="recalcGrad()"></div>
+    <div class="form-group"><label>Total mass of test portion (g) <span style="background:#1f3864;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">W2</span></label><input type="number" step="0.1" id="e-mass-orig" value="${entryData.massOrig||''}" placeholder="e.g. 1524.7" oninput="recalcGrad()"></div>
+    <div class="form-group"><label>Dry mass after extraction (g) <span style="background:#1f3864;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">W6</span></label><input type="number" step="0.1" id="e-mass-dry" value="${entryData.massDry||''}" placeholder="e.g. 1448.0" oninput="recalcGrad()"></div>
+    <div class="form-group"><label>Mix Design AC% target</label><input type="number" step="0.01" id="e-jmf-ac" value="${entryData.jmfAC||jmf?.acTarget||''}" oninput="recalcGrad()"></div>
     <div class="form-group"><label>Extracted AC%</label><input type="number" step="0.01" id="e-ac-content" value="${entryData.acContent||''}" placeholder="auto-calculated" readonly></div>
   </div>
   <div id="ac-status-bar" class="ac-bar pending"><span id="ac-status-text">Enter total mass and dry mass to calculate AC%</span></div>
   <div class="info-note" style="margin-top:8px;margin-bottom:10px">AC% = (Total − Dry) / Total × 100 &nbsp;|&nbsp; Accept: &lt;0.30% diff &nbsp;|&nbsp; Border: 0.30–0.50% &nbsp;|&nbsp; Reject: &gt;0.50%</div>
   <div class="divider"></div>
   <div class="section-title" style="font-size:13px;margin-bottom:6px">Sieve analysis — cumulative mass retained (g)</div>
-  <div class="info-note" style="margin-bottom:8px"><span class="entry-col">Blue column = Dave enters cumulative retained.</span> % Passing calculated automatically.</div>
+  <div class="info-note" style="margin-bottom:8px"><span class="entry-col">Blue column = Technician enters cumulative retained (g).</span> % Passing is calculated automatically.</div>
   <div style="overflow-x:auto"><table class="grad-table">
     <thead><tr><th class="left" style="width:115px">Sieve</th><th style="color:#90b8f8">Cum. retained (g)</th><th>% Passing</th><th>JMF %</th><th>Tolerance</th><th>Diff</th><th>Status</th></tr></thead>
     <tbody>${sieveRows}</tbody>
@@ -467,6 +472,15 @@ function renderStep2(){
 
 function getGradTol(sieve,isSurface){const s=parseFloat(sieve);if(s>=4.75)return isSurface?5.0:7.0;if(s>=0.6)return isSurface?3.5:4.5;if(s>=0.075)return 2.0;return null;}
 
+function sieveKeydown(e,idx){
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    const inputs=[...document.querySelectorAll('[data-sieve-idx]')];
+    const next=inputs.find(el=>+el.dataset.sieveIdx===idx+1);
+    if(next) next.focus();
+    else{const m=document.getElementById('e-mass-orig');if(m)m.focus();}
+  }
+}
 function recalcGrad(){
   const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;
   const massOrig=parseFloat(document.getElementById('e-mass-orig').value)||0;
@@ -476,10 +490,10 @@ function recalcGrad(){
   if(massOrig>0&&massDry>0&&massDry<massOrig){
     const acPct=(massOrig-massDry)/massOrig*100;acInput.value=acPct.toFixed(2);
     if(jmfAC>0){const diff=acPct-jmfAC;const abs=Math.abs(diff);const sign=diff>=0?'+':'';
-      if(abs<0.30){acBar.className='ac-bar ok';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | JMF: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✓ ACCEPTABLE`;}
-      else if(abs<=0.50){acBar.className='ac-bar border';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | JMF: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ⚠ BORDERLINE`;}
-      else{acBar.className='ac-bar fail';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | JMF: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✗ REJECTABLE`;}
-    }else{acBar.className='ac-bar pending';acText.textContent=`AC: ${acPct.toFixed(2)}% — enter JMF target to see status`;}
+      if(abs<0.30){acBar.className='ac-bar ok';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✓ ACCEPTABLE`;}
+      else if(abs<=0.50){acBar.className='ac-bar border';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ⚠ BORDERLINE`;}
+      else{acBar.className='ac-bar fail';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✗ REJECTABLE`;}
+    }else{acBar.className='ac-bar pending';acText.textContent=`AC: ${acPct.toFixed(2)}% — enter Mix Design target to see status`;}
   }else{acBar.className='ac-bar pending';acText.textContent='Enter masses to calculate AC%';acInput.value='';}
   const totalDry=massDry>0?massDry:massOrig;
   sieves.forEach(s=>{
@@ -513,8 +527,8 @@ function renderStep3(){
   if(fam==='Superpave'&&jmf){const g=GYR[jmf.trafficCat]||{nini:7,ndes:75,nmax:115};gyrationBox=`<div class="gyration-box"><div class="gyration-item"><div class="gyration-label">Cat.</div><div class="gyration-value">${jmf.trafficCat||'?'}</div></div><div class="gyration-item"><div class="gyration-label">Nini</div><div class="gyration-value">${g.nini}</div></div><div class="gyration-item"><div class="gyration-label">Ndes</div><div class="gyration-value">${g.ndes}</div></div><div class="gyration-item"><div class="gyration-label">Nmax</div><div class="gyration-value">${g.nmax}</div></div><div class="gyration-item"><div class="gyration-label">Nini limit</div><div class="gyration-value">≤${NILIM[jmf.trafficCat]||89.0}%</div></div></div>`;}
   else if(fam==='SMA'){const sni=jmf?jmf.smaGyrNini||7:7,snd=jmf?jmf.smaGyrNdes||75:75;gyrationBox=`<div class="card" style="margin-bottom:12px;border-color:#5b21b6"><div class="section-title" style="font-size:12px;margin-bottom:8px;color:#5b21b6">SMA gyration counts</div><div class="form-grid" style="margin-bottom:0"><div class="form-group"><label>Nini gyrations</label><input type="number" id="sma-nini" value="${sni}"></div><div class="form-group"><label>Ndes gyrations (75 or 100)</label><input type="number" id="sma-ndes" value="${snd}"></div></div></div>`;}
   const briqCols=Array.from({length:nBriq},(_,i)=>`<th>Specimen ${i+1}</th>`).join('');
-  const brdRows=`<tr class="shdr"><td colspan="${nBriq+2}">BULK RELATIVE DENSITY — Dave calculates with calculator</td></tr>
-    <tr><td class="prop" style="font-weight:700;color:#1f3864">Gmb (enter from calculator)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.001" id="b${i}-gmb" placeholder="e.g. 2.480" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell" id="avg-gmb">—</td></tr>`;
+  const brdRows=`<tr class="shdr"><td colspan="${nBriq+2}">BULK RELATIVE DENSITY — Technician calculates from worksheet</td></tr>
+    <tr><td class="prop" style="font-weight:700;color:#1f3864">Gmb (from worksheet)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.001" id="b${i}-gmb" placeholder="e.g. 2.480" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell" id="avg-gmb">—</td></tr>`;
   const sgcRows=isSGC?`<tr class="shdr"><td colspan="${nBriq+2}">GYRATORY HEIGHT DATA</td></tr>
     <tr><td class="prop">Height @ Nini (mm)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.01" id="b${i}-hini" placeholder="e.g. 118.5" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell">—</td></tr>
     <tr><td class="prop">Height @ Ndes (mm)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.01" id="b${i}-hdes" placeholder="e.g. 113.2" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell">—</td></tr>
@@ -523,9 +537,9 @@ function renderStep3(){
   const marshalRows=!isSGC?`<tr class="shdr"><td colspan="${nBriq+2}">MARSHALL TEST VALUES</td></tr>
     <tr><td class="prop" style="font-weight:700;color:#1f3864">Stability (dial)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.01" id="b${i}-stab" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell" id="avg-stab">—</td></tr>
     <tr><td class="prop" style="font-weight:700;color:#1f3864">Flow (0.25mm)</td>${Array.from({length:nBriq},(_,i)=>`<td><input type="number" step="0.01" id="b${i}-flow" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>`).join('')}<td class="avg-cell" id="avg-flow">—</td></tr>`:'';
-  const mrdRows=`<tr class="shdr"><td colspan="3">MAXIMUM RELATIVE DENSITY — Dave calculates with calculator</td></tr>
+  const mrdRows=`<tr class="shdr"><td colspan="3">MAXIMUM RELATIVE DENSITY — Technician calculates from worksheet</td></tr>
     <tr><td class="prop">Flask no.</td><td class="calc" style="text-align:center;font-weight:700">Flask 1</td><td class="avg-cell" style="font-weight:700">Flask 2</td></tr>
-    <tr><td class="prop" style="font-weight:700;color:#1f3864">Gmm (enter from calculator)</td>
+    <tr><td class="prop" style="font-weight:700;color:#1f3864">Gmm (from worksheet)</td>
       <td><input type="number" step="0.001" id="r-gmm1" placeholder="e.g. 2.565" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td>
       <td><input type="number" step="0.001" id="r-gmm2" placeholder="e.g. 2.569" oninput="recalcVol()" style="width:90px;text-align:center;padding:4px 6px;font-size:12px"></td></tr>`;
   const sumRows=`<tr class="shdr"><td colspan="2">SUMMARY</td></tr>
@@ -541,7 +555,7 @@ function renderStep3(){
   <div class="step-indicator">Step 3 of 3</div>
   <div class="section-title">Volumetrics &nbsp;<span class="badge badge-${fam==='Marshall'?'ms':fam==='SMA'?'sma':'sp'}">${fam}</span></div>
   ${gyrationBox}
-  <div class="info-note" style="margin-bottom:12px"><span class="entry-col">Blue rows = Dave enters values from calculator.</span> All other values calculated automatically.</div>
+  <div class="info-note" style="margin-bottom:12px"><span class="entry-col">Enter highlighted values from your lab worksheets.</span> Air voids, VMA, VFA, and density averages are calculated automatically.</div>
   <div style="overflow-x:auto"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${brdRows}${sgcRows}${marshalRows}</tbody></table></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
     <table class="lab-table"><thead><tr><th class="prop" colspan="3">Rice Test — MRD</th></tr></thead><tbody>${mrdRows}</tbody></table>
@@ -603,7 +617,7 @@ function calcAndSave(){
   const overall=worstSt([acStatus,avStatus,gradWorst]);
   const record={
     id:editingRecordId||Date.now().toString(),
-    date:entryData.date,season:entryData.season,sampleId:entryData.sampleId,
+    date:entryData.date,dateSampled:entryData.dateSampled||entryData.date,bySampled:entryData.bySampled||'',dateTested:entryData.dateTested||entryData.date,byTested:entryData.byTested||'',season:entryData.season,sampleId:entryData.sampleId,
     job:entryData.job,location:entryData.location,tech:entryData.tech,
     contractNo:entryData.contractNo||'',lot:entryData.lot||'',subLot:entryData.subLot||'',
     mixNo:entryData.mixNo,mixType:entryData.mixType,testFamily:fam,jmfId:entryData.jmfId||null,
@@ -630,10 +644,10 @@ function renderSavedResult(r){
   <div class="card"><div class="section-title">Result summary</div>
   <div class="metric-grid">
     <div class="metric-card"><div class="metric-label">AC content</div><div class="metric-value" style="color:${r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b'}">${r.acContent}%</div></div>
-    ${r.jmfAC?`<div class="metric-card"><div class="metric-label">JMF AC</div><div class="metric-value">${r.jmfAC}%</div></div>`:''}
+    ${r.jmfAC?`<div class="metric-card"><div class="metric-label">Mix Design AC</div><div class="metric-value">${r.jmfAC}%</div></div>`:''}
     <div class="metric-card"><div class="metric-label">Air voids</div><div class="metric-value" style="color:${r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b'}">${r.airVoids}%</div></div>
     <div class="metric-card"><div class="metric-label">VMA</div><div class="metric-value" style="color:${r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b'}">${r.vma}%</div></div>
-    ${r.jmfVMA?`<div class="metric-card"><div class="metric-label">JMF VMA</div><div class="metric-value">${r.jmfVMA}%</div></div>`:''}
+    ${r.jmfVMA?`<div class="metric-card"><div class="metric-label">Mix Design VMA</div><div class="metric-value">${r.jmfVMA}%</div></div>`:''}
     <div class="metric-card"><div class="metric-label">VFA</div><div class="metric-value">${r.vfa}%</div></div>
     <div class="metric-card"><div class="metric-label">Gmb</div><div class="metric-value">${r.gmb}</div></div>
     <div class="metric-card"><div class="metric-label">Gmm</div><div class="metric-value">${r.gmm||'—'}</div></div>
