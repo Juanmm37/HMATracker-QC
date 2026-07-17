@@ -1284,6 +1284,7 @@ function populateJMFForm(d){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+(function(){const tl=document.querySelector('.topbar-logo');const ll=document.getElementById('login-logo');if(tl&&ll)ll.src=tl.src;})();
 initApp();
 </script>
 </div><!-- /app-shell -->
