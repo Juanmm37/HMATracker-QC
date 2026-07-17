@@ -186,7 +186,7 @@ function range(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?[
 function roundUp(val,dec){const factor=Math.pow(10,dec);return(Math.ceil(val*factor-(Number.EPSILON*factor))/factor).toFixed(dec);}
 
 // ── SUPABASE ─────────────────────────────────────────────────────────────────
-const SUPA_URL='https://gndkcdfvntmixdvpgbah._db.co';
+const SUPA_URL='https://gndkcdfvntmixdvpgbah.supabase.co';
 const SUPA_KEY='sb_publishable_RXJ3Z7RWaCRHkmeJbq6uqQ_67TN_JHq'; // anon/publishable key — safe client-side; RLS gates access
 const _db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
