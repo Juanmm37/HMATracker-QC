@@ -474,13 +474,28 @@ async function deleteRecord(id){
 function editRecord(id){
   const r=db.records.find(x=>x.id===id);if(!r)return;
   editingRecordId=id;
+  // Reconstruct vol3Data from saved vol3Data (new records) or briquettes array (older records)
+  const _briq=r.briquettes||[];
+  const _vol3=r.vol3Data||(
+    _briq.length?{
+      gmb:_briq.map(b=>b.gmb!=null?String(b.gmb):''),
+      hini:_briq.map(b=>b.hini!=null?String(b.hini):''),
+      hdes:_briq.map(b=>b.hdes!=null?String(b.hdes):''),
+      stab:_briq.map(b=>b.stab!=null?String(b.stab):''),
+      flow:_briq.map(b=>b.flow!=null?String(b.flow):''),
+      gmm1:r.gmm||'',gmm2:''
+    }:null);
   entryData={
-    date:r.date,season:r.season,sampleId:r.sampleId,job:r.job,location:r.location,tech:r.tech,
+    date:r.date,dateSampled:r.dateSampled||r.date,bySampled:r.bySampled||'',
+    dateTested:r.dateTested||r.date,byTested:r.byTested||'',
+    season:r.season,sampleId:r.sampleId,job:r.job,location:r.location,tech:r.tech,
     contractNo:r.contractNo||'',lot:r.lot||'',subLot:r.subLot||'',
+    mixDesignNo:r.mixDesignNo||'',
     testFamily:r.testFamily,mixType:r.mixType,jmfId:r.jmfId,
     jmf:r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null,mixNo:r.mixNo,
     cumRetained:r.cumRetained||{},gradActual:r.gradActual||{},gradStatus:r.gradStatus||{},
     massOrig:r.massOrig,massDry:r.massDry,acContent:r.acContent,jmfAC:r.jmfAC,
+    vol3Data:_vol3,notes:r.notes||'',
   };
   entryStep=1;currentView='entry';
   document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',i===1);});
@@ -680,6 +695,7 @@ function renderStep3(){
     <table class="lab-table"><thead><tr><th class="prop" colspan="3">Rice Test — MRD</th></tr></thead><tbody>${mrdRows}</tbody></table>
     <table class="lab-table"><thead><tr><th class="prop" colspan="2">Results</th></tr></thead><tbody>${sumRows}</tbody></table>
   </div>
+  <div class="form-group" style="margin-top:16px"><label style="display:block;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Notes / comments</label><textarea id="e-notes" rows="3" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Field adjustments, observations, or anything worth noting…">${entryData.notes||''}</textarea></div>
   <div class="row" style="margin-top:14px">
     <button class="btn" onclick="saveVol3();entryStep=2;renderView()">← Back</button>
     <button class="btn btn-primary" onclick="calcAndSave()">✓ ${editingRecordId?'Update record':'Save record'}</button>
@@ -718,6 +734,7 @@ function saveVol3(){
   d.gmm1=document.getElementById('r-gmm1')?.value||'';
   d.gmm2=document.getElementById('r-gmm2')?.value||'';
   entryData.vol3Data=d;
+  entryData.notes=document.getElementById('e-notes')?.value||'';
 }
 function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 function setHTML(id,val){const el=document.getElementById(id);if(el)el.innerHTML=val;}
@@ -726,6 +743,7 @@ function evalAV(av,isDFC){if(isDFC)return av>=2.5&&av<=4.5?'acceptable':av>=2.0&
 function worstSt(s){if(s.includes('rejectable'))return'rejectable';if(s.includes('borderline'))return'borderline';if(s.includes('acceptable'))return'acceptable';return'acceptable';}
 
 async function calcAndSave(){
+  saveVol3(); // snapshot DOM → entryData.vol3Data before reading values
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;const jmf=entryData.jmf;
   const gsb=parseFloat(document.getElementById('e-gsb')?.value)||2.680;
   let niniCount=null,ndesCount=null,niniLimit=null;
@@ -760,17 +778,25 @@ async function calcAndSave(){
     niniStatus,niniLimit,niniCount,ndesCount,
     gradActual:entryData.gradActual||{},gradStatus:entryData.gradStatus||{},
     cumRetained:entryData.cumRetained||{},massOrig:entryData.massOrig,massDry:entryData.massDry,
-    avStatus,overallStatus:overall,briquettes
+    avStatus,overallStatus:overall,briquettes,
+    notes:document.getElementById('e-notes')?.value?.trim()||entryData.notes||''  
   };
   // ── Save to Supabase ──────────────────────────────────────────────────────
   const _year=parseInt((record.dateSampled||record.date||'').slice(0,4))||new Date().getFullYear();
   const contractId=await getOrCreateContract(record.contractNo,_year);
+  // Link mix design to contract in join table (upsert — safe to call on every save)
+  if(contractId&&record.jmfId){
+    await _db.from('contract_mix_designs').upsert({
+      contract_id:contractId,mix_design_id:record.jmfId,created_by:currentUser?.id
+    },{onConflict:'contract_id,mix_design_id',ignoreDuplicates:true});
+  }
   const sbPayload={
     mix_design_id:record.jmfId||null,contract_id:contractId,
     test_date:record.dateSampled||record.date,test_type:'extraction',
     air_voids:parseFloat(record.airVoids)||null,vma:parseFloat(record.vma)||null,
     vfa:parseFloat(record.vfa)||null,binder_content:parseFloat(record.acContent)||null,
     passed_spec:record.overallStatus==='acceptable',
+    notes:record.notes||null,
     results:record,entered_by:currentUser?.id,last_modified_by:currentUser?.id,
   };
   let saveErr;
