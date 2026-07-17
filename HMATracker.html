@@ -247,7 +247,8 @@ function supabaseTestRecordToRecord(tr){
     niniLimit:r.niniLimit||null,niniCount:r.niniCount||null,ndesCount:r.ndesCount||null,
     gradActual:r.gradActual||{},gradStatus:r.gradStatus||{},cumRetained:r.cumRetained||{},
     massOrig:r.massOrig||'',massDry:r.massDry||'',avStatus:r.avStatus||'',
-    overallStatus:r.overallStatus||'',briquettes:r.briquettes||[],vol3Data:r.vol3Data||null};
+    overallStatus:r.overallStatus||'',briquettes:r.briquettes||[],vol3Data:r.vol3Data||null,
+    notes:tr.notes||r.notes||''};
 }
 
 // ── DATA LOADING ──────────────────────────────────────────────────────────────
