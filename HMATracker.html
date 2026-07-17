@@ -581,7 +581,7 @@ function renderStep2(){
   <div class="section-title" style="font-size:13px;margin-bottom:6px">Sieve analysis — cumulative mass retained (g)</div>
   <div class="info-note" style="margin-bottom:8px"><span class="entry-col">Blue column = Technician enters cumulative retained (g).</span> % Passing is calculated automatically.</div>
   <div style="overflow-x:auto"><table class="grad-table">
-    <thead><tr><th class="left" style="width:115px">Sieve</th><th style="color:#90b8f8">Cum. retained (g)</th><th>% Passing</th><th>JMF %</th><th>Tolerance</th><th>Diff</th><th>Status</th></tr></thead>
+    <thead><tr><th class="left" style="width:115px">Sieve</th><th style="color:#90b8f8">Cum. retained (g)</th><th>% Passing</th><th>Mix Design %</th><th>Tolerance</th><th>Diff</th><th>Status</th></tr></thead>
     <tbody>${sieveRows}</tbody>
       </table></div>
   <div class="row" style="margin-top:12px">
@@ -824,7 +824,7 @@ function drawResultChart(record,canvasId){
   const canvas=document.getElementById(canvasId);if(!canvas)return;
   if(chartInst){chartInst.destroy();chartInst=null;}
   const datasets=[{label:'Field sample',data:fieldData,borderColor:'#c00000',backgroundColor:'transparent',borderWidth:2,pointRadius:5,tension:0.1}];
-  if(jmf&&jmfData.length>0)datasets.push({label:'JMF',data:jmfData,borderColor:'#1f3864',backgroundColor:'transparent',borderWidth:2,borderDash:[8,4],pointRadius:3,tension:0.1});
+  if(jmf&&jmfData.length>0)datasets.push({label:'Mix Design',data:jmfData,borderColor:'#1f3864',backgroundColor:'transparent',borderWidth:2,borderDash:[8,4],pointRadius:3,tension:0.1});
   chartInst=new Chart(canvas,{type:'line',data:{datasets},options:{responsive:true,parsing:false,scales:{x:{type:isMarshall?'logarithmic':'linear',afterBuildTicks:function(axis){axis.ticks=tickX.map(function(v){return{value:v};});},ticks:{font:{size:10},maxRotation:45,callback:function(v,i,all){var idx=tickX.findIndex(function(x){return Math.abs(x-v)/(Math.abs(x)||1)<0.001;});return idx>=0?tickLabels[idx]:'';}},min:tickX[0],max:tickX[tickX.length-1],grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:isMarshall?'SEMI-LOG AGGREGATE GRADING CHART':'0.45 POWER AGGREGATE GRADING CHART',font:{size:10}}},y:{min:0,max:103,ticks:{font:{size:10},callback:function(v){return v<=100?v+'%':''}},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Percent Passing (%)',font:{size:11}}}},plugins:{legend:{position:'top',align:'start',labels:{font:{size:11},boxWidth:20}}}}});
 }
 
@@ -855,7 +855,7 @@ function printRecord(id){
   }).join('');
   const acBg=r.acStatus==='acceptable'?'#c6efce':r.acStatus==='borderline'?'#ffeb9c':'#ffc7ce';
   const acRow=jmfAC>0?`<tr style="border-top:2px solid #1f3864"><td colspan="2" style="font-weight:700">AC Content</td><td>—</td><td style="font-weight:700">${r.acContent}%</td><td style="font-weight:700">${jmfAC.toFixed(2)}%</td><td style="font-weight:700">${(acPct-jmfAC>=0?'+':'')+(acPct-jmfAC).toFixed(2)}%</td><td style="background:${acBg};color:${acStatusColor};font-weight:700">${r.acStatus?r.acStatus.toUpperCase():'—'}</td></tr>`:'';
-  const ds=JSON.stringify([{label:'Field sample',data:fp,borderColor:'#c00000',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.1},...(jp.length>0?[{label:'JMF',data:jp,borderColor:'#1f3864',backgroundColor:'transparent',borderWidth:2,borderDash:[8,4],pointRadius:3,tension:0.1}]:[])]);
+  const ds=JSON.stringify([{label:'Field sample',data:fp,borderColor:'#c00000',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.1},...(jp.length>0?[{label:'Mix Design',data:jp,borderColor:'#1f3864',backgroundColor:'transparent',borderWidth:2,borderDash:[8,4],pointRadius:3,tension:0.1}]:[])]);
   const win=window.open('','_blank','width=1150,height=800');
   win.document.write(`<!DOCTYPE html><html><head>
   <title>TEST REPORT _${r.sampleId||'—'} _${r.contractNo||'—'} _${r.mixType||'—'} _${r.lot&&r.subLot?r.lot+'-'+parseInt(r.subLot):r.lot||'—'}</title>
@@ -918,7 +918,7 @@ function printRecord(id){
       <div class="info-divider"></div>
       <div class="info-row"><span class="il">AC content:</span><span class="iv" style="color:${acStatusColor}">${r.acContent}%${jmfAC>0?' (JMF: '+jmfAC.toFixed(2)+'%)':''}</span></div>
       <div class="info-row"><span class="il">Air voids:</span><span class="iv">${r.airVoids}%</span></div>
-      <div class="info-row"><span class="il">VMA:</span><span class="iv">${r.vma}%${r.jmfVMA?' (JMF: '+r.jmfVMA+'%)':''}</span></div>
+      <div class="info-row"><span class="il">VMA:</span><span class="iv">${r.vma}%${r.jmfVMA?' (Mix Design: '+r.jmfVMA+'%)':''}</span></div>
       <div class="info-row"><span class="il">VFA:</span><span class="iv">${r.vfa}%</span></div>
       <div class="info-row"><span class="il">Gmb:</span><span class="iv">${r.gmb}</span></div>
       <div class="info-row"><span class="il">Gmm:</span><span class="iv">${r.gmm||'—'}</span></div>
@@ -926,7 +926,7 @@ function printRecord(id){
       ${r.ndesPct?`<div class="info-row"><span class="il">%Gmm Ndes (N=${r.ndesCount}):</span><span class="iv">${r.ndesPct}%</span></div>`:''}
     </div>
   </div>
-  <table><thead><tr><th class="left">Sieve (mm)</th><th>US</th><th>Cum. ret. (g)</th><th>% Passing</th><th>JMF %</th><th>Diff</th><th>Status</th></tr></thead>
+  <table><thead><tr><th class="left">Sieve (mm)</th><th>US</th><th>Cum. ret. (g)</th><th>% Passing</th><th>Mix Design %</th><th>Diff</th><th>Status</th></tr></thead>
   <tbody>${gradRows}${acRow}</tbody></table>
   <div class="footer">Capital Paving — ${r.date} — ${r.mixType} — Mix No. ${r.mixNo} — Mix Design No. ${(jmf||r.jmf)?.mixDesignNo||'—'} — Sample ${r.sampleId||'—'} — Contract ${r.contractNo||'—'} — AC: ${r.acContent}% — Air voids: ${r.airVoids}% — VMA: ${r.vma}%</div>
   <div style="text-align:center;margin-top:8px" class="noprint"><button onclick="window.print()" style="padding:8px 20px;font-size:13px;cursor:pointer;background:#1f3864;color:#fff;border:none;border-radius:6px">Print / Save PDF</button></div>
@@ -959,9 +959,9 @@ function renderJMF(){
       <button class="btn btn-sm btn-danger" onclick="deleteJMF('${j.id}')" style="margin-left:4px">🗑️</button>
     </td>
   </tr>`).join('');
-  return`<div style="margin-bottom:14px"><button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add JMF</button></div>
+  return`<div style="margin-bottom:14px"><button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add Mix Design</button></div>
   <div class="card" style="padding:0;overflow:hidden">
-  ${!db.jmfs.length?`<div class="empty-state">No JMFs yet. Add your active mix designs for the season.</div>`:`
+  ${!db.jmfs.length?`<div class="empty-state">No mix designs yet. Add your active mix designs for the season.</div>`:`
   <table class="records-table"><thead><tr><th>Mix no.</th><th>Mix design no.</th><th>Mix Design Type</th><th>Mix type</th><th>Cat.</th><th>AC target</th><th>PGAC type</th><th>Season</th><th>Date added</th><th></th></tr></thead>
   <tbody>${rows}</tbody></table>`}</div>`;
 }
@@ -1002,7 +1002,7 @@ function renderJMFForm(){
   </div>
   <div id="pdf-status" style="display:none"></div>
   ` : '';
-  return`<div class="card"><div class="section-title">${isNew?'Add new JMF':'Edit JMF'}</div>
+  return`<div class="card"><div class="section-title">${isNew?'Add new Mix Design':'Edit Mix Design'}</div>
   <div class="section-title" style="font-size:12px;color:#666;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">Mix Design Type</div>
   <div class="type-selector" style="margin-bottom:14px">
     <button class="type-btn ${fam==='Superpave'?'active-sp':''}" onclick="setJmfFamily('Superpave')">Superpave</button>
@@ -1025,13 +1025,13 @@ function renderJMFForm(){
   </div>
   <div id="gyration-section">${gyrationSection}</div>
   <div class="divider"></div>
-  <div class="section-title" style="margin-bottom:6px">JMF gradation targets</div>
+  <div class="section-title" style="margin-bottom:6px">Mix Design gradation targets</div>
   <div class="info-note" style="margin-bottom:8px">Enter % passing for each sieve. Tolerances auto-applied per OPSS Table 7.</div>
   <div class="jmf-header"><span>Sieve</span><span>JMF %</span><span>Tolerance</span></div>
   <div id="grad-rows">${gradRows}</div>
   <div class="row" style="margin-top:16px">
     <button class="btn" onclick="cancelJmfEdit()">Cancel</button>
-    <button class="btn btn-primary" onclick="saveJMF()">✓ Save JMF</button>
+    <button class="btn btn-primary" onclick="saveJMF()">✓ Save Mix Design</button>
   </div></div>`;
 }
 function cancelJmfEdit(){db.jmfs=db.jmfs.filter(j=>j.id!=='__temp__');editingJmf=null;renderView();}
