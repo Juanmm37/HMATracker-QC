@@ -543,7 +543,7 @@ function step1Next(){
     dateSampled:document.getElementById('e-date-sampled').value,bySampled:(document.getElementById('e-by-sampled').value||'').toUpperCase(),dateTested:document.getElementById('e-date-tested').value,byTested:(document.getElementById('e-by-tested').value||'').toUpperCase(),date:document.getElementById('e-date-sampled').value,season:document.getElementById('e-season').value,
     contractNo:document.getElementById('e-contract').value,
     job:document.getElementById('e-job').value,location:document.getElementById('e-location').value,
-    tech:document.getElementById('e-tech').value,
+    tech:entryData.tech||'',
     lot:document.getElementById('e-lot').value,subLot:document.getElementById('e-sublot').value,
     sampleId:document.getElementById('e-sampleid').value,
     testFamily:fam,mixType:document.getElementById('e-mixtype').value,
