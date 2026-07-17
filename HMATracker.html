@@ -1154,7 +1154,7 @@ Fields to extract:
 - reportType: one of "Marshall", "Superpave", or "SMA"
 - mixType: mix type string (e.g. "HL3", "SP 19 RAP", "SMA 12.5")
 - trafficCategory: letter A-E for Superpave, null otherwise
-- acTarget: AC% as number (from JMF row, ACnew column)
+- acTarget: AC% as number — this is the TOTAL AC content (the "%" or "% AC" column in the JMF table, NOT the "ACnew" column). For mixes with RAP, this total % AC includes both the new binder and the AC contributed by the RAP. It is typically the leftmost % AC value in the JMF row (e.g. 5.2, not the ACnew value of 4.5).
 - airVoids: selected air voids % as number
 - vma: selected VMA % as number
 - gmb: Gmb at Ndes as number
