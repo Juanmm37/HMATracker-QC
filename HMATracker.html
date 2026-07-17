@@ -81,10 +81,10 @@ input[type=number]{-moz-appearance:textfield}
 .empty-state{text-align:center;padding:50px;color:#aaa;font-size:13px}
 .alert-success{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;background:#c6efce;color:#1a6b1a;border:1px solid #a0d9a0;font-weight:500}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.jmf-row{display:grid;grid-template-columns:1fr 120px 120px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
-.jmf-row input[type=number]{text-align:center}
+.jmf-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0;align-items:center;padding:8px 16px;border-bottom:1px solid #e8edf5}
+.jmf-row input[type=number]{text-align:center;width:100%}
 .jmf-row:last-child{border-bottom:none}
-.jmf-header{display:grid;grid-template-columns:1fr 120px 120px;gap:8px;padding:5px 0;font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #ddd;margin-bottom:6px}
+.jmf-header{display:grid;grid-template-columns:2fr 1fr 1fr;padding:10px 16px;background:#1f3864;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}.jmf-table{max-width:500px;margin:12px auto 0;border-radius:10px;overflow:hidden;border:1px solid #dde3ed;box-shadow:0 2px 8px rgba(31,56,100,0.08)}.jmf-row:nth-child(even){background:#f4f7ff}.jmf-row:nth-child(odd){background:#fff}.jmf-header span,.jmf-row span:not(:first-child){text-align:center}.jmf-tol{font-size:11px;color:#5a6a82;text-align:center;font-weight:600}
 .gyration-box{background:#e8edf5;border:1px solid #c8d4e8;border-radius:8px;padding:10px 16px;display:flex;gap:24px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .gyration-item{text-align:center}
 .gyration-label{font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px}
@@ -974,7 +974,7 @@ function renderJMFForm(){
   const mixOpts=(MIX_TYPES[fam]||[]).map(m=>`<option value="${m}" ${jmf.mixType===m?'selected':''}>${m}</option>`).join('');
   const gradRows=sieves.map(s=>`<div class="jmf-row"><span>${SL[s]||s}</span>
     <input type="number" step="0.1" min="0" max="100" id="jg-${s}" value="${jmf.gradation&&jmf.gradation[s]||''}" placeholder="JMF %" style="text-align:center">
-    <span style="font-size:11px;color:#888;text-align:center">±${getGradTol(s,true)||'n/a'}%</span>
+    <span class="jmf-tol">±${getGradTol(s,true)||'n/a'}%</span>
   </div>`).join('');
   let gyrationSection='';
   if(fam==='Superpave'){gyrationSection=`<div class="form-grid"><div class="form-group"><label>Traffic category</label><select id="jf-trafficcat" onchange="updateGyrations()">${['A','B','C','D','E'].map(c=>`<option value="${c}" ${cat===c?'selected':''}>${c}</option>`).join('')}</select></div><div class="form-group"><label>Nini (auto)</label><input type="number" id="jf-nini" value="${g.nini}" readonly></div><div class="form-group"><label>Ndes (auto)</label><input type="number" id="jf-ndes" value="${g.ndes}" readonly></div><div class="form-group"><label>Nmax (auto)</label><input type="number" id="jf-nmax" value="${g.nmax}" readonly></div><div class="form-group"><label>Nini %Gmm limit</label><input type="text" id="jf-nini-limit" value="≤${NILIM[cat]||89.0}%" readonly></div></div>`;}
@@ -1027,8 +1027,7 @@ function renderJMFForm(){
   <div class="divider"></div>
   <div class="section-title" style="margin-bottom:6px">Mix Design gradation targets</div>
   <div class="info-note" style="margin-bottom:8px">Enter % passing for each sieve. Tolerances auto-applied per OPSS Table 7.</div>
-  <div class="jmf-header"><span>Sieve</span><span>JMF %</span><span>Tolerance</span></div>
-  <div id="grad-rows">${gradRows}</div>
+  <div class="jmf-table"><div class="jmf-header"><span>Sieve</span><span>JMF %</span><span>Tolerance</span></div><div id="grad-rows">${gradRows}</div></div>
   <div class="row" style="margin-top:16px">
     <button class="btn" onclick="cancelJmfEdit()">Cancel</button>
     <button class="btn btn-primary" onclick="saveJMF()">✓ Save Mix Design</button>
