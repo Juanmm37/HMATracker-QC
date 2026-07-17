@@ -779,7 +779,8 @@ async function calcAndSave(){
     gradActual:entryData.gradActual||{},gradStatus:entryData.gradStatus||{},
     cumRetained:entryData.cumRetained||{},massOrig:entryData.massOrig,massDry:entryData.massDry,
     avStatus,overallStatus:overall,briquettes,
-    notes:document.getElementById('e-notes')?.value?.trim()||entryData.notes||''  
+    notes:document.getElementById('e-notes')?.value?.trim()||entryData.notes||'',
+    vol3Data:entryData.vol3Data||null
   };
   // ── Save to Supabase ──────────────────────────────────────────────────────
   const _year=parseInt((record.dateSampled||record.date||'').slice(0,4))||new Date().getFullYear();
