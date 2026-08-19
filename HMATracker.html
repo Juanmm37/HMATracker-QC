@@ -239,7 +239,7 @@ function supabaseTestRecordToRecord(tr){
   const r=tr.results||{};
   return {id:tr.id,date:tr.test_date,dateSampled:r.dateSampled||tr.test_date,bySampled:r.bySampled||'',
     dateTested:r.dateTested||tr.test_date,byTested:r.byTested||'',season:r.season||'',
-    sampleId:tr.sample_id||r.sampleId||'',job:r.job||'',location:r.location||'',tech:r.tech||'',
+    sampleId:tr.sample_id||r.sampleId||'',ticketNo:r.ticketNo||'',job:r.job||'',location:r.location||'',tech:r.tech||'',
     contractNo:r.contractNo||'',lot:r.lot||'',subLot:r.subLot||'',mixNo:r.mixNo||'',
     mixDesignNo:r.mixDesignNo||'',mixType:r.mixType||'',testFamily:r.testFamily||'',
     jmfId:tr.mix_design_id,jmf:r.jmf||null,
