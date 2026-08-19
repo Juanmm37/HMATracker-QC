@@ -1527,7 +1527,8 @@ Fields to extract:
 - binderGrade: PGAC grade string
 - niniGyrations: Nini gyrations as integer or null
 - ndesGyrations: Ndes gyrations as integer or null
-- gradation: object with sieve sizes as keys, % passing as numbers. Keys must be from: "26.5","25.0","19.0","16.0","13.2","12.5","9.5","4.75","2.36","1.18","0.600","0.300","0.150","0.075". Use the JMF total row values only.`;
+- gradation: object with sieve sizes as keys, % passing as numbers. Keys must be from: "26.5","25.0","19.0","16.0","13.2","12.5","9.5","4.75","2.36","1.18","0.600","0.300","0.150","0.075". Use the JMF total row values only.
+- designDate: the mix design approval or submission date in YYYY-MM-DD format, or null if not found.`;
 
     const body = JSON.stringify({
       model: localStorage.getItem('cp_model') || 'claude-haiku-4-5-20251001',
