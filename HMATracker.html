@@ -156,8 +156,11 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#1f3864}
 <div class="nav">
   <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
   <button class="nav-btn" onclick="showView('entry')">New test entry</button>
+  <button class="nav-btn" onclick="showView('quickentry')">Quick Entry</button>
   <button class="nav-btn" onclick="showView('records')">Records</button>
   <button class="nav-btn" onclick="showView('jmf')">Mix Design Library</button>
+  <button class="nav-btn" onclick="showView('prodnotes')">Production Notes</button>
+  <button class="nav-btn" onclick="showView('acreport')">AC Report</button>
 </div>
 <div class="content" id="main-content"></div>
 </div>
@@ -191,9 +194,12 @@ const SUPA_KEY='sb_publishable_RXJ3Z7RWaCRHkmeJbq6uqQ_67TN_JHq'; // anon/publish
 const _db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let db={jmfs:[],records:[]};
+let db={jmfs:[],records:[],contracts:[],productionNotes:[]};
 let currentUser=null; // {id, name, role} from users table
 let currentView='dashboard';
+let prodNotesFilterMix='';
+let quickEntryState={contractNo:'',jmfId:'',season:new Date().getFullYear().toString()};
+let acReportFamily='Superpave';
 let editingJmf=null;
 let entryStep=1;
 let entryData={};
@@ -233,7 +239,7 @@ function supabaseTestRecordToRecord(tr){
   const r=tr.results||{};
   return {id:tr.id,date:tr.test_date,dateSampled:r.dateSampled||tr.test_date,bySampled:r.bySampled||'',
     dateTested:r.dateTested||tr.test_date,byTested:r.byTested||'',season:r.season||'',
-    sampleId:r.sampleId||'',job:r.job||'',location:r.location||'',tech:r.tech||'',
+    sampleId:tr.sample_id||r.sampleId||'',job:r.job||'',location:r.location||'',tech:r.tech||'',
     contractNo:r.contractNo||'',lot:r.lot||'',subLot:r.subLot||'',mixNo:r.mixNo||'',
     mixDesignNo:r.mixDesignNo||'',mixType:r.mixType||'',testFamily:r.testFamily||'',
     jmfId:tr.mix_design_id,jmf:r.jmf||null,
@@ -253,14 +259,20 @@ function supabaseTestRecordToRecord(tr){
 
 // ── DATA LOADING ──────────────────────────────────────────────────────────────
 async function loadFromSupabase(){
-  const [mds,trs]=await Promise.all([
+  const [mds,trs,ctrs,pns]=await Promise.all([
     _db.from('mix_designs').select('*').order('created_at'),
-    _db.from('test_records').select('*').order('entered_at'),
+    _db.from('test_records').select('*').order('sample_id',{ascending:true,nullsFirst:false}),
+    _db.from('contracts').select('id,contract_number,year').order('year',{ascending:false}),
+    _db.from('production_notes').select('*, mix_designs(mix_number), contracts(contract_number)').order('note_date',{ascending:false}),
   ]);
   if(mds.error)console.error('mix_designs:',mds.error);
   if(trs.error)console.error('test_records:',trs.error);
+  if(ctrs.error)console.error('contracts:',ctrs.error);
+  if(pns.error)console.error('production_notes:',pns.error);
   db.jmfs=(mds.data||[]).map(supabaseMixDesignToJmf);
   db.records=(trs.data||[]).map(supabaseTestRecordToRecord);
+  db.contracts=ctrs.data||[];
+  db.productionNotes=pns.data||[];
 }
 
 async function initApp(){
@@ -298,8 +310,8 @@ function saveDB(){} // no-op — data lives in Supabase
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showView(v){
   currentView=v;
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['dashboard','entry','records','jmf'][i]===v);});
-  if(v!=='entry'){entryStep=1;entryData={};editingRecordId=null;}
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['dashboard','entry','quickentry','records','jmf','prodnotes','acreport'][i]===v);});
+  if(v!=='entry'&&v!=='quickentry'){entryStep=1;entryData={};editingRecordId=null;}
   renderView();
 }
 
@@ -318,6 +330,9 @@ function renderView(){
   else if(currentView==='entry')el.innerHTML=renderEntry();
   else if(currentView==='records')el.innerHTML=renderRecords();
   else if(currentView==='jmf')el.innerHTML=renderJMF();
+  else if(currentView==='prodnotes')el.innerHTML=renderProdNotes();
+  else if(currentView==='quickentry')el.innerHTML=renderQuickEntry();
+  else if(currentView==='acreport')el.innerHTML=renderACReport();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -350,7 +365,7 @@ function renderRecords(){
   const contractFilter=(document.getElementById('filter-contract')?.value||'').toLowerCase();
   const mixFilter=(document.getElementById('filter-mix')?.value||'').toLowerCase();
   const summaryMode=document.getElementById('summary-mode')?.checked||false;
-  let recs=[...db.records].reverse();
+  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?ai-bi:(a.sampleId||'').localeCompare(b.sampleId||'');});
   if(contractFilter)recs=recs.filter(r=>(r.contractNo||'').toLowerCase().includes(contractFilter)||(r.job||'').toLowerCase().includes(contractFilter));
   if(mixFilter)recs=recs.filter(r=>(r.mixNo||'').toLowerCase().includes(mixFilter)||(r.mixType||'').toLowerCase().includes(mixFilter));
   const contracts=[...new Set(db.records.map(r=>r.contractNo).filter(Boolean))];
@@ -371,7 +386,7 @@ function filterRecords(){
   const cf=(document.getElementById('filter-contract')?.value||'').toLowerCase();
   const mf=(document.getElementById('filter-mix')?.value||'').toLowerCase();
   const sm=document.getElementById('summary-mode')?.checked||false;
-  let recs=[...db.records].reverse();
+  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?ai-bi:(a.sampleId||'').localeCompare(b.sampleId||'');});
   if(cf)recs=recs.filter(r=>(r.contractNo||'').toLowerCase().includes(cf)||(r.job||'').toLowerCase().includes(cf));
   if(mf)recs=recs.filter(r=>(r.mixNo||'').toLowerCase().includes(mf)||(r.mixType||'').toLowerCase().includes(mf));
   const el=document.getElementById('records-list');
@@ -385,28 +400,34 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
   return`<table class="records-table">
     <thead><tr>
       ${showCheck?`<th class="checkbox-col"></th>`:''}
-      <th>Date</th><th>Contract no.</th><th>Mix no.</th><th>Mix design no.</th><th>Mix type</th>
-      ${!mini?'<th style="text-align:center">Lot</th><th style="text-align:center">Sub-lot</th>':''}<th style="text-align:center">Sample</th><th style="text-align:center">AC%</th><th style="text-align:center">Air voids%</th><th style="text-align:center">VMA%</th>
+      <th>Lab Sample #</th><th>Date</th><th>Contract No.</th><th>Mix Type</th><th>Mix No.</th>
+      <th style="text-align:center">Design AC%</th><th style="text-align:center">Result AC%</th><th style="text-align:center">Deviation</th>
       <th style="text-align:right"></th>
     </tr></thead>
-    <tbody>${recs.map(r=>`<tr>
-      ${showCheck?`<td class="checkbox-col"><input type="checkbox" class="rec-check" data-id="${r.id}"></td>`:''}
-      <td>${r.date}</td>
-      <td><strong>${r.contractNo||'—'}</strong></td>
-      <td><strong>${r.mixNo||'—'}</strong></td>
-      <td style="font-size:11px">${r.mixDesignNo||r.jmf?.mixDesignNo||(r.jmfId?db.jmfs.find(j=>j.id===r.jmfId)?.mixDesignNo:'')||'—'}</td>
-      <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType}</span></td>
-      ${!mini?`<td style="text-align:center">${r.lot||'—'}</td><td style="text-align:center">${r.subLot||'—'}</td>`:''}
-      <td style="text-align:center">${r.sampleId||'—'}</td>
-      <td style="text-align:center;color:${r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b'};font-weight:600">${fmt2(r.acContent)}%</td>
-      <td style="text-align:center;color:${r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b'};font-weight:600">${fmt1(r.airVoids)}%</td>
-      <td style="text-align:center;color:${r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b'};font-weight:600">${fmt1(r.vma)}%</td>
-      <td style="text-align:right;white-space:nowrap">
-        <button class="btn btn-sm" onclick="editRecord('${r.id}')" title="Edit">✏️</button>
-        <button class="btn btn-sm" onclick="printRecord('${r.id}')" title="Print">🖨️</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteRecord('${r.id}')" title="Delete" style="margin-left:2px">🗑️</button>
-      </td>
-    </tr>`).join('')}</tbody></table>`;
+    <tbody>${recs.map(r=>{
+      const _jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
+      const designAC=parseFloat(_jmf?.acTarget);
+      const resultAC=parseFloat(r.acContent);
+      const dev=(!isNaN(designAC)&&!isNaN(resultAC)&&resultAC>0)?resultAC-designAC:null;
+      const devColor=dev===null?'#888':Math.abs(dev)>0.5?'#c0392b':Math.abs(dev)>0.3?'#8a6000':'#1a6b1a';
+      const acColor=r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b';
+      return`<tr>
+        ${showCheck?`<td class="checkbox-col"><input type="checkbox" class="rec-check" data-id="${r.id}"></td>`:''}
+        <td style="font-weight:700">${r.sampleId||'—'}</td>
+        <td>${r.dateSampled||r.date||'—'}</td>
+        <td><strong>${r.contractNo||'—'}</strong></td>
+        <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType||'—'}</span></td>
+        <td>${r.mixNo||'—'}</td>
+        <td style="text-align:center">${!isNaN(designAC)?designAC.toFixed(2)+'%':'—'}</td>
+        <td style="text-align:center;font-weight:600;color:${acColor}">${resultAC>0?resultAC.toFixed(2)+'%':'—'}</td>
+        <td style="text-align:center;font-weight:700;color:${devColor}">${dev!==null?(dev>=0?'+':'')+dev.toFixed(2):'—'}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn btn-sm" onclick="editRecord('${r.id}')" title="Edit">&#9998;</button>
+          <button class="btn btn-sm" onclick="printRecord('${r.id}')" title="Print">&#128424;</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteRecord('${r.id}')" title="Delete" style="margin-left:2px">&#128465;</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
 }
 
 function generateSummary(){
@@ -539,7 +560,7 @@ function renderStep1(){
     <div class="form-group"><label>Location</label><input type="text" id="e-location" value="${entryData.location||''}" placeholder="e.g. 10 Goodrich Dr"></div>
     <div class="form-group"><label>Lot (optional)</label><input type="text" id="e-lot" value="${entryData.lot||''}" placeholder="e.g. 1"></div>
     <div class="form-group"><label>Sub-lot (optional)</label><input type="number" id="e-sublot" value="${entryData.subLot||''}" min="1" max="10" placeholder="e.g. 3"></div>
-    <div class="form-group"><label>Sample ID</label><input type="text" id="e-sampleid" value="${entryData.sampleId||''}" placeholder="e.g. 26015"></div>
+    <div class="form-group"><label>Lab Sample #</label><input type="text" id="e-sampleid" value="${entryData.sampleId||''}" placeholder="e.g. 26015"></div>
   </div>
   <div class="form-grid">
     <div class="form-group" style="grid-column:1/3"><label>Select Mix Design</label><select id="e-jmf">${jmfOpts}</select></div>
@@ -794,6 +815,7 @@ async function calcAndSave(){
   }
   const sbPayload={
     mix_design_id:record.jmfId||null,contract_id:contractId,
+    sample_id:record.sampleId||null,
     test_date:record.dateSampled||record.date,test_type:'extraction',
     air_voids:parseFloat(record.airVoids)||null,vma:parseFloat(record.vma)||null,
     vfa:parseFloat(record.vfa)||null,binder_content:parseFloat(record.acContent)||null,
@@ -1115,6 +1137,265 @@ async function deleteJMF(id){
   await loadFromSupabase();renderView();
 }
 
+
+// ── PRODUCTION NOTES ──────────────────────────────────────────────────────────
+function renderProdNotes(){
+  const today=new Date().toISOString().split('T')[0];
+  const mixOpts=db.jmfs.map(j=>`<option value="${j.id}">${j.mixNo}${j.mixDesignNo?' / '+j.mixDesignNo:''}</option>`).join('');
+  const contractOpts=db.contracts.map(c=>`<option value="${c.id}">${c.contract_number} (${c.year})</option>`).join('');
+  const filterOpts='<option value="">All mix designs</option>'+db.jmfs.map(j=>`<option value="${j.id}" ${prodNotesFilterMix===j.id?'selected':''}>${j.mixNo}${j.mixDesignNo?' / '+j.mixDesignNo:''}</option>`).join('');
+  return`<div class="card">
+    <div class="section-title">Add Production Note</div>
+    <div id="pn-success" style="display:none;background:#e8f5e9;color:#1a6b1a;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-weight:600">Note saved successfully</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group"><label>Mix Design</label><select id="pn-mix"><option value="">Select mix design</option>${mixOpts}</select></div>
+      <div class="form-group"><label>Contract</label><select id="pn-contract"><option value="">Select contract</option>${contractOpts}</select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group"><label>Date</label><input type="date" id="pn-date" value="${today}"></div>
+      <div class="form-group"><label>Category</label>
+        <input type="text" id="pn-category" list="pn-cat-list" placeholder="Select or type a category">
+        <datalist id="pn-cat-list">
+          <option value="binder_adjustment">
+          <option value="aggregate_source_change">
+          <option value="moisture_issue">
+          <option value="temperature_issue">
+          <option value="mix_stiffness">
+          <option value="roller_pattern_change">
+          <option value="production_rate_change">
+          <option value="other">
+        </datalist>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px"><label>Note</label>
+      <textarea id="pn-note" rows="4" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Describe what changed or was observed during production"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveProdNote()">Save note</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin:0">Past Production Notes</div>
+      <select style="font-size:12px;padding:5px 10px;border:1px solid #d0d7e3;border-radius:6px;color:#444" onchange="prodNotesFilterMix=this.value;document.getElementById('pn-list').innerHTML=renderProdNotesList()">${filterOpts}</select>
+    </div>
+    <div id="pn-list">${renderProdNotesList()}</div>
+  </div>`;
+}
+
+function renderProdNotesList(){
+  let notes=db.productionNotes||[];
+  if(prodNotesFilterMix)notes=notes.filter(n=>n.mix_design_id===prodNotesFilterMix);
+  if(!notes.length)return'<div class="empty-state">No production notes yet.</div>';
+  return notes.map(n=>{
+    const mix=n.mix_designs?n.mix_designs.mix_number:'unknown';
+    const contract=n.contracts?n.contracts.contract_number:'unknown';
+    const cat=n.category?`<span style="background:#f0f4ff;color:#5a6a82;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px">${n.category}</span>`:'';
+    return`<div style="padding:12px 0;border-bottom:1px solid #eef0f5">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+        <span style="background:#1f3864;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">${mix}</span>
+        <span style="background:#e8edf5;color:#1f3864;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">Contract ${contract}</span>
+        ${cat}
+        <span style="font-size:11px;color:#aaa;margin-left:auto">${n.note_date}</span>
+      </div>
+      <div style="font-size:13px;color:#333;line-height:1.6;white-space:pre-wrap">${n.note}</div>
+    </div>`;
+  }).join('');
+}
+
+async function saveProdNote(){
+  const mix_design_id=document.getElementById('pn-mix').value;
+  const contract_id=document.getElementById('pn-contract').value;
+  const note_date=document.getElementById('pn-date').value;
+  const category=document.getElementById('pn-category').value.trim()||null;
+  const note=document.getElementById('pn-note').value.trim();
+  if(!mix_design_id){alert('Please select a mix design.');return;}
+  if(!contract_id){alert('Please select a contract.');return;}
+  if(!note_date){alert('Please enter a date.');return;}
+  if(!note){alert('Note cannot be empty.');return;}
+  const btn=document.querySelector('[onclick="saveProdNote()"]');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  const {error}=await _db.from('production_notes').insert({
+    mix_design_id,contract_id,note_date,category,note,
+    entered_by:currentUser?currentUser.id:null,last_modified_by:currentUser?currentUser.id:null,
+  });
+  if(btn){btn.disabled=false;btn.textContent='Save note';}
+  if(error){alert('Save failed: '+error.message);return;}
+  await loadFromSupabase();
+  const succ=document.getElementById('pn-success');
+  if(succ){succ.style.display='block';setTimeout(function(){if(succ)succ.style.display='none';},3000);}
+  document.getElementById('pn-note').value='';
+  document.getElementById('pn-category').value='';
+  document.getElementById('pn-list').innerHTML=renderProdNotesList();
+}
+
+
+
+// ── QUICK ENTRY ───────────────────────────────────────────────────────────────
+function renderQuickEntry(){
+  const today=new Date().toISOString().split('T')[0];
+  const allJmfs=db.jmfs;
+  const jmfOpts=allJmfs.map(j=>`<option value="${j.id}" ${quickEntryState.jmfId===j.id?'selected':''}>${j.mixNo}${j.mixDesignNo?' / '+j.mixDesignNo:''} — ${j.mixType}</option>`).join('');
+  const selJmf=quickEntryState.jmfId?allJmfs.find(j=>j.id===quickEntryState.jmfId):null;
+  const designAC=selJmf?.acTarget||'';
+  return`<div class="card" style="max-width:600px;margin:0 auto">
+    <div class="section-title">Quick Entry</div>
+    <div class="info-note" style="margin-bottom:14px">Minimal entry for historical backfill — no gradation or gyration required. Contract and Mix Design are preserved between saves.</div>
+    <div id="qe-success" style="display:none;background:#e8f5e9;color:#1a6b1a;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-weight:600">Record saved</div>
+    <div style="display:grid;grid-template-columns:1fr 80px;gap:10px;margin-bottom:12px">
+      <div class="form-group"><label>Contract / Job No.</label><input type="text" id="qe-contract" value="${quickEntryState.contractNo||''}" placeholder="e.g. 26-030" style="width:100%"></div>
+      <div class="form-group"><label>Season</label><input type="text" id="qe-season" value="${quickEntryState.season||new Date().getFullYear()}" style="width:100%"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px"><label>Mix Design</label>
+      <select id="qe-jmf" onchange="quickEntryState.jmfId=this.value;document.getElementById('qe-design-ac').textContent=db.jmfs.find(j=>j.id===this.value)?.acTarget||'—'">
+        <option value="">Select mix design</option>${jmfOpts}
+      </select>
+    </div>
+    <div style="background:#f0f4ff;border:1px solid #c8d4e8;border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:13px">
+      Design AC%: <strong id="qe-design-ac">${designAC||'—'}</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="form-group"><label>Lab Sample #</label><input type="text" id="qe-sampleid" placeholder="e.g. 26015" style="width:100%" onkeydown="if(event.key==='Enter'){document.getElementById('qe-date').focus();}"></div>
+      <div class="form-group"><label>Date Sampled</label><input type="date" id="qe-date" value="${today}" style="width:100%" onkeydown="if(event.key==='Enter'){document.getElementById('qe-ac').focus();}"></div>
+      <div class="form-group"><label>Result AC%</label><input type="number" step="0.01" id="qe-ac" placeholder="e.g. 5.20" style="width:100%;text-align:center" onkeydown="if(event.key==='Enter'){saveQuickEntry();}"></div>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="showView('records')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuickEntry()">Save</button>
+    </div>
+    <div style="margin-top:20px;border-top:1px solid #eee;padding-top:14px">
+      <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Recent quick entries</div>
+      <div style="font-size:12px;color:#555">${renderQuickEntryRecent()}</div>
+    </div>
+  </div>`;
+}
+
+function renderQuickEntryRecent(){
+  const recent=db.records.filter(r=>!r.airVoids&&r.acContent).slice(-10).reverse();
+  if(!recent.length)return'<span style="color:#aaa">None yet</span>';
+  return recent.map(r=>`<div style="padding:4px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px">
+    <span style="font-weight:700;min-width:70px">${r.sampleId||'—'}</span>
+    <span style="color:#888;min-width:100px">${r.dateSampled||r.date||'—'}</span>
+    <span>${r.contractNo||'—'}</span>
+    <span style="margin-left:auto;font-weight:600">${r.acContent?r.acContent+'%':'—'}</span>
+  </div>`).join('');
+}
+
+async function saveQuickEntry(){
+  const contractNo=(document.getElementById('qe-contract').value||'').trim();
+  const jmfId=document.getElementById('qe-jmf').value;
+  const sampleId=(document.getElementById('qe-sampleid').value||'').trim();
+  const dateSampled=document.getElementById('qe-date').value;
+  const acContent=document.getElementById('qe-ac').value.trim();
+  const season=(document.getElementById('qe-season').value||'').trim();
+  if(!contractNo){alert('Contract / Job No. is required.');return;}
+  if(!jmfId){alert('Please select a Mix Design.');return;}
+  if(!sampleId){alert('Lab Sample # is required.');return;}
+  if(!dateSampled){alert('Date is required.');return;}
+  if(!acContent){alert('Result AC% is required.');return;}
+  const jmf=db.jmfs.find(j=>j.id===jmfId);
+  const year=parseInt(dateSampled.slice(0,4))||new Date().getFullYear();
+  const contractId=await getOrCreateContract(contractNo,year);
+  const payload={
+    mix_design_id:jmfId,contract_id:contractId,
+    sample_id:sampleId,
+    test_date:dateSampled,test_type:'extraction',
+    binder_content:parseFloat(acContent)||null,
+    passed_spec:null,
+    results:{
+      sampleId,dateSampled,date:dateSampled,season,contractNo,
+      mixNo:jmf?.mixNo||'',mixDesignNo:jmf?.mixDesignNo||'',
+      mixType:jmf?.mixType||'',testFamily:jmf?.testFamily||'Superpave',
+      acContent,jmfAC:jmf?.acTarget||'',acStatus:'',overallStatus:'',
+      gradActual:{},gradStatus:{},cumRetained:{},briquettes:[],vol3Data:null,
+      lot:'',subLot:'',job:'',location:'',tech:'',bySampled:'',dateTested:dateSampled,byTested:'',
+    },
+    entered_by:currentUser?currentUser.id:null,
+    last_modified_by:currentUser?currentUser.id:null,
+  };
+  if(contractId&&jmfId){
+    await _db.from('contract_mix_designs').upsert({contract_id:contractId,mix_design_id:jmfId,created_by:currentUser?.id},{onConflict:'contract_id,mix_design_id',ignoreDuplicates:true});
+  }
+  const btn=document.querySelector('[onclick="saveQuickEntry()"]');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {error}=await _db.from('test_records').insert(payload);
+  if(btn){btn.disabled=false;btn.textContent='Save';}
+  if(error){alert('Save failed: '+error.message);return;}
+  // Persist contract/mix, clear sample/date/ac
+  quickEntryState={contractNo,jmfId,season};
+  await loadFromSupabase();
+  const succ=document.getElementById('qe-success');
+  if(succ){succ.style.display='block';setTimeout(()=>{if(succ)succ.style.display='none';},2000);}
+  document.getElementById('qe-sampleid').value='';
+  document.getElementById('qe-ac').value='';
+  document.getElementById('qe-sampleid').focus();
+  document.getElementById('qe-list-recent')||document.getElementById('main-content').querySelector('[style*="Recent quick"]')&&renderView();
+}
+
+// ── AC DEVIATION REPORT ───────────────────────────────────────────────────────
+function renderACReport(){
+  const year=new Date().getFullYear().toString();
+  const families=['Superpave','Marshall','SMA'];
+  const tabs=families.map(f=>`<button class="btn ${acReportFamily===f?'btn-primary':''}" style="margin-right:6px" onclick="acReportFamily='${f}';renderView()">${f}</button>`).join('');
+  const recs=db.records.filter(r=>r.season===year&&r.testFamily===acReportFamily&&parseFloat(r.acContent)>0);
+  const ytdDevs=recs.map(r=>{
+    const jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
+    const d=parseFloat(jmf?.acTarget),res=parseFloat(r.acContent);
+    return(!isNaN(d)&&!isNaN(res))?res-d:null;
+  }).filter(d=>d!==null);
+  const ytdAvg=ytdDevs.length?ytdDevs.reduce((a,b)=>a+b,0)/ytdDevs.length:null;
+  const ytdColor=ytdAvg===null?'#888':Math.abs(ytdAvg)>0.5?'#c0392b':Math.abs(ytdAvg)>0.3?'#8a6000':'#1a6b1a';
+  // Group by month
+  const byMonth={};
+  recs.forEach(r=>{const m=(r.dateSampled||r.date||'').slice(0,7);if(m)byMonth[m]=(byMonth[m]||[]).concat(r);});
+  const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthBlocks=Object.keys(byMonth).sort().reverse().map(month=>{
+    const [,m]=month.split('-');
+    const label=`${MNAMES[parseInt(m)-1]} ${month.slice(0,4)}`;
+    const mRecs=byMonth[month];
+    const byMix={};
+    mRecs.forEach(r=>{const k=r.mixNo||'—';if(!byMix[k])byMix[k]={recs:[],jmf:r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null};byMix[k].recs.push(r);});
+    const rows=Object.entries(byMix).map(([mixNo,{recs:mr,jmf}])=>{
+      const d=parseFloat(jmf?.acTarget);
+      const results=mr.map(r=>parseFloat(r.acContent)).filter(v=>!isNaN(v)&&v>0);
+      const devs=results.map(v=>!isNaN(d)?v-d:null).filter(x=>x!==null);
+      const avgRes=results.length?results.reduce((a,b)=>a+b,0)/results.length:null;
+      const avgDev=devs.length?devs.reduce((a,b)=>a+b,0)/devs.length:null;
+      const dc=avgDev===null?'#888':Math.abs(avgDev)>0.5?'#c0392b':Math.abs(avgDev)>0.3?'#8a6000':'#1a6b1a';
+      return`<tr style="border-bottom:1px solid #eef0f5">
+        <td style="padding:7px 10px">${mixNo}</td>
+        <td style="text-align:center;padding:7px 10px">${!isNaN(d)?d.toFixed(2)+'%':'—'}</td>
+        <td style="text-align:center;padding:7px 10px">${mr.length}</td>
+        <td style="text-align:center;padding:7px 10px">${avgRes!==null?avgRes.toFixed(2)+'%':'—'}</td>
+        <td style="text-align:center;font-weight:700;color:${dc};padding:7px 10px">${avgDev!==null?(avgDev>=0?'+':'')+avgDev.toFixed(2):'—'}</td>
+      </tr>`;
+    }).join('');
+    return`<div style="margin-bottom:20px">
+      <div style="font-weight:700;color:#1f3864;font-size:13px;padding:8px 0;border-bottom:2px solid #1f3864;margin-bottom:0">${label}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#e8edf5">
+          <th style="text-align:left;padding:7px 10px;font-size:11px">Mix No.</th>
+          <th style="text-align:center;padding:7px 10px;font-size:11px">Design AC%</th>
+          <th style="text-align:center;padding:7px 10px;font-size:11px">n</th>
+          <th style="text-align:center;padding:7px 10px;font-size:11px">Avg Result AC%</th>
+          <th style="text-align:center;padding:7px 10px;font-size:11px">Avg Deviation</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+  return`<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    <span style="line-height:32px;font-weight:700;color:#1f3864;margin-right:6px">Mix Family:</span>${tabs}
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #eef0f5">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em">YTD Average Deviation — ${acReportFamily} (${year})</div>
+        <div style="font-size:32px;font-weight:900;color:${ytdColor}">${ytdAvg!==null?(ytdAvg>=0?'+':'')+ytdAvg.toFixed(2):'—'}</div>
+      </div>
+      <div style="font-size:13px;color:#888">n = ${ytdDevs.length} records</div>
+    </div>
+    ${monthBlocks||'<div class="empty-state">No '+acReportFamily+' records with AC data in '+year+'</div>'}
+  </div>`;
+}
 
 // ── PDF EXTRACTION ─────────────────────────────────────────────────────────────
 let apiKey = (localStorage.getItem('cp_api_key') || '').trim();
