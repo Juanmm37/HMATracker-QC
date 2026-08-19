@@ -1431,9 +1431,20 @@ function renderACReport(){
   </div>`;
 }
 
-function _tonnageKey(year,month,family,mixNo){return`hma_t_${year}_${month}_${family}_${mixNo}`;}
-function _getTon(year,month,family,mixNo){const v=parseFloat(localStorage.getItem(_tonnageKey(year,month,family,mixNo)));return isNaN(v)?null:v;}
-function _saveTon(year,month,family,mixNo,val){const k=_tonnageKey(year,month,family,mixNo);val?localStorage.setItem(k,val):localStorage.removeItem(k);}
+let acTonnageCache={};
+function _tonCacheKey(year,month,family,mixNo){return`${year}|${month}|${family}|${mixNo}`;}
+function _getTon(year,month,family,mixNo){return acTonnageCache[_tonCacheKey(year,month,family,mixNo)]||null;}
+async function loadACTonnage(year,month,family){
+  const {data}=await _db.from('ac_tonnage').select('mix_no,tonnage').eq('year',year).eq('month',month).eq('family',family);
+  acTonnageCache={};
+  (data||[]).forEach(r=>{acTonnageCache[_tonCacheKey(year,month,family,r.mix_no)]=r.tonnage;});
+}
+async function saveACTonnage(year,month,family,mixNo,val){
+  const k=_tonCacheKey(year,month,family,mixNo);
+  const tonnage=parseFloat(val)||0;
+  acTonnageCache[k]=tonnage;
+  await _db.from('ac_tonnage').upsert({year:String(year),month:parseInt(month),family,mix_no:mixNo,tonnage,updated_at:new Date().toISOString(),updated_by:currentUser?.name||null},{onConflict:'year,month,family,mix_no'});
+}
 
 function renderACMixAvgsTable(recsAug,year,month,family){
   // Group records with AC data by mix number
