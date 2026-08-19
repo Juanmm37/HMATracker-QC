@@ -1475,7 +1475,7 @@ function renderACMixAvgsTable(recsAug,year,month,family){
     const stored=_getTon(year,month,family,m)||'';
     return`<td style="${cellSt}padding:4px 6px"><input type="number" min="0" step="1" value="${stored}" placeholder="0"
       style="width:80px;text-align:center;border:1px solid #c8d4e8;border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700"
-      oninput="_saveTon('${year}',${month},'${family}','${m}',this.value);_updateACMixTotals()" id="acmt-ton-${i}"></td>`;
+      oninput="saveACTonnage('${year}',${month},'${family}','${m}',this.value);_updateACMixTotals()" id="acmt-ton-${i}"></td>`;
   }).join('');
   // AC Mass row
   const massCols=mixes.map((_,i)=>`<td style="${cellSt}" id="acmt-mass-${i}">—</td>`).join('');
