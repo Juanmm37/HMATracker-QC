@@ -998,6 +998,18 @@ function printRecord(id){
 }
 
 // ── JMF LIBRARY ───────────────────────────────────────────────────────────────
+function jmfExpiryChip(designDate){
+  if(!designDate) return '<span style="color:#aaa;font-size:11px">—</span>';
+  const d=new Date(designDate);
+  if(isNaN(d)) return '<span style="color:#aaa;font-size:11px">—</span>';
+  const expiry=new Date(d); expiry.setFullYear(expiry.getFullYear()+3);
+  const now=new Date();
+  const mo=Math.round((expiry-now)/(1000*60*60*24*30.44));
+  if(mo<=0) return`<span style="background:#ffc7ce;color:#9c0006;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700">Expired</span>`;
+  const bg=mo<3?'#ffc7ce':mo<12?'#ffeb9c':'#c6efce';
+  const cl=mo<3?'#9c0006':mo<12?'#7d5a00':'#375623';
+  return`<span style="background:${bg};color:${cl};padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700">${mo}mo left</span>`;
+}
 function renderJMF(){
   if(editingJmf!==null)return renderJMFForm();
   const rows=db.jmfs.map(j=>`<tr>
@@ -1006,7 +1018,8 @@ function renderJMF(){
     <td><span class="badge badge-${j.testFamily==='Marshall'?'ms':j.testFamily==='SMA'?'sma':'sp'}">${j.testFamily}</span></td>
     <td style="font-size:11px">${j.mixType}</td><td>${j.trafficCat||'—'}</td>
     <td>${fmt2(j.acTarget)}</td><td>${j.binder||'—'}</td><td>${j.season||'—'}</td>
-    <td style="font-size:11px;color:#888">${fmtDate(j.createdAt)}</td>
+    <td style="font-size:11px">${j.designDate||'—'}</td>
+    <td>${jmfExpiryChip(j.designDate)}</td>
     <td>
       <button class="btn btn-sm" onclick="editJMF('${j.id}')">✏️</button>
       <button class="btn btn-sm btn-danger" onclick="deleteJMF('${j.id}')" style="margin-left:4px">🗑️</button>
@@ -1015,7 +1028,7 @@ function renderJMF(){
   return`<div style="margin-bottom:14px"><button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add Mix Design</button></div>
   <div class="card" style="padding:0;overflow:hidden">
   ${!db.jmfs.length?`<div class="empty-state">No mix designs yet. Add your active mix designs for the season.</div>`:`
-  <table class="records-table"><thead><tr><th>Mix no.</th><th>Mix design no.</th><th>Mix Design Type</th><th>Mix type</th><th>Cat.</th><th>AC target</th><th>PGAC type</th><th>Season</th><th>Date added</th><th></th></tr></thead>
+  <table class="records-table"><thead><tr><th>Mix no.</th><th>Mix design no.</th><th>Mix Design Type</th><th>Mix type</th><th>Cat.</th><th>AC target</th><th>PGAC type</th><th>Season</th><th>Design date</th><th>Expires</th><th></th></tr></thead>
   <tbody>${rows}</tbody></table>`}</div>`;
 }
 
