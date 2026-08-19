@@ -1601,6 +1601,7 @@ function populateJMFForm(d){
   set('jf-gb', d.gb);
   set('jf-binder', d.binderGrade);
   set('jf-season', new Date().getFullYear().toString());
+  set('jf-designdate', d.designDate||'');
 
   // Mix type dropdown
   const mtSel = document.getElementById('jf-mixtype');
