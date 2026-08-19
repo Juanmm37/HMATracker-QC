@@ -1422,6 +1422,48 @@ function renderACReport(){
   </div>`;
 }
 
+function drawACChart(){
+  const canvas=document.getElementById('ac-dev-chart');
+  if(!canvas)return;
+  if(acChartInst){acChartInst.destroy();acChartInst=null;}
+  const recs=db.records.filter(r=>r.testFamily===acReportFamily&&parseFloat(r.acContent)>0&&(acReportYear==='all'||r.season===acReportYear))
+    .sort((a,b)=>(a.dateSampled||a.date||'').localeCompare(b.dateSampled||b.date||''));
+  const labels=recs.map(r=>r.sampleId||(r.dateSampled||r.date||''));
+  const devData=recs.map(r=>{
+    const jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
+    const d=parseFloat(jmf?.acTarget),res=parseFloat(r.acContent);
+    return(!isNaN(d)&&res>0)?parseFloat((res-d).toFixed(3)):null;
+  });
+  const barColors=devData.map(d=>d===null?'rgba(180,180,180,0.5)':Math.abs(d)>0.5?'rgba(192,57,43,0.75)':Math.abs(d)>0.3?'rgba(200,140,0,0.75)':'rgba(26,107,26,0.75)');
+  const n=labels.length;
+  const hline=(v,color,dash)=>({label:'',data:Array(n).fill(v),type:'line',borderColor:color,borderWidth:1.5,borderDash:dash,pointRadius:0,fill:false,tension:0});
+  acChartInst=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'AC Deviation',data:devData,backgroundColor:barColors,borderColor:barColors.map(c=>c.replace('0.75','1')),borderWidth:1,order:2},
+        hline(0,'rgba(31,56,100,0.9)',[]),
+        hline(0.30,'rgba(200,140,0,0.6)',[5,4]),
+        hline(-0.30,'rgba(200,140,0,0.6)',[5,4]),
+        hline(0.50,'rgba(192,57,43,0.6)',[3,4]),
+        hline(-0.50,'rgba(192,57,43,0.6)',[3,4]),
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;return v!==null?(v>=0?'+':'')+v.toFixed(2)+'%':'N/T';}}}
+      },
+      scales:{
+        x:{ticks:{font:{size:10},maxRotation:55,autoSkip:true,maxTicksLimit:30},grid:{display:false},title:{display:true,text:'Lab Sample #',font:{size:11}}},
+        y:{ticks:{font:{size:11},callback:v=>(v>=0?'+':'')+v.toFixed(2)+'%'},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'AC Deviation (%)',font:{size:11}}}
+      }
+    }
+  });
+}
+
 // ── PDF EXTRACTION ─────────────────────────────────────────────────────────────
 let apiKey = (localStorage.getItem('cp_api_key') || '').trim();
 
