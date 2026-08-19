@@ -1019,7 +1019,6 @@ function renderJMF(){
     <td style="font-size:11px">${j.mixType}</td><td>${j.trafficCat||'—'}</td>
     <td>${fmt2(j.acTarget)}</td><td>${j.binder||'—'}</td><td>${j.season||'—'}</td>
     <td style="font-size:11px">${j.designDate||'—'}</td>
-    <td>${jmfExpiryChip(j.designDate)}</td>
     <td>
       <button class="btn btn-sm" onclick="editJMF('${j.id}')">✏️</button>
       <button class="btn btn-sm btn-danger" onclick="deleteJMF('${j.id}')" style="margin-left:4px">🗑️</button>
