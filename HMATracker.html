@@ -1431,6 +1431,101 @@ function renderACReport(){
   </div>`;
 }
 
+function _tonnageKey(year,month,family,mixNo){return`hma_t_${year}_${month}_${family}_${mixNo}`;}
+function _getTon(year,month,family,mixNo){const v=parseFloat(localStorage.getItem(_tonnageKey(year,month,family,mixNo)));return isNaN(v)?null:v;}
+function _saveTon(year,month,family,mixNo,val){const k=_tonnageKey(year,month,family,mixNo);val?localStorage.setItem(k,val):localStorage.removeItem(k);}
+
+function renderACMixAvgsTable(recsAug,year,month,family){
+  // Group records with AC data by mix number
+  const byMix={};
+  recsAug.forEach(r=>{
+    if(!r.hasAC||r.dev===null)return;
+    const k=r.mixNo||'—';
+    if(!byMix[k])byMix[k]={devs:[],count:0};
+    byMix[k].devs.push(r.dev);
+    byMix[k].count++;
+  });
+  const mixes=Object.keys(byMix).sort();
+  if(!mixes.length)return'';
+  const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const cellSt='padding:8px 12px;text-align:center;border:1px solid #e0e8f0;';
+  const labelSt='padding:8px 12px;font-weight:700;background:#fff9c4;border:1px solid #e0e8f0;white-space:nowrap;';
+  const wCellSt='padding:8px 12px;text-align:center;border:1px solid #e0e8f0;background:#fff3cd;font-weight:700;';
+  // Header row
+  const headerCols=mixes.map(m=>`<th style="${cellSt}background:#1f3864;color:#fff;font-weight:700">${m}</th>`).join('');
+  // AC% Dev row
+  const avgDevs=mixes.map(m=>(byMix[m].devs.reduce((a,b)=>a+b,0)/byMix[m].devs.length));
+  const devCols=avgDevs.map((d,i)=>{
+    const c=Math.abs(d)>0.5?'#c0392b':Math.abs(d)>0.3?'#8a6000':'#1a6b1a';
+    return`<td style="${cellSt}font-weight:700;color:${c}" id="acmt-dev-${i}">${(d>=0?'+':'')+d.toFixed(2)}</td>`;
+  }).join('');
+  // Tonnage row (editable)
+  const tonCols=mixes.map((m,i)=>{
+    const stored=_getTon(year,month,family,m)||'';
+    return`<td style="${cellSt}padding:4px 6px"><input type="number" min="0" step="1" value="${stored}" placeholder="0"
+      style="width:80px;text-align:center;border:1px solid #c8d4e8;border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700"
+      oninput="_saveTon('${year}',${month},'${family}','${m}',this.value);_updateACMixTotals()" id="acmt-ton-${i}"></td>`;
+  }).join('');
+  // AC Mass row
+  const massCols=mixes.map((_,i)=>`<td style="${cellSt}" id="acmt-mass-${i}">—</td>`).join('');
+  // No. Tests row
+  const testCols=mixes.map(m=>`<td style="${cellSt}">${byMix[m].count}</td>`).join('');
+  const totalTests=mixes.reduce((a,m)=>a+byMix[m].count,0);
+  // Encode avg devs for JS
+  const devsJson=JSON.stringify(avgDevs);
+  const nMixes=mixes.length;
+  return`<div class="card" style="margin-bottom:16px;overflow-x:auto">
+    <div style="font-size:12px;font-weight:700;color:#1f3864;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em">
+      Mix Averages — ${MNAMES[month-1]} ${year} — ${family}
+      <span style="font-size:10px;color:#888;font-weight:400;margin-left:8px">Enter tonnage per mix to calculate weighted deviation</span>
+    </div>
+    <table style="border-collapse:collapse;font-size:13px;min-width:100%">
+      <thead><tr>
+        <th style="${labelSt}background:#1f3864;color:#fff">Mix Avgs.</th>
+        ${headerCols}
+        <th style="${wCellSt}background:#e6a817;color:#000;border:1px solid #e0e8f0">Weighted</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="${labelSt}">AC% Dev.</td>${devCols}<td style="${wCellSt}" id="acmt-w-dev">—</td></tr>
+        <tr><td style="${labelSt}">Tonnage</td>${tonCols}<td style="${wCellSt}" id="acmt-w-ton">—</td></tr>
+        <tr><td style="${labelSt}">AC Mass</td>${massCols}<td style="${wCellSt}" id="acmt-w-mass">—</td></tr>
+        <tr><td style="${labelSt}">No. Tests</td>${testCols}<td style="${wCellSt}">${totalTests}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+  (function(){
+    const devs=${devsJson};
+    const n=${nMixes};
+    window._updateACMixTotals=function(){
+      let totalTon=0,totalMass=0,allHave=true;
+      for(let i=0;i<n;i++){
+        const ton=parseFloat(document.getElementById('acmt-ton-'+i)?.value)||0;
+        const mass=(devs[i]/100)*ton;
+        const massEl=document.getElementById('acmt-mass-'+i);
+        if(massEl)massEl.textContent=mass.toFixed(4);
+        totalTon+=ton;totalMass+=mass;
+        if(!ton)allHave=false;
+      }
+      const wTon=document.getElementById('acmt-w-ton');
+      const wMass=document.getElementById('acmt-w-mass');
+      const wDev=document.getElementById('acmt-w-dev');
+      if(wTon)wTon.textContent=totalTon?totalTon.toLocaleString():'—';
+      if(wMass)wMass.textContent=totalTon?totalMass.toFixed(4):'—';
+      if(wDev){
+        if(totalTon){
+          const wd=(totalMass/totalTon)*100;
+          const c=Math.abs(wd)>0.5?'#c0392b':Math.abs(wd)>0.3?'#8a6000':'#1a6b1a';
+          wDev.textContent=(wd>=0?'+':'')+wd.toFixed(4);
+          wDev.style.color=c;
+        } else wDev.textContent='—';
+      }
+    };
+    setTimeout(window._updateACMixTotals,0);
+  })();
+  <\/script>`;
+}
+
 function drawACChart(){
   const canvas=document.getElementById('ac-dev-chart');
   if(!canvas)return;
