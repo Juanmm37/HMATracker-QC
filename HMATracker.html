@@ -1610,7 +1610,7 @@ function renderACMixAvgsTable(recsAug,year,month,family){
   const testCols=mixes.map(m=>`<td style="${cellSt}">${byMix[m].count}</td>`).join('');
   const totalTests=mixes.reduce((a,m)=>a+byMix[m].count,0);
   _acMixAvgsDevs=avgDevs;
-  return`<div class="card" style="margin-bottom:16px;overflow-x:auto">
+  return`<div id="ac-mix-avgs-card" class="card" style="margin-bottom:16px;overflow-x:auto">
     <div style="font-size:12px;font-weight:700;color:#1f3864;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em">
       Mix Averages — ${MNAMES[month-1]} ${year} — ${family}
       <span style="font-size:10px;color:#888;font-weight:400;margin-left:8px">Enter tonnage per mix to calculate weighted deviation</span>
