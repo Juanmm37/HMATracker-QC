@@ -1372,7 +1372,8 @@ function renderACReport(){
     const mo=i+1;
     const hasData=monthsWithData.has(mo);
     const isActive=acReportMonth===mo;
-    return`<button onclick="acReportMonth=${isActive?'null':mo};renderView()" style="padding:6px 10px;border-radius:6px;border:1px solid ${isActive?'#1f3864':hasData?'#8aa0cc':'#dde3ed'};background:${isActive?'#1f3864':hasData?'#eef2ff':'#f8f9fc'};color:${isActive?'#fff':hasData?'#1f3864':'#aaa'};font-size:12px;font-weight:${isActive||hasData?'700':'400'};cursor:${hasData?'pointer':'default'}">${m}</button>`;
+    const clickHandler=isActive?`acReportMonth=null;renderView()`:`acReportMonth=${mo};loadACTonnage('${acReportYear}',${mo},'${acReportFamily}').then(()=>renderView())`;
+    return`<button onclick="${clickHandler}" style="padding:6px 10px;border-radius:6px;border:1px solid ${isActive?'#1f3864':hasData?'#8aa0cc':'#dde3ed'};background:${isActive?'#1f3864':hasData?'#eef2ff':'#f8f9fc'};color:${isActive?'#fff':hasData?'#1f3864':'#aaa'};font-size:12px;font-weight:${isActive||hasData?'700':'400'};cursor:${hasData?'pointer':'default'}">${m}</button>`;
   }).join('');
   // Filter records
   const filteredRecs=db.records.filter(r=>{
