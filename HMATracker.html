@@ -1434,9 +1434,12 @@ function drawACChart(){
   const canvas=document.getElementById('ac-dev-chart');
   if(!canvas)return;
   if(acChartInst){acChartInst.destroy();acChartInst=null;}
-  const recs=db.records.filter(r=>r.testFamily===acReportFamily&&parseFloat(r.acContent)>0&&(acReportYear==='all'||r.season===acReportYear))
-    .sort((a,b)=>(a.dateSampled||a.date||'').localeCompare(b.dateSampled||b.date||''));
-  const labels=recs.map(r=>r.sampleId||(r.dateSampled||r.date||''));
+  const recs=db.records.filter(r=>{
+    if(r.testFamily!==acReportFamily||r.season!==acReportYear)return false;
+    if(acReportMonth!==null){const mo=parseInt((r.dateSampled||r.date||'').slice(5,7));if(mo!==acReportMonth)return false;}
+    return parseFloat(r.acContent)>0;
+  }).sort((a,b)=>(a.dateSampled||a.date||'').localeCompare(b.dateSampled||b.date||''));
+  const labels=recs.map(r=>{const d=r.dateSampled||r.date||'';return d.slice(5).replace('-','/');});
   const devData=recs.map(r=>{
     const jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
     const d=parseFloat(jmf?.acTarget),res=parseFloat(r.acContent);
