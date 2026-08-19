@@ -1493,7 +1493,7 @@ Fields to extract:
       messages: [{
         role: 'user',
         content: [
-          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } },
+          contentBlock,
           { type: 'text', text: 'Extract all fields from this mix design cover page. Return JSON only.' }
         ]
       }]
