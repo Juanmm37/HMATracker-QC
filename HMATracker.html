@@ -1465,22 +1465,19 @@ async function extractFromPDF(input){
       });
       mediaType='application/pdf';
     } else if(isHEIC){
-      // HEIC isn't accepted by the API — convert via heic2any (loaded on demand)
-      if(!window.heic2any){
-        await new Promise((resolve,reject)=>{
-          const s=document.createElement('script');
-          s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-          s.onload=resolve; s.onerror=()=>reject(new Error('Could not load HEIC converter. Check your internet connection.'));
-          document.head.appendChild(s);
-        });
+      // HEIC isn't accepted by the API — convert to JPEG via canvas
+      try {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width; canvas.height = bitmap.height;
+        canvas.getContext('2d').drawImage(bitmap, 0, 0);
+        bitmap.close();
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        const comma = dataUrl.indexOf(',');
+        b64 = dataUrl.slice(comma + 1);
+      } catch(e) {
+        throw new Error('HEIC could not be converted automatically.\n\nOn your Mac: open the photo in Preview → File → Export → choose JPEG → save. Then upload that JPEG file instead.');
       }
-      const blob = await window.heic2any({blob: file, toType:'image/jpeg', quality:0.92});
-      b64 = await new Promise((resolve,reject)=>{
-        const reader=new FileReader();
-        reader.onload=()=>{const r=reader.result;const c=r.indexOf(',');resolve(c>=0?r.slice(c+1):r);};
-        reader.onerror=reject;
-        reader.readAsDataURL(blob);
-      });
       mediaType='image/jpeg';
     } else {
       b64 = await new Promise((resolve,reject)=>{
