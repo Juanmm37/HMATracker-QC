@@ -1445,9 +1445,12 @@ async function extractFromPDF(input){
     const key = getApiKey();
     if(!key){ showPdfStatus('error','API key required.'); return; }
 
-    showPdfStatus('loading','Reading mix design PDF — please wait about 10 seconds...');
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|heic|heif|webp)$/i.test(file.name);
+    if(!isPDF && !isImage){ showPdfStatus('error','Unsupported file type. Please use a PDF or an image (JPG, PNG, HEIC, WebP).'); return; }
 
-    // Convert PDF to base64
+    showPdfStatus('loading',`Reading mix design ${isPDF?'PDF':'photo'} — please wait about 10 seconds...`);
+
     const b64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -1459,7 +1462,12 @@ async function extractFromPDF(input){
       reader.readAsDataURL(file);
     });
 
-    const systemPrompt = `You are extracting data from a Capital Paving mix design report PDF. Return ONLY a JSON object with no other text, no markdown, no backticks.
+    const mediaType = isPDF ? 'application/pdf' : (file.type || 'image/jpeg');
+    const contentBlock = isPDF
+      ? { type: 'document', source: { type: 'base64', media_type: mediaType, data: b64 } }
+      : { type: 'image',    source: { type: 'base64', media_type: mediaType, data: b64 } };
+
+    const systemPrompt = `You are extracting data from a Capital Paving mix design report (PDF or photo). Return ONLY a JSON object with no other text, no markdown, no backticks.
 
 Fields to extract:
 - mixDesignNo: Mix Design No. string in format PREFIX-YY-NN.N where PREFIX is SP/M/SMA (e.g. "SP-26-03.1", "M-25-04.1", "SMA-25-01.1")
