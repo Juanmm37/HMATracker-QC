@@ -1452,20 +1452,46 @@ async function extractFromPDF(input){
     const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|heic|heif|webp)$/i.test(file.name);
     if(!isPDF && !isImage){ showPdfStatus('error','Unsupported file type. Please use a PDF or an image (JPG, PNG, HEIC, WebP).'); return; }
 
-    showPdfStatus('loading',`Reading mix design ${isPDF?'PDF':'photo'} — please wait about 10 seconds...`);
+    const isHEIC = /\.(heic|heif)$/i.test(file.name) || file.type === 'image/heic' || file.type === 'image/heif';
+    showPdfStatus('loading',`Reading mix design ${isPDF?'PDF':isHEIC?'photo (converting HEIC…)':'photo'} — please wait about 10 seconds...`);
 
-    const b64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result;
-        const comma = result.indexOf(',');
-        resolve(comma >= 0 ? result.slice(comma + 1) : result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    let b64, mediaType;
+    if(isPDF){
+      b64 = await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>{const r=reader.result;const c=r.indexOf(',');resolve(c>=0?r.slice(c+1):r);};
+        reader.onerror=reject;
+        reader.readAsDataURL(file);
+      });
+      mediaType='application/pdf';
+    } else if(isHEIC){
+      // HEIC isn't accepted by the API — convert to JPEG via canvas first
+      const result = await new Promise((resolve,reject)=>{
+        const url=URL.createObjectURL(file);
+        const img=new Image();
+        img.onload=()=>{
+          const canvas=document.createElement('canvas');
+          canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+          canvas.getContext('2d').drawImage(img,0,0);
+          URL.revokeObjectURL(url);
+          const dataUrl=canvas.toDataURL('image/jpeg',0.92);
+          const comma=dataUrl.indexOf(',');
+          resolve(dataUrl.slice(comma+1));
+        };
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not decode HEIC. Please convert the photo to JPG and try again.'));};
+        img.src=url;
+      });
+      b64=result; mediaType='image/jpeg';
+    } else {
+      b64 = await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>{const r=reader.result;const c=r.indexOf(',');resolve(c>=0?r.slice(c+1):r);};
+        reader.onerror=reject;
+        reader.readAsDataURL(file);
+      });
+      mediaType=file.type||'image/jpeg';
+    }
 
-    const mediaType = isPDF ? 'application/pdf' : (file.type || 'image/jpeg');
     const contentBlock = isPDF
       ? { type: 'document', source: { type: 'base64', media_type: mediaType, data: b64 } }
       : { type: 'image',    source: { type: 'base64', media_type: mediaType, data: b64 } };
