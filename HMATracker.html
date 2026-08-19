@@ -204,6 +204,32 @@ let acReportFamily='Superpave';
 let acReportYear=new Date().getFullYear().toString();
 let acReportMonth=null;
 let acChartInst=null;
+let _acMixAvgsDevs=[];
+function _updateACMixTotals(){
+  const devs=_acMixAvgsDevs;
+  const n=devs.length;
+  let totalTon=0,totalMass=0;
+  for(let i=0;i<n;i++){
+    const ton=parseFloat(document.getElementById('acmt-ton-'+i)?.value)||0;
+    const mass=(devs[i]/100)*ton;
+    const massEl=document.getElementById('acmt-mass-'+i);
+    if(massEl)massEl.textContent=ton?mass.toFixed(4):'—';
+    totalTon+=ton;totalMass+=mass;
+  }
+  const wTon=document.getElementById('acmt-w-ton');
+  const wMass=document.getElementById('acmt-w-mass');
+  const wDev=document.getElementById('acmt-w-dev');
+  if(wTon)wTon.textContent=totalTon?totalTon.toLocaleString():'—';
+  if(wMass)wMass.textContent=totalTon?totalMass.toFixed(4):'—';
+  if(wDev){
+    if(totalTon){
+      const wd=(totalMass/totalTon)*100;
+      const c=Math.abs(wd)>0.5?'#c0392b':Math.abs(wd)>0.3?'#8a6000':'#1a6b1a';
+      wDev.textContent=(wd>=0?'+':'')+wd.toFixed(4);
+      wDev.style.color=c;
+    } else{wDev.textContent='—';wDev.style.color='';}
+  }
+}
 let editingJmf=null;
 let entryStep=1;
 let entryData={};
