@@ -1451,6 +1451,8 @@ async function extractFromPDF(input){
     const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|heic|heif|webp)$/i.test(file.name);
     if(!isPDF && !isImage){ showPdfStatus('error','Unsupported file type. Please use a PDF or an image (JPG, PNG, HEIC, WebP).'); return; }
+    if(isPDF && file.size > 30*1024*1024){ showPdfStatus('error','PDF is too large ('+Math.round(file.size/1024/1024)+'MB). The API limit is 32MB / 100 pages. Please upload only the cover page: open in Preview → select page 1 in the sidebar → File → Print → PDF → Save as PDF.'); return; }
+    if(isImage && file.size > 20*1024*1024){ showPdfStatus('error','Image is too large ('+Math.round(file.size/1024/1024)+'MB). Please reduce the file size or use a lower resolution photo.'); return; }
 
     const isHEIC = /\.(heic|heif)$/i.test(file.name) || file.type === 'image/heic' || file.type === 'image/heif';
     showPdfStatus('loading',`Reading mix design ${isPDF?'PDF':isHEIC?'photo (converting HEIC…)':'photo'} — please wait about 10 seconds...`);
