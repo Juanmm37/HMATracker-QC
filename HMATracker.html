@@ -1027,7 +1027,7 @@ function renderJMF(){
   return`<div style="margin-bottom:14px"><button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add Mix Design</button></div>
   <div class="card" style="padding:0;overflow:hidden">
   ${!db.jmfs.length?`<div class="empty-state">No mix designs yet. Add your active mix designs for the season.</div>`:`
-  <table class="records-table"><thead><tr><th>Mix no.</th><th>Mix design no.</th><th>Mix Design Type</th><th>Mix type</th><th>Cat.</th><th>AC target</th><th>PGAC type</th><th>Season</th><th>Design date</th><th>Expires</th><th></th></tr></thead>
+  <table class="records-table"><thead><tr><th>Mix no.</th><th>Mix design no.</th><th>Mix Design Type</th><th>Mix type</th><th>Cat.</th><th>AC target</th><th>PGAC type</th><th>Season</th><th>Design date</th><th></th></tr></thead>
   <tbody>${rows}</tbody></table>`}</div>`;
 }
 
