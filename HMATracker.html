@@ -792,7 +792,7 @@ async function calcAndSave(){
     id:editingRecordId||Date.now().toString(),
     date:entryData.date,dateSampled:entryData.dateSampled||entryData.date,bySampled:entryData.bySampled||'',dateTested:entryData.dateTested||entryData.date,byTested:entryData.byTested||'',season:entryData.season,sampleId:entryData.sampleId,
     job:entryData.job,location:entryData.location,tech:entryData.tech,
-    contractNo:entryData.contractNo||'',lot:entryData.lot||'',subLot:entryData.subLot||'',
+    contractNo:entryData.contractNo||'',lot:entryData.lot||'',subLot:entryData.subLot||'',ticketNo:entryData.ticketNo||'',
     mixNo:entryData.mixNo,mixDesignNo:entryData.mixDesignNo||'',mixType:entryData.mixType,testFamily:fam,jmfId:entryData.jmfId||null,jmf:entryData.jmf||null,
     acContent:roundUp(acPct,2),jmfAC:jmfAC>0?roundUp(jmfAC,2):'',acStatus,
     airVoids:roundUp(airVoids,1),vma:roundUp(vma,1),vfa:roundUp(vfa,1),
