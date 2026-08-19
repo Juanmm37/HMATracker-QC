@@ -180,7 +180,7 @@ const GYR={A:{nini:6,ndes:50,nmax:75},B:{nini:7,ndes:75,nmax:115},C:{nini:7,ndes
 const NILIM={A:91.5,B:90.5,C:89.0,D:89.0,E:89.0};
 const NINOTE5=89.5;
 
-function getSieves(fam){return fam==='Marshall'?SIEVES_M:SIEVES_SP;}
+function getSieves(fam){return fam==='Marshall'?SIEVES_M:fam==='SMA'?SIEVES_SMA:SIEVES_SP;}
 function fmt1(v,s=''){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(1)+s;}
 function fmt2(v,s=''){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(2)+s;}
 function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'});}
