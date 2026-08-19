@@ -1114,6 +1114,7 @@ async function saveJMF(){
       trafficCat:cat,binder:document.getElementById('jf-binder').value,
       gb:document.getElementById('jf-gb').value,vmaTarget:document.getElementById('jf-vmatarget').value,
       season:document.getElementById('jf-season').value,
+      designDate:document.getElementById('jf-designdate')?.value||'',
       niniGyrations:fam==='SMA'?parseInt(document.getElementById('jf-sma-nini')?.value||7):g.nini||null,
       ndesGyrations:fam==='SMA'?parseInt(document.getElementById('jf-sma-ndes')?.value||75):g.ndes||null,
       nmaxGyrations:g.nmax||null,
