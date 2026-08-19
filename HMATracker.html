@@ -1361,14 +1361,27 @@ async function saveQuickEntry(){
 function renderACReport(){
   const year=new Date().getFullYear().toString();
   const families=['Superpave','Marshall','SMA'];
-  const familyTabs=families.map(f=>`<button class="btn ${acReportFamily===f?'btn-primary':''}" style="margin-right:6px" onclick="acReportFamily='${f}';renderView()">${f}</button>`).join('');
+  const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const familyTabs=families.map(f=>`<button class="btn ${acReportFamily===f?'btn-primary':''}" style="margin-right:6px" onclick="acReportFamily='${f}';acReportMonth=null;renderView()">${f}</button>`).join('');
   const seasons=[...new Set(db.records.filter(r=>r.testFamily===acReportFamily).map(r=>r.season||'').filter(Boolean))].sort().reverse();
-  const seasonOpts=[`<option value="all" ${acReportYear==='all'?'selected':''}>All seasons</option>`,...seasons.map(s=>`<option value="${s}" ${acReportYear===s?'selected':''}>${s}</option>`)].join('');
-  // Filter + sort records
-  const allRecs=db.records.filter(r=>r.testFamily===acReportFamily&&(acReportYear==='all'||r.season===acReportYear))
-    .sort((a,b)=>(a.dateSampled||a.date||'').localeCompare(b.dateSampled||b.date||''));
+  const seasonOpts=seasons.map(s=>`<option value="${s}" ${acReportYear===s?'selected':''}>${s}</option>`).join('');
+  // Month buttons — highlight which months have data
+  const yearRecs=db.records.filter(r=>r.testFamily===acReportFamily&&r.season===acReportYear);
+  const monthsWithData=new Set(yearRecs.map(r=>(r.dateSampled||r.date||'').slice(5,7)).filter(Boolean).map(Number));
+  const monthBtns=MNAMES.map((m,i)=>{
+    const mo=i+1;
+    const hasData=monthsWithData.has(mo);
+    const isActive=acReportMonth===mo;
+    return`<button onclick="acReportMonth=${isActive?'null':mo};renderView()" style="padding:6px 10px;border-radius:6px;border:1px solid ${isActive?'#1f3864':hasData?'#8aa0cc':'#dde3ed'};background:${isActive?'#1f3864':hasData?'#eef2ff':'#f8f9fc'};color:${isActive?'#fff':hasData?'#1f3864':'#aaa'};font-size:12px;font-weight:${isActive||hasData?'700':'400'};cursor:${hasData?'pointer':'default'}">${m}</button>`;
+  }).join('');
+  // Filter records
+  const filteredRecs=db.records.filter(r=>{
+    if(r.testFamily!==acReportFamily||r.season!==acReportYear)return false;
+    if(acReportMonth!==null){const mo=parseInt((r.dateSampled||r.date||'').slice(5,7));if(mo!==acReportMonth)return false;}
+    return true;
+  }).sort((a,b)=>(a.dateSampled||a.date||'').localeCompare(b.dateSampled||b.date||''));
   // Augment with deviation
-  const recsAug=allRecs.map(r=>{
+  const recsAug=filteredRecs.map(r=>{
     const jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
     const designAC=parseFloat(jmf?.acTarget);
     const resultAC=parseFloat(r.acContent);
@@ -1376,9 +1389,7 @@ function renderACReport(){
     const dev=(hasAC&&!isNaN(designAC))?resultAC-designAC:null;
     return{...r,designAC,resultAC,hasAC,dev,jmf};
   });
-  const tested=recsAug.filter(r=>r.dev!==null);
-  const avgDev=tested.length?tested.reduce((a,r)=>a+r.dev,0)/tested.length:null;
-  const avgColor=avgDev===null?'#888':Math.abs(avgDev)>0.5?'#c0392b':Math.abs(avgDev)>0.3?'#8a6000':'#1a6b1a';
+  const chartTitle=`AC Deviation — ${acReportFamily}${acReportMonth!==null?' / '+MNAMES[acReportMonth-1]:''} ${acReportYear}`;
   // Table rows
   const tableRows=recsAug.map(r=>{
     const dc=r.dev===null?'#888':Math.abs(r.dev)>0.5?'#c0392b':Math.abs(r.dev)>0.3?'#8a6000':'#1a6b1a';
@@ -1395,24 +1406,20 @@ function renderACReport(){
       <td style="text-align:center;font-weight:700;color:${dc}">${r.dev!==null?(r.dev>=0?'+':'')+r.dev.toFixed(2):'—'}</td>
     </tr>`;
   }).join('');
-  return`<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+  return`
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
     <span style="font-weight:700;color:#1f3864;line-height:32px;margin-right:4px">Mix Family:</span>
     ${familyTabs}
-    <select onchange="acReportYear=this.value;renderView()" style="margin-left:auto;padding:6px 10px;border-radius:6px;border:1px solid #c8d4e8;font-size:13px;color:#1f3864;background:#fff">${seasonOpts}</select>
+    <select onchange="acReportYear=this.value;acReportMonth=null;renderView()" style="margin-left:auto;padding:6px 10px;border-radius:6px;border:1px solid #c8d4e8;font-size:13px;color:#1f3864;background:#fff">${seasonOpts||'<option>—</option>'}</select>
   </div>
-  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-    <div class="metric-card" style="flex:1;min-width:110px"><div class="metric-label">Avg Deviation</div><div class="metric-value" style="color:${avgColor}">${avgDev!==null?(avgDev>=0?'+':'')+avgDev.toFixed(2):'—'}</div></div>
-    <div class="metric-card" style="flex:1;min-width:110px"><div class="metric-label">Records tested</div><div class="metric-value">${tested.length}</div></div>
-    <div class="metric-card" style="flex:1;min-width:110px"><div class="metric-label">Within ±0.30%</div><div class="metric-value" style="color:#1a6b1a">${tested.filter(r=>Math.abs(r.dev)<=0.3).length}</div></div>
-    <div class="metric-card" style="flex:1;min-width:110px"><div class="metric-label">Borderline</div><div class="metric-value" style="color:#8a6000">${tested.filter(r=>Math.abs(r.dev)>0.3&&Math.abs(r.dev)<=0.5).length}</div></div>
-    <div class="metric-card" style="flex:1;min-width:110px"><div class="metric-label">Outside ±0.50%</div><div class="metric-value" style="color:#c0392b">${tested.filter(r=>Math.abs(r.dev)>0.5).length}</div></div>
-  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${monthBtns}</div>
   <div class="card" style="margin-bottom:16px">
-    <div class="section-title" style="margin-bottom:12px">AC Deviation vs Sample Date — ${acReportFamily}${acReportYear!=='all'?' ('+acReportYear+')':''}</div>
+    <div style="font-size:12px;font-weight:700;color:#1f3864;margin-bottom:10px">${chartTitle}</div>
     <canvas id="ac-dev-chart" style="width:100%;max-height:300px"></canvas>
+    ${!recsAug.filter(r=>r.hasAC).length?`<div class="empty-state" style="margin-top:8px">No ${acReportFamily} records with AC data${acReportMonth!==null?' in '+MNAMES[acReportMonth-1]:''}</div>`:''}
   </div>
   <div class="card" style="padding:0;overflow:hidden">
-    ${!recsAug.length?`<div class="empty-state">No ${acReportFamily} records found</div>`:`
+    ${!recsAug.length?`<div class="empty-state">No records</div>`:`
     <div style="overflow-x:auto"><table class="records-table">
       <thead><tr>
         <th>Lab #</th><th>Date</th><th>Contract</th><th>Job</th><th>Mix Type</th><th>Mix No.</th>
