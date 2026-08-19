@@ -1418,6 +1418,7 @@ function renderACReport(){
     <canvas id="ac-dev-chart" style="width:100%;max-height:300px"></canvas>
     ${!recsAug.filter(r=>r.hasAC).length?`<div class="empty-state" style="margin-top:8px">No ${acReportFamily} records with AC data${acReportMonth!==null?' in '+MNAMES[acReportMonth-1]:''}</div>`:''}
   </div>
+  ${acReportMonth!==null?renderACMixAvgsTable(recsAug,acReportYear,acReportMonth,acReportFamily):''}
   <div class="card" style="padding:0;overflow:hidden">
     ${!recsAug.length?`<div class="empty-state">No records</div>`:`
     <div style="overflow-x:auto"><table class="records-table">
