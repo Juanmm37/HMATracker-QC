@@ -1135,9 +1135,12 @@ async function saveJMF(){
 }
 function editJMF(id){editingJmf=id;renderView();}
 async function deleteJMF(id){
-  if(!confirm('Delete this Mix Design?'))return;
-  const {error}=await _db.from('mix_designs').delete().eq('id',id);
-  if(error){alert('Delete failed: '+error.message);return;}
+  if(!confirm('Delete this Mix Design? This will also remove it from any linked contracts.'))return;
+  // Remove child rows first to avoid foreign key constraint
+  const {error:e1}=await _db.from('contract_mix_designs').delete().eq('mix_design_id',id);
+  if(e1){alert('Delete failed: '+e1.message);return;}
+  const {error:e2}=await _db.from('mix_designs').delete().eq('id',id);
+  if(e2){alert('Delete failed: '+e2.message);return;}
   await loadFromSupabase();renderView();
 }
 
