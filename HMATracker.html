@@ -1468,10 +1468,9 @@ function printACReport(){
   const chartImg=canvas?canvas.toDataURL('image/png'):'';
   // Read Mix Avgs table from DOM
   let mixAvgsHTML='';
-  const mixAvgsEl=document.querySelector('#app-content .card table');
-  if(mixAvgsEl){
-    // Clone and strip inline inputs → show their values as text
-    const clone=mixAvgsEl.cloneNode(true);
+  const mixAvgsCard=document.getElementById('ac-mix-avgs-card');
+  if(mixAvgsCard){
+    const clone=mixAvgsCard.cloneNode(true);
     clone.querySelectorAll('input[type=number]').forEach(inp=>{
       const td=inp.closest('td');
       if(td){td.innerHTML=`<strong>${inp.value||'0'}</strong>`;}
