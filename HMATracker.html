@@ -839,24 +839,28 @@ async function calcAndSave(){
 
 function renderSavedResult(r){
   const nc=r.niniStatus==='acceptable'?'#1a6b1a':r.niniStatus==='note5'?'#8a6000':'#c0392b';
+  const isQuick=!r.airVoids&&!r.vma&&!r.vfa&&!r.gmb;
+  const acColor=r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b';
   return`<div class="alert-success">✓ ${editingRecordId?'Record updated':'Record saved'} — ${r.sampleId||r.date} — ${r.mixNo} (${r.mixType})</div>
   <div class="card"><div class="section-title">Result summary</div>
+  ${isQuick?`<div class="info-note" style="margin-bottom:12px">Quick-entry record — no volumetric or gradation data.</div>`:''}
   <div class="metric-grid">
-    <div class="metric-card"><div class="metric-label">AC content</div><div class="metric-value" style="color:${r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b'}">${r.acContent}%</div></div>
+    ${r.acContent?`<div class="metric-card"><div class="metric-label">AC content</div><div class="metric-value" style="color:${acColor}">${r.acContent}%</div></div>`:''}
     ${r.jmfAC?`<div class="metric-card"><div class="metric-label">Mix Design AC</div><div class="metric-value">${r.jmfAC}%</div></div>`:''}
-    <div class="metric-card"><div class="metric-label">Air voids</div><div class="metric-value" style="color:${r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b'}">${r.airVoids}%</div></div>
-    <div class="metric-card"><div class="metric-label">VMA</div><div class="metric-value" style="color:${r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b'}">${r.vma}%</div></div>
+    ${r.airVoids?`<div class="metric-card"><div class="metric-label">Air voids</div><div class="metric-value" style="color:${r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b'}">${r.airVoids}%</div></div>`:''}
+    ${r.vma?`<div class="metric-card"><div class="metric-label">VMA</div><div class="metric-value" style="color:${r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b'}">${r.vma}%</div></div>`:''}
     ${r.jmfVMA?`<div class="metric-card"><div class="metric-label">Mix Design VMA</div><div class="metric-value">${r.jmfVMA}%</div></div>`:''}
-    <div class="metric-card"><div class="metric-label">VFA</div><div class="metric-value">${r.vfa}%</div></div>
-    <div class="metric-card"><div class="metric-label">Gmb</div><div class="metric-value">${r.gmb}</div></div>
-    <div class="metric-card"><div class="metric-label">Gmm</div><div class="metric-value">${r.gmm||'—'}</div></div>
+    ${r.vfa?`<div class="metric-card"><div class="metric-label">VFA</div><div class="metric-value">${r.vfa}%</div></div>`:''}
+    ${r.gmb?`<div class="metric-card"><div class="metric-label">Gmb</div><div class="metric-value">${r.gmb}</div></div>`:''}
+    ${r.gmm?`<div class="metric-card"><div class="metric-label">Gmm</div><div class="metric-value">${r.gmm}</div></div>`:''}
     ${r.niniPct?`<div class="metric-card"><div class="metric-label">%Gmm Nini (N=${r.niniCount})</div><div class="metric-value" style="color:${nc}">${r.niniPct}%</div></div>`:''}
     ${r.ndesPct?`<div class="metric-card"><div class="metric-label">%Gmm Ndes (N=${r.ndesCount})</div><div class="metric-value">${r.ndesPct}%</div></div>`:''}
   </div></div>
-  <div class="card"><div class="section-title">Gradation chart</div><canvas id="result-chart" style="width:100%;max-height:360px"></canvas></div>
+  ${!isQuick?`<div class="card"><div class="section-title">Gradation chart</div><canvas id="result-chart" style="width:100%;max-height:360px"></canvas></div>`:''}
   <div class="row" style="margin-top:12px">
-    <button class="btn btn-primary" onclick="printRecord('${r.id}')">🖨️ Print gradation report</button>
-    <button class="btn" onclick="showView('entry')">New entry</button>
+    ${!isQuick?`<button class="btn btn-primary" onclick="printRecord('${r.id}')">🖨️ Print gradation report</button>`:''}
+    <button class="btn" onclick="showView('entry')">New full entry</button>
+    <button class="btn" onclick="showView('quickentry')">New quick entry</button>
     <button class="btn" onclick="showView('records')">All records</button>
   </div>`;
 }
