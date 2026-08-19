@@ -1037,13 +1037,13 @@ function renderJMFForm(){
   <div class="pdf-upload-card" id="pdf-upload-section">
     <div class="pdf-upload-icon">📄</div>
     <div class="pdf-upload-text">
-      <strong>Auto-fill from mix design PDF</strong>
-      <span>Upload the cover page of your mix design report — all fields will be populated automatically</span>
+      <strong>Auto-fill from mix design PDF or photo</strong>
+      <span>Upload the cover page as a PDF or a photo (JPG, PNG, HEIC) — all fields will be populated automatically</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-items:flex-end">
       <label class="pdf-upload-btn" for="pdf-file-input">
-        Choose PDF
-        <input type="file" id="pdf-file-input" accept=".pdf" style="display:none" onchange="extractFromPDF(this)">
+        Choose file
+        <input type="file" id="pdf-file-input" accept=".pdf,image/jpeg,image/png,image/jpg,image/heic,image/heif,image/webp" style="display:none" onchange="extractFromPDF(this)">
       </label>
       <select onchange="localStorage.setItem('cp_model',this.value)" style="font-size:10px;padding:2px 4px;border:1px solid #8aa0cc;border-radius:4px;color:#1f3864;background:#f0f5ff">
         <option value="claude-haiku-4-5-20251001" selected>claude-haiku-4-5-20251001</option>
