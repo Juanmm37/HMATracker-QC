@@ -996,8 +996,8 @@ function printRecord(id){
     <div class="info-box" style="display:flex;flex-direction:column">
       <div class="info-title">SUMMARY OF RESULTS</div>
       <div class="info-row"><span class="il">Date sample:</span><span class="iv">${fmtPrintDate(r.date)}</span></div>
+      <div class="info-row"><span class="il">Date tested:</span><span class="iv">${fmtPrintDate(r.dateTested)}</span></div>
       <div class="info-row"><span class="il">Contract no.:</span><span class="iv">${r.contractNo||'—'}</span></div>
-      <div class="info-row"><span class="il">Contract:</span><span class="iv">${(r.job||'—').substring(0,22)}</span></div>
       <div class="info-row"><span class="il">Location:</span><span class="iv">${(r.location||'—').substring(0,22)}</span></div>
       <div class="info-row"><span class="il">Mix type:</span><span class="iv">${r.mixType}</span></div>
       <div class="info-row"><span class="il">Mix number:</span><span class="iv">${r.mixNo}</span></div>
