@@ -1003,7 +1003,7 @@ function printRecord(id){
       <div class="info-row"><span class="il">Mix number:</span><span class="iv">${r.mixNo}</span></div>
       <div class="info-row"><span class="il">PGAC type:</span><span class="iv">${(jmf||r.jmf)?.binder||'—'}</span></div>
       <div class="info-row"><span class="il">Mix design no.:</span><span class="iv">${(jmf||r.jmf)?.mixDesignNo||'—'}</span></div>
-      <div class="info-row"><span class="il">Gsb blend:</span><span class="iv">${(jmf||r.jmf)?.gsb||'—'}</span></div>
+      <div class="info-row"><span class="il">Gsb blend:</span><span class="iv">${(jmf||r.jmf)?.gsb!=null&&(jmf||r.jmf)?.gsb!==''?parseFloat((jmf||r.jmf).gsb).toFixed(3):'—'}</span></div>
       <div class="info-row"><span class="il">Lot / Sub-lot:</span><span class="iv">${r.lot&&r.subLot?r.lot+'-'+parseInt(r.subLot):r.lot||r.subLot||'—'}</span></div>
       <div class="info-row"><span class="il">Sample #:</span><span class="iv">${r.sampleId||'—'}</span></div>
       <div class="info-row"><span class="il">Ticket no.:</span><span class="iv">${r.ticketNo||'—'}</span></div>
