@@ -371,10 +371,9 @@ function renderDashboard(){
   const contracts=[...new Set(db.records.map(r=>r.contractNo).filter(Boolean))];
   const recentRecs=db.records.slice(-5).reverse();
   return`
-  <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="metric-grid" style="grid-template-columns:repeat(2,1fr)">
     <div class="metric-card"><div class="metric-label">Total tests (2026)</div><div class="metric-value">${season.length}</div></div>
     <div class="metric-card"><div class="metric-label">Active Mix Designs</div><div class="metric-value">${db.jmfs.length}</div></div>
-    <div class="metric-card"><div class="metric-label">Active contracts</div><div class="metric-value">${contracts.length}</div></div>
   </div>
   ${contracts.length>0?`<div class="card card-blue">
     <div class="section-title">By contract</div>
