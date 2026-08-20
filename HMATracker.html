@@ -686,7 +686,7 @@ function sieveKeydown(e,idx){
   }
 }
 function recalcGrad(){
-  const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;
+  const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;const dls=getDLS(entryData.mixType);
   const massOrig=parseFloat(document.getElementById('e-mass-orig').value)||0;
   const massDry=parseFloat(document.getElementById('e-mass-dry').value)||0;
   const jmfAC=parseFloat(document.getElementById('e-jmf-ac').value)||0;
