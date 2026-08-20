@@ -927,19 +927,21 @@ function printRecord(id){
   const chartTitle=isMarshall?'SEMI-LOG AGGREGATE GRADING CHART':'0.45 POWER AGGREGATE GRADING CHART';
   const jmfAC=parseFloat(r.jmfAC)||0;const acPct=parseFloat(r.acContent)||0;
   const acStatusColor=r.acStatus==='acceptable'?'#375623':r.acStatus==='borderline'?'#7d5a00':'#9c0006';
+  const avColor=r.avStatus==='acceptable'?'#375623':r.avStatus==='borderline'?'#7d5a00':'#9c0006';
+  const vmaColor=r.vmaStatus==='acceptable'?'#375623':r.vmaStatus==='borderline'?'#7d5a00':'#9c0006';
+  const _MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const fmtPrintDate=d=>{if(!d)return'—';const p=d.split('-');return _MONTHS[parseInt(p[1],10)-1]+' '+parseInt(p[2],10)+', '+p[0];};
+  const stBadge=s=>s?` <b style="font-size:8px;letter-spacing:.02em">(${s.toUpperCase()})</b>`:'';
   const gradRows=sieves.map(s=>{
-    const cr=r.cumRetained&&r.cumRetained[s]!==undefined?parseFloat(r.cumRetained[s]).toFixed(1):'—';
     const act=r.gradActual[s]?parseFloat(r.gradActual[s]).toFixed(1):'—';
     const jv=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]).toFixed(1):'—';
-    const diff=r.gradActual[s]&&jmf&&jmf.gradation&&jmf.gradation[s]?(parseFloat(r.gradActual[s])-parseFloat(jmf.gradation[s])).toFixed(1):'—';
-    const diffStr=diff!=='—'?(parseFloat(diff)>=0?'+':'')+diff+'%':'—';
     const st=r.gradStatus[s]||'';
     const stBg=st==='acceptable'?'#c6efce':st==='borderline'?'#ffeb9c':st==='rejectable'?'#ffc7ce':'transparent';
     const stColor=st==='acceptable'?'#375623':st==='borderline'?'#7d5a00':st==='rejectable'?'#9c0006':'#666';
-    return`<tr><td>${SL[s]||s}</td><td>${SUS[s]||'—'}</td><td>${cr}</td><td>${act}</td><td>${jv}</td><td>${diffStr}</td><td style="background:${stBg};color:${stColor};font-weight:700">${st?st.toUpperCase():'—'}</td></tr>`;
+    return`<tr><td>${SL[s]||s}</td><td>${SUS[s]||'—'}</td><td>${act}</td><td>${jv}</td><td style="background:${stBg};color:${stColor};font-weight:700">${st?st.toUpperCase():'—'}</td></tr>`;
   }).join('');
   const acBg=r.acStatus==='acceptable'?'#c6efce':r.acStatus==='borderline'?'#ffeb9c':'#ffc7ce';
-  const acRow=jmfAC>0?`<tr style="border-top:2px solid #1f3864"><td colspan="2" style="font-weight:700">AC Content</td><td>—</td><td style="font-weight:700">${r.acContent}%</td><td style="font-weight:700">${jmfAC.toFixed(2)}%</td><td style="font-weight:700">${(acPct-jmfAC>=0?'+':'')+(acPct-jmfAC).toFixed(2)}%</td><td style="background:${acBg};color:${acStatusColor};font-weight:700">${r.acStatus?r.acStatus.toUpperCase():'—'}</td></tr>`:'';
+  const acRow=jmfAC>0?`<tr style="border-top:2px solid #1f3864"><td colspan="2" style="font-weight:700">AC Content</td><td style="font-weight:700">${r.acContent}%</td><td style="font-weight:700">${jmfAC.toFixed(2)}%</td><td style="background:${acBg};color:${acStatusColor};font-weight:700">${r.acStatus?r.acStatus.toUpperCase():'—'}</td></tr>`:'';
   const ds=JSON.stringify([{label:'Field sample',data:fp,borderColor:'#c00000',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.1},...(jp.length>0?[{label:'Mix Design',data:jp,borderColor:'#1f3864',backgroundColor:'transparent',borderWidth:2,borderDash:[8,4],pointRadius:0,tension:0.1}]:[])]);
   const win=window.open('','_blank','width=1150,height=800');
   win.document.write(`<!DOCTYPE html><html><head>
