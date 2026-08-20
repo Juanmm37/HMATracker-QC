@@ -618,11 +618,11 @@ function step1Next(){
 }
 
 function renderStep2(){
-  const jmf=entryData.jmf;const sieves=getSieves(entryData.testFamily);const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;
+  const jmf=entryData.jmf;const sieves=getSieves(entryData.testFamily);const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;const dls=getDLS(entryData.mixType);
   const prevCR=entryData.cumRetained||{};
   const sieveRows=sieves.map((s,idx)=>{
     const jv=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]).toFixed(1):'—';
-    const tol=getGradTol(s,isSurface);const prev=prevCR[s]||'';
+    const tol=getGradTol(s,isSurface,dls);const prev=prevCR[s]||'';
     return`<tr><td class="left">${SL[s]||s}</td>
       <td><input type="number" step="0.1" min="0" id="cr-${s}" data-sieve-idx="${idx}" value="${prev}" placeholder="0.0" oninput="recalcGrad()" onkeydown="sieveKeydown(event,${idx})" style="width:100%;text-align:center;padding:4px 6px;font-size:12px"></td>
       <td id="pct-pass-${s}" class="cell-na" style="font-weight:600">—</td>
