@@ -1269,7 +1269,6 @@ async function saveProdNote(){
   const succ=document.getElementById('pn-success');
   if(succ){succ.style.display='block';setTimeout(function(){if(succ)succ.style.display='none';},3000);}
   document.getElementById('pn-note').value='';
-  document.getElementById('pn-category').value='';
   document.getElementById('pn-list').innerHTML=renderProdNotesList();
 }
 
