@@ -922,7 +922,7 @@ function printRecord(id){
   const fp=sievesRev.map(s=>{const v=r.gradActual[s]?parseFloat(r.gradActual[s]):null;return v!==null?{x:xFn(parseFloat(s)),y:v}:null;}).filter(p=>p!==null);
   const jp=jmf?sievesRev.map(s=>{const v=jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]):null;return v!==null?{x:xFn(parseFloat(s)),y:v}:null;}).filter(p=>p!==null):[];
   const tickX=JSON.stringify(sievesRev.map(s=>xFn(parseFloat(s))));
-  const tickLabels=JSON.stringify(sievesRev.map(s=>SL[s]||s));
+  const tickLabels=JSON.stringify(sievesRev.map(s=>String(parseFloat(s))));
   const chartAxisType=isMarshall?'logarithmic':'linear';
   const chartTitle=isMarshall?'SEMI-LOG AGGREGATE GRADING CHART':'0.45 POWER AGGREGATE GRADING CHART';
   const jmfAC=parseFloat(r.jmfAC)||0;const acPct=parseFloat(r.acContent)||0;
