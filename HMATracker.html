@@ -706,7 +706,7 @@ function recalcGrad(){
     if(totalDry>0){
       const pctPass=100-(cr/totalDry*100);if(passCell)passCell.textContent=pctPass.toFixed(1)+'%';
       const jmfVal=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]):null;
-      if(jmfVal!==null&&diffCell&&statCell){const diff=pctPass-jmfVal,abs=Math.abs(diff),tol=getGradTol(s,isSurface);diffCell.textContent=(diff>=0?'+':'')+diff.toFixed(1)+'%';
+      if(jmfVal!==null&&diffCell&&statCell){const diff=pctPass-jmfVal,abs=Math.abs(diff),tol=getGradTol(s,isSurface,dls);diffCell.textContent=(diff>=0?'+':'')+diff.toFixed(1)+'%';
         if(tol){if(abs<tol){diffCell.className='cell-pass';statCell.className='cell-pass';statCell.textContent='OK';}else if(abs<=tol*1.5){diffCell.className='cell-border';statCell.className='cell-border';statCell.textContent='BORDER';}else{diffCell.className='cell-fail';statCell.className='cell-fail';statCell.textContent='REJECT';}}
         else{diffCell.className='';statCell.className='cell-na';statCell.textContent='—';}
       }else{if(diffCell){diffCell.className='cell-na';diffCell.textContent='—';}if(statCell){statCell.className='cell-na';statCell.textContent='—';}}
