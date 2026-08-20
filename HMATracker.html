@@ -1210,21 +1210,8 @@ function renderProdNotes(){
       <div class="form-group"><label>Mix Design</label><select id="pn-mix"><option value="">Select mix design</option>${mixOpts}</select></div>
       <div class="form-group"><label>Contract</label><select id="pn-contract"><option value="">Select contract</option>${contractOpts}</select></div>
     </div>
-    <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;margin-bottom:12px">
-      <div class="form-group"><label>Date</label><input type="date" id="pn-date" value="${today}"></div>
-      <div class="form-group"><label>Category</label>
-        <input type="text" id="pn-category" list="pn-cat-list" placeholder="Select or type a category">
-        <datalist id="pn-cat-list">
-          <option value="binder_adjustment">
-          <option value="aggregate_source_change">
-          <option value="moisture_issue">
-          <option value="temperature_issue">
-          <option value="mix_stiffness">
-          <option value="roller_pattern_change">
-          <option value="production_rate_change">
-          <option value="other">
-        </datalist>
-      </div>
+    <div style="margin-bottom:12px">
+      <div class="form-group"><label>Date</label><input type="date" id="pn-date" value="${today}" style="width:180px"></div>
     </div>
     <div class="form-group" style="margin-bottom:14px"><label>Note</label>
       <textarea id="pn-note" rows="4" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Describe what changed or was observed during production"></textarea>
