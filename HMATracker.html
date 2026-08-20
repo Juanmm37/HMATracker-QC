@@ -791,9 +791,9 @@ function recalcVol(){
       if(gmb>0&&hi>0&&hd>0){const ni=gmb/gmmAvg*(hd/hi)*100;const nd=gmb/gmmAvg*100;setText('b'+i+'-nini-pct',roundUp(ni,1)+'%');setText('b'+i+'-ndes-pct',roundUp(nd,1)+'%');np.push(ni);ndp.push(nd);}else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}}
     if(np.length){const a=np.reduce((s,v)=>s+v,0)/np.length;setText('avg-nini-pct',roundUp(a,1)+'%');setText('res-nini',roundUp(a,1)+'%');}
     if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}}
-  if(!isSGC){const stabs=[],flows=[];for(let i=0;i<nBriq;i++){const s=parseFloat(document.getElementById('b'+i+'-stab')?.value)||0;const f=parseFloat(document.getElementById('b'+i+'-flow')?.value)||0;if(s>0)stabs.push(s);if(f>0)flows.push(f);}
-    if(stabs.length){const a=stabs.reduce((s,v)=>s+v,0)/stabs.length;setText('avg-stab',a.toFixed(2));setText('res-stab',a.toFixed(2));}
-    if(flows.length){const a=flows.reduce((s,v)=>s+v,0)/flows.length;setText('avg-flow',a.toFixed(2));setText('res-flow',a.toFixed(2));}}
+  if(!isSGC){const stab=parseFloat(document.getElementById('avg-stab-input')?.value)||0;const flow=parseFloat(document.getElementById('avg-flow-input')?.value)||0;
+    if(stab>0){setText('avg-stab',stab.toFixed(2));setText('res-stab',stab.toFixed(2));}
+    if(flow>0){setText('avg-flow',flow.toFixed(2));setText('res-flow',flow.toFixed(2));}}
 }
 function saveVol3(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;
