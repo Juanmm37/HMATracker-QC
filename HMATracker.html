@@ -1251,7 +1251,7 @@ async function saveProdNote(){
   const mix_design_id=document.getElementById('pn-mix').value;
   const contract_id=document.getElementById('pn-contract').value;
   const note_date=document.getElementById('pn-date').value;
-  const category=document.getElementById('pn-category').value.trim()||null;
+  const category=null;
   const note=document.getElementById('pn-note').value.trim();
   if(!mix_design_id){alert('Please select a mix design.');return;}
   if(!contract_id){alert('Please select a contract.');return;}
