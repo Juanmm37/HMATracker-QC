@@ -801,7 +801,7 @@ function saveVol3(){
   for(let i=0;i<nBriq;i++){
     d.gmb.push(document.getElementById('b'+i+'-gmb')?.value||'');
     if(isSGC){d.hini.push(document.getElementById('b'+i+'-hini')?.value||'');d.hdes.push(document.getElementById('b'+i+'-hdes')?.value||'');}
-    else{d.stab.push(document.getElementById('b'+i+'-stab')?.value||'');d.flow.push(document.getElementById('b'+i+'-flow')?.value||'');}
+    else{d.avgStab=document.getElementById('avg-stab-input')?.value||'';d.avgFlow=document.getElementById('avg-flow-input')?.value||'';}
   }
   d.gmm1=document.getElementById('r-gmm1')?.value||'';
   d.gmm2=document.getElementById('r-gmm2')?.value||'';
