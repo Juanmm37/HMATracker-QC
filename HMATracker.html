@@ -947,10 +947,11 @@ function printRecord(id){
   const _MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const fmtPrintDate=d=>{if(!d)return'—';const p=d.split('-');return _MONTHS[parseInt(p[1],10)-1]+' '+parseInt(p[2],10)+', '+p[0];};
   const stBadge=s=>s?` <b style="font-size:8px;letter-spacing:.02em">(${s.toUpperCase()})</b>`:'';
+  const _printDls=getDLS(r.mixType);
   const gradRows=sieves.map(s=>{
     const act=r.gradActual[s]?parseFloat(r.gradActual[s]).toFixed(1):'—';
     const jv=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]).toFixed(1):'—';
-    const st=r.gradStatus[s]||'';
+    const st=isKeySieve(s,_printDls)?(r.gradStatus[s]||''):'';
     const stBg=st==='acceptable'?'#c6efce':st==='borderline'?'#ffeb9c':st==='rejectable'?'#ffc7ce':'transparent';
     const stColor=st==='acceptable'?'#375623':st==='borderline'?'#7d5a00':st==='rejectable'?'#9c0006':'#666';
     return`<tr><td>${SL[s]||s}</td><td>${SUS[s]||'—'}</td><td>${act}</td><td>${jv}</td><td style="background:${stBg};color:${stColor};font-weight:700">${st?st.toUpperCase():'—'}</td></tr>`;
