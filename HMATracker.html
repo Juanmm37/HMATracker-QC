@@ -906,19 +906,13 @@ async function calcAndSave(){
   if(editingRecordId){
     const {error}=await _db.from('test_records').update(sbPayload).eq('id',editingRecordId);saveErr=error;
   } else {
-    // Check for existing record with same sample_id to prevent duplicates
+    // Block save if lab sample # already exists
     const existingMatch=record.sampleId?db.records.filter(r=>r.sampleId===record.sampleId):[];
     if(existingMatch.length>0){
-      const ok=confirm(`A record with lab sample # ${record.sampleId} already exists.\n\nClick OK to overwrite it, or Cancel to keep both.`);
-      if(ok){
-        const {error}=await _db.from('test_records').update(sbPayload).eq('id',existingMatch[0].id);saveErr=error;
-        editingRecordId=existingMatch[0].id;
-      } else {
-        const {error}=await _db.from('test_records').insert(sbPayload);saveErr=error;
-      }
-    } else {
-      const {error}=await _db.from('test_records').insert(sbPayload);saveErr=error;
+      alert(`⛔ Lab sample # ${record.sampleId} already exists in the database.\n\nPlease verify the sample number before saving. If you need to correct an existing record, go to Test Records and use the edit button instead.`);
+      return;
     }
+    const {error}=await _db.from('test_records').insert(sbPayload);saveErr=error;
   }
   if(saveErr){alert('Save failed: '+saveErr.message);return;}
   await loadFromSupabase();
