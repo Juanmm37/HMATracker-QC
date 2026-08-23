@@ -408,6 +408,32 @@ function renderRecords(){
   <div class="card" style="padding:0;overflow:hidden" id="records-list">${recs.length===0?`<div class="empty-state">No records found</div>`:renderRecordsTable(recs,false,summaryMode)}</div>`;
 }
 
+async function cleanupDuplicates(){
+  const groups={};
+  for(const r of db.records){
+    if(!r.sampleId)continue;
+    if(!groups[r.sampleId])groups[r.sampleId]=[];
+    groups[r.sampleId].push(r);
+  }
+  const dupes=Object.entries(groups).filter(([,recs])=>recs.length>1);
+  if(!dupes.length){alert('No duplicate sample IDs found.');return;}
+  const summary=dupes.map(([sid,recs])=>`Sample #${sid}: ${recs.length} copies`).join('\n');
+  const ok=confirm(`Found duplicates:\n\n${summary}\n\nFor each group, the most complete record will be kept and the rest deleted. Continue?`);
+  if(!ok)return;
+  let deleted=0;
+  for(const [,recs] of dupes){
+    // Score by completeness — prefer records with full gradation/volumetrics over quick-entry stubs
+    const scored=recs.map(r=>({r,score:(r.airVoids?3:0)+(r.vma?2:0)+(Object.keys(r.gradActual||{}).length>0?4:0)+(r.briquettes?.length>0?1:0)}));
+    scored.sort((a,b)=>b.score-a.score);
+    const toDelete=scored.slice(1).map(x=>x.r.id);
+    for(const id of toDelete){
+      await _db.from('test_records').delete().eq('id',id);
+      deleted++;
+    }
+  }
+  await loadFromSupabase();renderView();
+  alert(`Done. Removed ${deleted} duplicate record${deleted!==1?'s':''}.`);
+}
 function filterRecords(){
   const cf=(document.getElementById('filter-contract')?.value||'').toLowerCase();
   const mf=(document.getElementById('filter-mix')?.value||'').toLowerCase();
