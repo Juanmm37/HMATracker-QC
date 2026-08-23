@@ -403,8 +403,7 @@ function renderRecords(){
       <input type="checkbox" id="summary-mode" ${summaryMode?'checked':''} onchange="renderView()"> Select for summary
     </label>
     ${summaryMode?`<button class="btn btn-success" onclick="generateSummary()">Create summary report</button><button class="btn" onclick="(function(){const all=document.querySelectorAll('.rec-check');const anyUnchecked=[...all].some(c=>!c.checked);all.forEach(c=>c.checked=anyUnchecked);})()" style="margin-left:4px">Select / Deselect All</button>`:''}
-    <button class="btn btn-danger" onclick="cleanupDuplicates()" style="margin-left:auto;font-size:11px;padding:4px 10px" title="Find and remove duplicate sample IDs">Remove duplicates</button>
-    <span style="font-size:12px;color:#888" id="records-count">${recs.length} records</span>
+    <span style="font-size:12px;color:#888;margin-left:auto" id="records-count">${recs.length} records</span>
   </div>
   <div class="card" style="padding:0;overflow:hidden" id="records-list">${recs.length===0?`<div class="empty-state">No records found</div>`:renderRecordsTable(recs,false,summaryMode)}</div>`;
 }
