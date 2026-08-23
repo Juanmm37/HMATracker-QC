@@ -427,16 +427,18 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
     <thead><tr>
       ${showCheck?`<th class="checkbox-col"></th>`:''}
       <th>Lab Sample #</th><th>Date</th><th>Contract No.</th><th>Mix Type</th><th>Mix No.</th>
-      <th style="text-align:center">Design AC%</th><th style="text-align:center">Result AC%</th><th style="text-align:center">Deviation</th>
+      <th style="text-align:center">Air Voids</th><th style="text-align:center">VMA</th><th style="text-align:center">Result AC%</th>
       <th style="text-align:right"></th>
     </tr></thead>
     <tbody>${recs.map(r=>{
       const _jmf=r.jmfId?db.jmfs.find(j=>j.id===r.jmfId):null;
-      const designAC=parseFloat(_jmf?.acTarget);
+      const designAC=parseFloat(_jmf?.acTarget||r.jmfAC);
       const resultAC=parseFloat(r.acContent);
       const dev=(!isNaN(designAC)&&!isNaN(resultAC)&&resultAC>0)?resultAC-designAC:null;
       const devColor=dev===null?'#888':Math.abs(dev)>0.5?'#c0392b':Math.abs(dev)>0.3?'#8a6000':'#1a6b1a';
       const acColor=r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b';
+      const avColor=r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b';
+      const vmaColor=r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b';
       return`<tr>
         ${showCheck?`<td class="checkbox-col"><input type="checkbox" class="rec-check" data-id="${r.id}"></td>`:''}
         <td style="font-weight:700">${r.sampleId||'—'}</td>
@@ -444,9 +446,9 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
         <td><strong>${r.contractNo||'—'}</strong></td>
         <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType||'—'}</span></td>
         <td>${r.mixNo||'—'}</td>
-        <td style="text-align:center">${!isNaN(designAC)?designAC.toFixed(2)+'%':'—'}</td>
-        <td style="text-align:center;font-weight:600;color:${acColor}">${resultAC>0?resultAC.toFixed(2)+'%':'—'}</td>
-        <td style="text-align:center;font-weight:700;color:${devColor}">${dev!==null?(dev>=0?'+':'')+dev.toFixed(2):'—'}</td>
+        <td style="text-align:center;font-weight:600;color:${avColor}">${r.airVoids?r.airVoids+'%':'—'}</td>
+        <td style="text-align:center;font-weight:600;color:${vmaColor}">${r.vma?r.vma+'%':'—'}</td>
+        <td style="text-align:center;font-weight:600;color:${acColor}">${resultAC>0?resultAC.toFixed(2)+'%':'—'}${dev!==null?` <span style="font-size:10px;font-weight:700;color:${devColor}">(${dev>=0?'+':''}${dev.toFixed(2)}%)</span>`:''}</td>
         <td style="text-align:right;white-space:nowrap">
           <button class="btn btn-sm" onclick="editRecord('${r.id}')" title="Edit">&#9998;</button>
           <button class="btn btn-sm" onclick="printRecord('${r.id}')" title="Print">&#128424;</button>
