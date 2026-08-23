@@ -626,7 +626,23 @@ function renderStep1(){
     <button class="btn btn-primary" onclick="step1Next()">Next — extraction →</button>
   </div></div>`;
 }
-function setEntryFamily(fam){entryData.testFamily=fam;renderView();}
+function setEntryFamily(fam){
+  // Snapshot current field values so they survive the family switch
+  entryData.dateSampled=document.getElementById('e-date-sampled')?.value||entryData.dateSampled;
+  entryData.bySampled=(document.getElementById('e-by-sampled')?.value||entryData.bySampled||'').toUpperCase();
+  entryData.dateTested=document.getElementById('e-date-tested')?.value||entryData.dateTested;
+  entryData.byTested=(document.getElementById('e-by-tested')?.value||entryData.byTested||'').toUpperCase();
+  entryData.season=document.getElementById('e-season')?.value||entryData.season;
+  entryData.contractNo=document.getElementById('e-contract')?.value||entryData.contractNo;
+  entryData.job=document.getElementById('e-job')?.value||entryData.job;
+  entryData.location=document.getElementById('e-location')?.value||entryData.location;
+  entryData.lot=document.getElementById('e-lot')?.value||entryData.lot;
+  entryData.subLot=document.getElementById('e-sublot')?.value||entryData.subLot;
+  entryData.sampleId=document.getElementById('e-sampleid')?.value||entryData.sampleId;
+  entryData.ticketNo=document.getElementById('e-ticketno')?.value||entryData.ticketNo;
+  entryData.testFamily=fam;entryData.mixType='';entryData.jmfId=null;entryData.jmf=null;
+  renderView();
+}
 function step1Next(){
   const fam=entryData.testFamily||'Superpave';
   const jmfId=document.getElementById('e-jmf').value;
