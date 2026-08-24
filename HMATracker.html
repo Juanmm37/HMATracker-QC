@@ -1018,8 +1018,8 @@ async function calcAndSave(){
   const gmms=[1,2,3,4].map(k=>parseFloat(entryData.vol3Data?.['gmm'+k])||0).filter(v=>v>0);
   const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
   const briquettes=[];
-  const _avgStab=parseFloat(entryData.vol3Data?.avgStab)||0;const _avgFlow=parseFloat(entryData.vol3Data?.avgFlow)||0;
-  for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;}else{b.stab=i===0?_avgStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
+  const _corrStab=parseFloat(entryData.vol3Data?.corrStab)||parseFloat(entryData.vol3Data?.avgStab)||0;const _avgFlow=parseFloat(entryData.vol3Data?.avgFlow)||0;
+  for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;}else{b.stab=i===0?_corrStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
   const gmbAvg=briquettes.filter(b=>b.gmb>0).reduce((s,b)=>s+b.gmb,0)/Math.max(briquettes.filter(b=>b.gmb>0).length,1);
   const acPct=parseFloat(document.getElementById('e-acpct')?.value)||parseFloat(entryData.acContent)||0;
   const airVoids=gmmAvg>0&&gmbAvg>0?(1-gmbAvg/gmmAvg)*100:0;
