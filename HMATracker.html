@@ -774,6 +774,11 @@ function step2Next(){
   entryStep=3;renderView();
 }
 
+function marshallVCF(vol){if(!vol||vol<=0)return 1.00;if(vol<=470)return 1.19;if(vol<=482)return 1.14;if(vol<=495)return 1.09;if(vol<=508)return 1.04;if(vol<=522)return 1.00;if(vol<=535)return 0.96;if(vol<=546)return 0.93;if(vol<=559)return 0.89;if(vol<=573)return 0.86;return 0.83;}
+function getFlaskWeights(){try{return JSON.parse(localStorage.getItem('hma_flask_weights'))||{f1a:'',f1w:'',f2a:'',f2w:''};}catch(e){return{f1a:'',f1w:'',f2a:'',f2w:''};}}
+function toggleFlaskEdit(){const el=document.getElementById('flask-edit-form');if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function saveFlaskTares(){const fw={f1a:document.getElementById('ft-f1a')?.value||'',f1w:document.getElementById('ft-f1w')?.value||'',f2a:document.getElementById('ft-f2a')?.value||'',f2w:document.getElementById('ft-f2w')?.value||''};localStorage.setItem('hma_flask_weights',JSON.stringify(fw));saveVol3();renderView();}
+
 function renderStep3(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;const jmf=entryData.jmf;
   let gyrationBox='';
