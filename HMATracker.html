@@ -964,14 +964,11 @@ function recalcVol(){
     if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}
   }
 
-  // Marshall VCF + corrected stability
+  // Marshall corrected stability + flow
   if(!isSGC){
-    const vcf=avgBrdVol>0?marshallVCF(avgBrdVol):null;
-    if(vcf!==null)setText('res-vcf',vcf.toFixed(2));
     const stab=parseFloat(document.getElementById('avg-stab-input')?.value)||0;
     const flow=parseFloat(document.getElementById('avg-flow-input')?.value)||0;
-    if(stab>0){setText('res-stab',stab.toFixed(0));setText('avg-stab',stab.toFixed(0));
-      if(vcf!==null)setText('res-corr-stab',(stab*vcf).toFixed(0)+' N');}
+    if(stab>0){setText('res-corr-stab',stab.toFixed(0));setText('avg-stab',stab.toFixed(0));}
     if(flow>0){setText('avg-flow',flow.toFixed(2));setText('res-flow',flow.toFixed(2));}
   }
 }
