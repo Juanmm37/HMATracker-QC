@@ -883,11 +883,11 @@ function recalcVol(){
   setText('avg-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
   setText('res-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
 
-  // MRD — compute from raw measurements + flask tares
+  // MRD — compute from raw measurements + flask tares (4 flasks)
   const gmms=[];
-  for(let k=1;k<=2;k++){
-    const fA=parseFloat(k===1?fw.f1a:fw.f2a)||0;
-    const fW=parseFloat(k===1?fw.f1w:fw.f2w)||0;
+  for(let k=1;k<=4;k++){
+    const fA=parseFloat(fw['f'+k+'a'])||0;
+    const fW=parseFloat(fw['f'+k+'w'])||0;
     const famix=parseFloat(document.getElementById('r-famix'+k)?.value)||0;
     const famixw=parseFloat(document.getElementById('r-famixw'+k)?.value)||0;
     if(famix>0&&famixw>0&&fA>0&&fW>0){
@@ -898,6 +898,7 @@ function recalcVol(){
     }else{setText('r-mmix'+k,'—');setText('r-mmixw'+k,'—');setText('r-vol'+k,'—');setText('r-gmm'+k,'—');}
   }
   const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
+  setText('avg-gmm',gmmAvg>0?roundUp(gmmAvg,4):'—');
   setText('res-gmm',gmmAvg>0?roundUp(gmmAvg,4):'—');
 
   // Summary
