@@ -874,7 +874,7 @@ function recalcVol(){
   const fw=getFlaskWeights();
 
   // BRD — compute from raw measurements
-  const gmbs=[],brdVols=[];
+  const gmbArr=Array(nBriq).fill(0),brdVolArr=Array(nBriq).fill(0);
   for(let i=0;i<nBriq;i++){
     const a1=parseFloat(document.getElementById('b'+i+'-a1')?.value)||0;
     const a2=parseFloat(document.getElementById('b'+i+'-a2')?.value)||0;
@@ -882,10 +882,11 @@ function recalcVol(){
     if(a2>0&&a3>0&&a2>a3){
       const vol=a2-a3;
       setText('b'+i+'-vol',vol.toFixed(1));
-      if(a1>0){const gmb=a1/vol;setText('b'+i+'-gmb',roundUp(gmb,4));gmbs.push(gmb);brdVols.push(vol);}
+      if(a1>0){const gmb=a1/vol;setText('b'+i+'-gmb',roundUp(gmb,4));gmbArr[i]=gmb;brdVolArr[i]=vol;}
       else setText('b'+i+'-gmb','—');
     }else{setText('b'+i+'-vol','—');setText('b'+i+'-gmb','—');}
   }
+  const gmbs=gmbArr.filter(v=>v>0);const brdVols=brdVolArr.filter(v=>v>0);
   const gmbAvg=gmbs.length?gmbs.reduce((a,b)=>a+b,0)/gmbs.length:0;
   const avgBrdVol=brdVols.length?brdVols.reduce((a,b)=>a+b,0)/brdVols.length:0;
   setText('avg-brd-vol',avgBrdVol>0?avgBrdVol.toFixed(1):'—');
