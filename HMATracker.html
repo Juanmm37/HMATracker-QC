@@ -848,10 +848,8 @@ function renderStep3(){
   ${gyrationBox}
   <div class="info-note" style="margin-bottom:12px"><span class="entry-col">Enter highlighted values from your lab worksheets.</span> Air voids, VMA, VFA, and density averages are calculated automatically.</div>
   <div style="overflow-x:auto"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${brdRows}${sgcRows}${marshalRows}</tbody></table></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-    <table class="lab-table"><thead><tr><th class="prop" colspan="3">Rice Test — MRD</th></tr></thead><tbody>${mrdRows}</tbody></table>
-    <table class="lab-table"><thead><tr><th class="prop" colspan="2">Results</th></tr></thead><tbody>${sumRows}</tbody></table>
-  </div>
+  <div style="overflow-x:auto;margin-top:14px"><table class="lab-table" style="width:100%"><tbody>${mrdRows}</tbody></table></div>
+  <div style="margin-top:14px"><table class="lab-table" style="max-width:360px"><tbody>${sumRows}</tbody></table></div>
   <div class="form-group" style="margin-top:16px"><label style="display:block;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Notes / comments</label><textarea id="e-notes" rows="3" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Field adjustments, observations, or anything worth noting…">${entryData.notes||''}</textarea></div>
   <div class="row" style="margin-top:14px">
     <button class="btn" onclick="saveVol3();entryStep=2;renderView()">← Back</button>
