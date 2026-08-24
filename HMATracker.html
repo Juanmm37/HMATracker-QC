@@ -801,11 +801,46 @@ function renderStep3(){
   const marshalRows=!isSGC?`<tr class="shdr"><td colspan="${nBriq+2}">MARSHALL TEST VALUES</td></tr>
     <tr><td class="prop" style="font-weight:700;color:#1f3864">Avg. Stability</td><td colspan="${nBriq}"><input type="number" step="0.1" id="avg-stab-input" value="${_avgStabVal}" placeholder="e.g. 8.5" oninput="setText('avg-stab',this.value||'—');setText('res-stab',this.value||'—')" style="width:100%;text-align:center;padding:4px 6px;font-size:12px"></td><td class="avg-cell" id="avg-stab">${_avgStabVal||'—'}</td></tr>
     <tr><td class="prop" style="font-weight:700;color:#1f3864">Avg. Flow (0.25mm)</td><td colspan="${nBriq}"><input type="number" step="0.1" id="avg-flow-input" value="${_avgFlowVal}" placeholder="e.g. 3.2" oninput="setText('avg-flow',this.value||'—');setText('res-flow',this.value||'—')" style="width:100%;text-align:center;padding:4px 6px;font-size:12px"></td><td class="avg-cell" id="avg-flow">${_avgFlowVal||'—'}</td></tr>`:'';
-  const mrdRows=`<tr class="shdr"><td colspan="3">MAXIMUM RELATIVE DENSITY — Technician calculates from worksheet</td></tr>
-    <tr><td class="prop">Flask no.</td><td class="calc" style="text-align:center;font-weight:700">Flask 1</td><td class="avg-cell" style="font-weight:700">Flask 2</td></tr>
-    <tr><td class="prop" style="font-weight:700;color:#1f3864">Gmm (from worksheet)</td>
-      <td><input type="number" step="0.001" id="r-gmm1" value="${entryData.vol3Data?.gmm1||''}" placeholder="e.g. 2.565" oninput="recalcVol()"></td>
-      <td><input type="number" step="0.001" id="r-gmm2" value="${entryData.vol3Data?.gmm2||''}" placeholder="e.g. 2.569" oninput="recalcVol()"></td></tr>`;
+  const fw=getFlaskWeights();
+  const flaskSet=fw.f1a||fw.f1w||fw.f2a||fw.f2w;
+  const mrdRows=`<tr class="shdr"><td colspan="3">MAXIMUM RELATIVE DENSITY (MRD)</td></tr>
+    <tr><td colspan="3" style="padding:8px 10px;background:#f5f7fa;border-bottom:1px solid #e8ecf0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${flaskSet?'4px':'0'}">
+        <span style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em">Flask tare weights</span>
+        <button onclick="toggleFlaskEdit()" style="font-size:11px;background:#fff;border:1px solid #bbb;border-radius:4px;padding:2px 8px;cursor:pointer">✏️ Edit</button>
+      </div>
+      ${flaskSet?`<div style="font-size:11px;color:#666">Flask 1: air <strong>${fw.f1a||'—'}g</strong> / water <strong>${fw.f1w||'—'}g</strong> &nbsp;·&nbsp; Flask 2: air <strong>${fw.f2a||'—'}g</strong> / water <strong>${fw.f2w||'—'}g</strong></div>`:`<div style="font-size:11px;color:#c0392b;font-weight:600">⚠ Tare weights not set — click Edit to enter flask masses</div>`}
+      <div id="flask-edit-form" style="display:none;margin-top:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+          <div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:5px;color:#1f3864">Flask 1</div>
+            <div style="font-size:11px;margin-bottom:4px">Mass in air (g): <input type="number" step="0.1" id="ft-f1a" value="${fw.f1a||''}" placeholder="e.g. 611.1" style="width:80px;font-size:11px;padding:2px 5px;border:1px solid #ccc;border-radius:3px"></div>
+            <div style="font-size:11px">Mass in water (g): <input type="number" step="0.1" id="ft-f1w" value="${fw.f1w||''}" placeholder="e.g. 533.7" style="width:80px;font-size:11px;padding:2px 5px;border:1px solid #ccc;border-radius:3px"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:5px;color:#1f3864">Flask 2</div>
+            <div style="font-size:11px;margin-bottom:4px">Mass in air (g): <input type="number" step="0.1" id="ft-f2a" value="${fw.f2a||''}" placeholder="e.g. 679.0" style="width:80px;font-size:11px;padding:2px 5px;border:1px solid #ccc;border-radius:3px"></div>
+            <div style="font-size:11px">Mass in water (g): <input type="number" step="0.1" id="ft-f2w" value="${fw.f2w||''}" placeholder="e.g. 593.1" style="width:80px;font-size:11px;padding:2px 5px;border:1px solid #ccc;border-radius:3px"></div>
+          </div>
+        </div>
+        <button onclick="saveFlaskTares()" style="font-size:11px;background:#1f3864;color:#fff;border:none;border-radius:4px;padding:4px 14px;cursor:pointer;font-weight:600">Save tare weights</button>
+      </div>
+    </td></tr>
+    <tr><td class="prop" style="font-size:11px;color:#888">Field</td><td class="calc" style="text-align:center;font-weight:700">Flask 1</td><td class="avg-cell" style="text-align:center;font-weight:700">Flask 2</td></tr>
+    <tr><td class="prop" style="font-weight:700;color:#1f3864">Flask+Mix in air (g)</td>
+      <td><input type="number" step="0.1" id="r-famix1" value="${entryData.vol3Data?.mrd?.[0]?.famix||''}" placeholder="e.g. 2095.3" oninput="recalcVol()" style="width:100%;text-align:center;padding:3px 2px;font-size:12px"></td>
+      <td><input type="number" step="0.1" id="r-famix2" value="${entryData.vol3Data?.mrd?.[1]?.famix||''}" placeholder="e.g. 2188.7" oninput="recalcVol()" style="width:100%;text-align:center;padding:3px 2px;font-size:12px"></td></tr>
+    <tr><td class="prop" style="font-weight:700;color:#1f3864">Flask+Mix in water (g)</td>
+      <td><input type="number" step="0.1" id="r-famixw1" value="${entryData.vol3Data?.mrd?.[0]?.famix_w||''}" placeholder="e.g. 1432.2" oninput="recalcVol()" style="width:100%;text-align:center;padding:3px 2px;font-size:12px"></td>
+      <td><input type="number" step="0.1" id="r-famixw2" value="${entryData.vol3Data?.mrd?.[1]?.famix_w||''}" placeholder="e.g. 1509.3" oninput="recalcVol()" style="width:100%;text-align:center;padding:3px 2px;font-size:12px"></td></tr>
+    <tr><td class="prop" style="font-weight:600;color:#555">Mass of mix (g)</td>
+      <td class="calc" id="r-mmix1" style="font-size:12px">—</td><td class="calc" id="r-mmix2" style="font-size:12px">—</td></tr>
+    <tr><td class="prop" style="font-weight:600;color:#555">Mass of mix in water (g)</td>
+      <td class="calc" id="r-mmixw1" style="font-size:12px">—</td><td class="calc" id="r-mmixw2" style="font-size:12px">—</td></tr>
+    <tr><td class="prop" style="font-weight:600;color:#555">Volume (cm³)</td>
+      <td class="calc" id="r-vol1" style="font-size:12px">—</td><td class="calc" id="r-vol2" style="font-size:12px">—</td></tr>
+    <tr><td class="prop" style="font-weight:700">Gmm (MRD)</td>
+      <td class="calc" id="r-gmm1" style="font-weight:700;font-size:13px">—</td><td class="avg-cell" id="r-gmm2" style="font-weight:700;font-size:13px">—</td></tr>`;
   const sumRows=`<tr class="shdr"><td colspan="2">SUMMARY</td></tr>
     <tr><td class="prop">Gb (binder SG)</td><td><input type="number" step="0.001" id="e-gb" value="${jmf?jmf.gb||'1.030':'1.030'}" oninput="recalcVol()" style="width:100%;text-align:center;padding:4px 6px;font-size:12px"></td></tr>
     <tr><td class="prop">Gsb blend</td><td><input type="number" step="0.001" id="e-gsb" value="${jmf?jmf.gsb||'2.680':'2.680'}" oninput="recalcVol()" style="width:100%;text-align:center;padding:4px 6px;font-size:12px"></td></tr>
