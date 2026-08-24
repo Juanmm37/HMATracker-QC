@@ -589,7 +589,7 @@ function renderEntry(){
 function renderStep1(){
   const fam=entryData.testFamily||null;
   const mixOpts=fam?(MIX_TYPES[fam]||[]).map(m=>`<option value="${m}" ${entryData.mixType===m?'selected':''}>${m}</option>`).join(''):'';
-  const filteredJmfs=fam?db.jmfs.filter(j=>j.testFamily===fam):[];
+  const filteredJmfs=fam?db.jmfs.filter(j=>j.testFamily===fam).sort((a,b)=>a.mixNo.localeCompare(b.mixNo,undefined,{numeric:true,sensitivity:'base'})):[];
   const jmfOpts=fam?(filteredJmfs.length?filteredJmfs.map(j=>`<option value="${j.id}" ${entryData.jmfId===j.id?'selected':''}>${j.mixNo}${j.mixDesignNo?' / '+j.mixDesignNo:''} — ${j.mixType}${j.trafficCat?' (Cat '+j.trafficCat+')':''}</option>`).join(''):`<option value="">— no ${fam} JMFs —</option>`):'';
   const fields=fam?`
   <div style="display:grid;grid-template-columns:1fr 72px 1fr 72px;gap:10px;margin-bottom:10px">
