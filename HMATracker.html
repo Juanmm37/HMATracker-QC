@@ -725,14 +725,42 @@ function getDLS(mixType){
 function isKeySieve(sieve,dls){const s=String(parseFloat(sieve));return s===String(parseFloat(dls))||s==='4.75'||s==='0.6'||s==='0.075';}
 function getGradTol(sieve,isSurface,dls){if(dls&&!isKeySieve(sieve,dls))return null;const s=parseFloat(sieve);if(s>=4.75)return isSurface?5.0:7.0;if(s>=0.6)return isSurface?3.5:4.5;if(s>=0.075)return 2.0;return null;}
 
+// Global: auto-select input content on focus so typing immediately replaces existing value
+document.addEventListener('focusin',e=>{if(e.target.matches('input[type=number],input[type=text]'))e.target.select();});
+
 function sieveKeydown(e,idx){
-  if(e.key==='Enter'||e.key==='Tab'){
+  if(e.key==='Enter'||e.key==='Tab'||e.key==='ArrowDown'){
     e.preventDefault();
     const inputs=[...document.querySelectorAll('[data-sieve-idx]')];
     const next=inputs.find(el=>+el.dataset.sieveIdx===idx+1);
-    if(next) next.focus();
-    else{const m=document.getElementById('e-mass-orig');if(m)m.focus();}
+    if(next){next.focus();next.select();}
+    else{const m=document.getElementById('e-mass-orig');if(m){m.focus();m.select();}}
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    const inputs=[...document.querySelectorAll('[data-sieve-idx]')];
+    const prev=inputs.find(el=>+el.dataset.sieveIdx===idx-1);
+    if(prev){prev.focus();prev.select();}
   }
+}
+
+// Column-aware Tab / ArrowDown / ArrowUp navigation for multi-column tables.
+// Inputs must have data-nav-group, data-nav-col, data-nav-row attributes.
+function tableKeydown(e){
+  if(e.key!=='Tab'&&e.key!=='ArrowDown'&&e.key!=='ArrowUp')return;
+  e.preventDefault();
+  const group=e.target.dataset.navGroup;
+  const col=parseInt(e.target.dataset.navCol);
+  const row=parseInt(e.target.dataset.navRow);
+  const dir=e.key==='ArrowUp'?-1:1;
+  // Try next/prev row in same column first
+  let next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${col}"][data-nav-row="${row+dir}"]`);
+  if(!next){
+    // Wrap to next/prev column
+    const nextCol=col+dir;
+    if(dir>0) next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${nextCol}"][data-nav-row="0"]`);
+    else{const all=document.querySelectorAll(`[data-nav-group="${group}"][data-nav-col="${nextCol}"]`);next=all[all.length-1]||null;}
+  }
+  if(next){next.focus();next.select();}
 }
 function recalcGrad(){
   const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;const dls=getDLS(entryData.mixType);
