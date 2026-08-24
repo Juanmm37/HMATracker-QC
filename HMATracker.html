@@ -921,8 +921,8 @@ function recalcVol(){
   const gmbAvg=gmbs.length?gmbs.reduce((a,b)=>a+b,0)/gmbs.length:0;
   const avgBrdVol=brdVols.length?brdVols.reduce((a,b)=>a+b,0)/brdVols.length:0;
   setText('avg-brd-vol',avgBrdVol>0?avgBrdVol.toFixed(1):'—');
-  setText('avg-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
-  setText('res-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
+  setText('avg-gmb',gmbAvg>0?roundUp(gmbAvg,3):'—');
+  setText('res-gmb',gmbAvg>0?roundUp(gmbAvg,3):'—');
 
   // MRD — compute from raw measurements + flask tares (4 flasks)
   const gmms=[];
