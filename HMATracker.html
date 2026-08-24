@@ -1023,7 +1023,7 @@ async function calcAndSave(){
   const _avgStab=parseFloat(entryData.vol3Data?.avgStab)||0;const _avgFlow=parseFloat(entryData.vol3Data?.avgFlow)||0;
   for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;}else{b.stab=i===0?_avgStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
   const gmbAvg=briquettes.filter(b=>b.gmb>0).reduce((s,b)=>s+b.gmb,0)/Math.max(briquettes.filter(b=>b.gmb>0).length,1);
-  const acPct=parseFloat(entryData.acContent)||0;
+  const acPct=parseFloat(document.getElementById('e-acpct')?.value)||parseFloat(entryData.acContent)||0;
   const airVoids=gmmAvg>0&&gmbAvg>0?(1-gmbAvg/gmmAvg)*100:0;
   const vma=gsb>0?(1-gmbAvg*(1-acPct/100)/gsb)*100:0;const vfa=vma>0?(vma-airVoids)/vma*100:0;
   let niniPct=null,ndesPct=null,niniStatus=null;
