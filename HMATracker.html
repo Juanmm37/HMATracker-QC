@@ -653,6 +653,7 @@ function setEntryFamily(fam){
   entryData.subLot=document.getElementById('e-sublot')?.value||entryData.subLot;
   entryData.sampleId=document.getElementById('e-sampleid')?.value||entryData.sampleId;
   entryData.ticketNo=document.getElementById('e-ticketno')?.value||entryData.ticketNo;
+  entryData.isOvernight=document.getElementById('e-overnight')?.checked||entryData.isOvernight||false;
   entryData.testFamily=fam;entryData.mixType='';entryData.jmfId=null;entryData.jmf=null;
   renderView();
 }
