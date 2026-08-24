@@ -868,25 +868,77 @@ function renderStep3(){
 }
 
 function recalcVol(){
-  const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;const gsb=parseFloat(document.getElementById('e-gsb')?.value)||2.680;
-  const gmm1=parseFloat(document.getElementById('r-gmm1')?.value)||0;const gmm2=parseFloat(document.getElementById('r-gmm2')?.value)||0;
-  const gmms=[gmm1,gmm2].filter(v=>v>0);const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
-  setText('res-gmm',gmmAvg>0?roundUp(gmmAvg,3):'—');
-  const gmbs=[];for(let i=0;i<nBriq;i++){const g=parseFloat(document.getElementById('b'+i+'-gmb')?.value)||0;if(g>0)gmbs.push(g);}
-  const gmbAvg=gmbs.length?gmbs.reduce((a,b)=>a+b,0)/gmbs.length:0;
-  setText('avg-gmb',gmbAvg>0?roundUp(gmbAvg,3):'—');setText('res-gmb',gmbAvg>0?roundUp(gmbAvg,3):'—');
+  const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;
+  const gsb=parseFloat(document.getElementById('e-gsb')?.value)||2.680;
   const acPct=parseFloat(entryData.acContent)||0;
-  if(gmmAvg>0&&gmbAvg>0){const av=(1-gmbAvg/gmmAvg)*100;const vma=gsb>0?(1-gmbAvg*(1-acPct/100)/gsb)*100:0;const vfa=vma>0?(vma-av)/vma*100:0;
+  const fw=getFlaskWeights();
+
+  // BRD — compute from raw measurements
+  const gmbs=[],brdVols=[];
+  for(let i=0;i<nBriq;i++){
+    const a1=parseFloat(document.getElementById('b'+i+'-a1')?.value)||0;
+    const a2=parseFloat(document.getElementById('b'+i+'-a2')?.value)||0;
+    const a3=parseFloat(document.getElementById('b'+i+'-a3')?.value)||0;
+    if(a2>0&&a3>0&&a2>a3){
+      const vol=a2-a3;
+      setText('b'+i+'-vol',vol.toFixed(1));
+      if(a1>0){const gmb=a1/vol;setText('b'+i+'-gmb',roundUp(gmb,4));gmbs.push(gmb);brdVols.push(vol);}
+      else setText('b'+i+'-gmb','—');
+    }else{setText('b'+i+'-vol','—');setText('b'+i+'-gmb','—');}
+  }
+  const gmbAvg=gmbs.length?gmbs.reduce((a,b)=>a+b,0)/gmbs.length:0;
+  const avgBrdVol=brdVols.length?brdVols.reduce((a,b)=>a+b,0)/brdVols.length:0;
+  setText('avg-brd-vol',avgBrdVol>0?avgBrdVol.toFixed(1):'—');
+  setText('avg-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
+  setText('res-gmb',gmbAvg>0?roundUp(gmbAvg,4):'—');
+
+  // MRD — compute from raw measurements + flask tares
+  const gmms=[];
+  for(let k=1;k<=2;k++){
+    const fA=parseFloat(k===1?fw.f1a:fw.f2a)||0;
+    const fW=parseFloat(k===1?fw.f1w:fw.f2w)||0;
+    const famix=parseFloat(document.getElementById('r-famix'+k)?.value)||0;
+    const famixw=parseFloat(document.getElementById('r-famixw'+k)?.value)||0;
+    if(famix>0&&famixw>0&&fA>0&&fW>0){
+      const mmix=famix-fA;const mmixw=famixw-fW;const vol=mmix-mmixw;
+      setText('r-mmix'+k,mmix.toFixed(1));setText('r-mmixw'+k,mmixw.toFixed(1));setText('r-vol'+k,vol.toFixed(1));
+      if(vol>0){const gmm=mmix/vol;setText('r-gmm'+k,roundUp(gmm,4));gmms.push(gmm);}
+      else setText('r-gmm'+k,'—');
+    }else{setText('r-mmix'+k,'—');setText('r-mmixw'+k,'—');setText('r-vol'+k,'—');setText('r-gmm'+k,'—');}
+  }
+  const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
+  setText('res-gmm',gmmAvg>0?roundUp(gmmAvg,4):'—');
+
+  // Summary
+  if(gmmAvg>0&&gmbAvg>0){
+    const av=(1-gmbAvg/gmmAvg)*100;const vma=gsb>0?(1-gmbAvg*(1-acPct/100)/gsb)*100:0;const vfa=vma>0?(vma-av)/vma*100:0;
     const avCol=av>=3.0&&av<=5.0?'#c6efce':av>=2.0&&av<=6.0?'#ffeb9c':'#ffc7ce';
-    setHTML('res-av',`<span style="background:${avCol};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);setText('res-vma',roundUp(vma,1)+'%');setText('res-vfa',roundUp(vfa,1)+'%');}
-  if(isSGC&&gmmAvg>0){const np=[],ndp=[];
-    for(let i=0;i<nBriq;i++){const gmb=parseFloat(document.getElementById('b'+i+'-gmb')?.value)||0;const hi=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;
-      if(gmb>0&&hi>0&&hd>0){const ni=gmb/gmmAvg*(hd/hi)*100;const nd=gmb/gmmAvg*100;setText('b'+i+'-nini-pct',roundUp(ni,1)+'%');setText('b'+i+'-ndes-pct',roundUp(nd,1)+'%');np.push(ni);ndp.push(nd);}else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}}
+    setHTML('res-av',`<span style="background:${avCol};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);
+    setText('res-vma',roundUp(vma,1)+'%');setText('res-vfa',roundUp(vfa,1)+'%');
+  }
+
+  // SGC heights
+  if(isSGC&&gmmAvg>0){
+    const np=[],ndp=[];
+    for(let i=0;i<nBriq;i++){
+      const gmb=gmbs[i]||0;const hi=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;
+      if(gmb>0&&hi>0&&hd>0){const ni=gmb/gmmAvg*(hd/hi)*100;const nd=gmb/gmmAvg*100;setText('b'+i+'-nini-pct',roundUp(ni,1)+'%');setText('b'+i+'-ndes-pct',roundUp(nd,1)+'%');np.push(ni);ndp.push(nd);}
+      else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}
+    }
     if(np.length){const a=np.reduce((s,v)=>s+v,0)/np.length;setText('avg-nini-pct',roundUp(a,1)+'%');setText('res-nini',roundUp(a,1)+'%');}
-    if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}}
-  if(!isSGC){const stab=parseFloat(document.getElementById('avg-stab-input')?.value)||0;const flow=parseFloat(document.getElementById('avg-flow-input')?.value)||0;
-    if(stab>0){setText('avg-stab',stab.toFixed(2));setText('res-stab',stab.toFixed(2));}
-    if(flow>0){setText('avg-flow',flow.toFixed(2));setText('res-flow',flow.toFixed(2));}}
+    if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}
+  }
+
+  // Marshall VCF + corrected stability
+  if(!isSGC){
+    const vcf=avgBrdVol>0?marshallVCF(avgBrdVol):null;
+    if(vcf!==null)setText('res-vcf',vcf.toFixed(2));
+    const stab=parseFloat(document.getElementById('avg-stab-input')?.value)||0;
+    const flow=parseFloat(document.getElementById('avg-flow-input')?.value)||0;
+    if(stab>0){setText('res-stab',stab.toFixed(0));setText('avg-stab',stab.toFixed(0));
+      if(vcf!==null)setText('res-corr-stab',(stab*vcf).toFixed(0)+' N');}
+    if(flow>0){setText('avg-flow',flow.toFixed(2));setText('res-flow',flow.toFixed(2));}
+  }
 }
 function saveVol3(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;
