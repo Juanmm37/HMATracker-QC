@@ -996,7 +996,7 @@ function saveVol3(){
     const fm=parseFloat(famix),fmw=parseFloat(famix_w);
     if(fm>0&&fmw>0&&fA>0&&fW>0){
       const mmix=fm-fA,mmixw=fmw-fW,vol=mmix-mmixw;
-      if(vol>0)d['gmm'+k]=String(roundUp(mmix/vol,4));
+      if(vol>0)d['gmm'+k]=String(roundUp(mmix/vol,3));
     }
   }
   entryData.vol3Data=d;
