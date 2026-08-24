@@ -902,7 +902,7 @@ function renderStep3(){
 function recalcVol(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;
   const gsb=parseFloat(document.getElementById('e-gsb')?.value)||2.680;
-  const acPct=parseFloat(entryData.acContent)||0;
+  const acPct=parseFloat(document.getElementById('e-acpct')?.value)||parseFloat(entryData.acContent)||0;
   const fw=getFlaskWeights();
 
   // BRD — compute from raw measurements
