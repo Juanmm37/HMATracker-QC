@@ -669,6 +669,7 @@ function step1Next(){
     lot:document.getElementById('e-lot').value,subLot:document.getElementById('e-sublot').value,
     sampleId:document.getElementById('e-sampleid').value,
     ticketNo:document.getElementById('e-ticketno').value,
+    isOvernight:document.getElementById('e-overnight')?.checked||false,
     testFamily:fam,mixType:document.getElementById('e-mixtype').value,
     jmfId:jmfId||null,jmf:jmf||null,mixNo:jmf?jmf.mixNo:'—',mixDesignNo:jmf?jmf.mixDesignNo:'—'
   };
