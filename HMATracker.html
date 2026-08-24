@@ -725,8 +725,19 @@ function getDLS(mixType){
 function isKeySieve(sieve,dls){const s=String(parseFloat(sieve));return s===String(parseFloat(dls))||s==='4.75'||s==='0.6'||s==='0.075';}
 function getGradTol(sieve,isSurface,dls){if(dls&&!isKeySieve(sieve,dls))return null;const s=parseFloat(sieve);if(s>=4.75)return isSurface?5.0:7.0;if(s>=0.6)return isSurface?3.5:4.5;if(s>=0.075)return 2.0;return null;}
 
-// Global: auto-select input content on focus so typing immediately replaces existing value
-document.addEventListener('focusin',e=>{if(e.target.matches('input[type=number],input[type=text]'))e.target.select();});
+// Global capture-phase: prevent ArrowUp/Down from changing number input values — fires
+// before the browser's native spin-button handler so e.preventDefault() actually wins.
+document.addEventListener('keydown',e=>{
+  if((e.key==='ArrowUp'||e.key==='ArrowDown')&&e.target.type==='number')e.preventDefault();
+},true);
+
+// Global: auto-select input content on focus. setTimeout is needed for type=number in
+// Chrome/Safari — .select() on a number input only works after a microtask delay.
+document.addEventListener('focusin',e=>{
+  if(e.target.type==='number'||e.target.type==='text'){
+    const t=e.target;setTimeout(()=>{try{t.select();}catch(_){}},0);
+  }
+});
 
 function sieveKeydown(e,idx){
   if(e.key==='Enter'||e.key==='Tab'||e.key==='ArrowDown'){
