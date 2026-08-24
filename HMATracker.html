@@ -1241,6 +1241,9 @@ function printRecord(id){
       <div class="info-row"><span class="il">Gmm:</span><span class="iv">${r.gmm||'—'}</span></div>
       ${r.niniPct?`<div class="info-row"><span class="il">%Gmm Nini (N=${r.niniCount}):</span><span class="iv">${r.niniPct}%</span></div>`:''}
       ${r.ndesPct?`<div class="info-row"><span class="il">%Gmm Ndes (N=${r.ndesCount}):</span><span class="iv">${r.ndesPct}%</span></div>`:''}
+      ${r.testFamily==='Marshall'&&r.avgStab?`<div class="info-row"><span class="il">Avg. stability (N):</span><span class="iv">${r.avgStab}</span></div>`:''}
+      ${r.testFamily==='Marshall'&&r.corrStab?`<div class="info-row"><span class="il">Corr. stability (N):</span><span class="iv" style="font-weight:700;color:#1f3864">${r.corrStab}</span></div>`:''}
+      ${r.testFamily==='Marshall'&&r.avgFlow?`<div class="info-row"><span class="il">Avg. flow (0.25mm):</span><span class="iv">${r.avgFlow}</span></div>`:''}
       <div class="info-divider"></div>
       <div style="padding:4px 7px;flex:1">
         <div style="font-size:9px;font-weight:700;color:#1f3864;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Notes</div>
