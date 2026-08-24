@@ -939,8 +939,8 @@ function recalcVol(){
     }else{setText('r-mmix'+k,'—');setText('r-mmixw'+k,'—');setText('r-vol'+k,'—');setText('r-gmm'+k,'—');}
   }
   const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
-  setText('avg-gmm',gmmAvg>0?roundUp(gmmAvg,4):'—');
-  setText('res-gmm',gmmAvg>0?roundUp(gmmAvg,4):'—');
+  setText('avg-gmm',gmmAvg>0?roundUp(gmmAvg,3):'—');
+  setText('res-gmm',gmmAvg>0?roundUp(gmmAvg,3):'—');
 
   // Summary
   if(gmmAvg>0&&gmbAvg>0){
