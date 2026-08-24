@@ -1015,6 +1015,8 @@ async function calcAndSave(){
     gradActual:entryData.gradActual||{},gradStatus:entryData.gradStatus||{},
     cumRetained:entryData.cumRetained||{},massOrig:entryData.massOrig,massDry:entryData.massDry,
     avStatus,overallStatus:overall,briquettes,
+    avgStab:_avgStab||null,avgFlow:_avgFlow||null,
+    corrStab:(!isSGC&&_avgStab>0&&gmbAvg>0)?roundUp(_avgStab*marshallVCF(briquettes.map((_,i)=>{const a2=parseFloat(entryData.vol3Data?.brd?.[i]?.a2)||0,a3=parseFloat(entryData.vol3Data?.brd?.[i]?.a3)||0;return a2>a3?a2-a3:0;}).filter(v=>v>0).reduce((s,v,_,a)=>s+v/a.length,0)),0):null,
     notes:document.getElementById('e-notes')?.value?.trim()||entryData.notes||'',
     vol3Data:entryData.vol3Data||null
   };
