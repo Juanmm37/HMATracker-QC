@@ -985,7 +985,7 @@ function saveVol3(){
     const fa1=parseFloat(a1),fa2=parseFloat(a2),fa3=parseFloat(a3);
     d.gmb.push(fa1>0&&fa2>fa3&&fa2>0?String(roundUp(fa1/(fa2-fa3),3)):'');
     if(isSGC){d.hini.push(document.getElementById('b'+i+'-hini')?.value||'');d.hdes.push(document.getElementById('b'+i+'-hdes')?.value||'');}
-    else{d.avgStab=document.getElementById('avg-stab-input')?.value||'';d.avgFlow=document.getElementById('avg-flow-input')?.value||'';}
+    else{d.corrStab=document.getElementById('avg-stab-input')?.value||'';d.avgFlow=document.getElementById('avg-flow-input')?.value||'';}
   }
   for(let k=1;k<=4;k++){
     const famix=document.getElementById('r-famix'+k)?.value||'';
