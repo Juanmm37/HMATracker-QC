@@ -186,7 +186,7 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 function avg(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
 function stddev(arr){const a=avg(arr);if(a===null)return null;const v=arr.filter(x=>!isNaN(x)&&x!==null);return Math.sqrt(v.reduce((s,x)=>s+(x-a)**2,0)/v.length);}
 function range(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?[Math.min(...v),Math.max(...v)]:null;}
-function roundUp(val,dec){const factor=Math.pow(10,dec);return(Math.ceil(val*factor-(Number.EPSILON*factor))/factor).toFixed(dec);}
+function roundUp(val,dec){return Number(Math.round(parseFloat(val+'e'+dec))+'e-'+dec).toFixed(dec);}
 
 // ── SUPABASE ─────────────────────────────────────────────────────────────────
 const SUPA_URL='https://gndkcdfvntmixdvpgbah.supabase.co';
