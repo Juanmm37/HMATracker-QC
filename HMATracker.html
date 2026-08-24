@@ -947,16 +947,15 @@ function saveVol3(){
     if(isSGC){d.hini.push(document.getElementById('b'+i+'-hini')?.value||'');d.hdes.push(document.getElementById('b'+i+'-hdes')?.value||'');}
     else{d.avgStab=document.getElementById('avg-stab-input')?.value||'';d.avgFlow=document.getElementById('avg-flow-input')?.value||'';}
   }
-  for(let k=1;k<=2;k++){
+  for(let k=1;k<=4;k++){
     const famix=document.getElementById('r-famix'+k)?.value||'';
     const famix_w=document.getElementById('r-famixw'+k)?.value||'';
     d.mrd.push({famix,famix_w});
-    // Compute Gmm for downstream compatibility
-    const fA=parseFloat(k===1?fw.f1a:fw.f2a)||0;const fW=parseFloat(k===1?fw.f1w:fw.f2w)||0;
+    const fA=parseFloat(fw['f'+k+'a'])||0;const fW=parseFloat(fw['f'+k+'w'])||0;
     const fm=parseFloat(famix),fmw=parseFloat(famix_w);
     if(fm>0&&fmw>0&&fA>0&&fW>0){
       const mmix=fm-fA,mmixw=fmw-fW,vol=mmix-mmixw;
-      if(vol>0){if(k===1)d.gmm1=String(roundUp(mmix/vol,4));else d.gmm2=String(roundUp(mmix/vol,4));}
+      if(vol>0)d['gmm'+k]=String(roundUp(mmix/vol,4));
     }
   }
   entryData.vol3Data=d;
