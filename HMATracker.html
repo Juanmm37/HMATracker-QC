@@ -922,7 +922,7 @@ function recalcVol(){
   if(isSGC&&gmmAvg>0){
     const np=[],ndp=[];
     for(let i=0;i<nBriq;i++){
-      const gmb=gmbs[i]||0;const hi=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;
+      const gmb=gmbArr[i]||0;const hi=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;
       if(gmb>0&&hi>0&&hd>0){const ni=gmb/gmmAvg*(hd/hi)*100;const nd=gmb/gmmAvg*100;setText('b'+i+'-nini-pct',roundUp(ni,1)+'%');setText('b'+i+'-ndes-pct',roundUp(nd,1)+'%');np.push(ni);ndp.push(nd);}
       else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}
     }
