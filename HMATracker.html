@@ -282,7 +282,8 @@ function supabaseTestRecordToRecord(tr){
     gradActual:r.gradActual||{},gradStatus:r.gradStatus||{},cumRetained:r.cumRetained||{},
     massOrig:r.massOrig||'',massDry:r.massDry||'',avStatus:r.avStatus||'',
     overallStatus:r.overallStatus||'',briquettes:r.briquettes||[],vol3Data:r.vol3Data||null,
-    avgStab:r.avgStab||null,avgFlow:r.avgFlow||null,corrStab:r.corrStab||null,
+    avgFlow:r.avgFlow||null,corrStab:r.corrStab||null,
+    isOvernight:r.isOvernight||false,isNmax:r.isNmax||false,nmaxPct:r.nmaxPct||null,
     notes:tr.notes||r.notes||''};
 }
 
@@ -469,9 +470,9 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
       return`<tr>
         ${showCheck?`<td class="checkbox-col"><input type="checkbox" class="rec-check" data-id="${r.id}"></td>`:''}
         <td style="font-weight:700">${r.sampleId||'—'}</td>
-        <td>${r.dateSampled||r.date||'—'}</td>
+        <td>${r.dateSampled||r.date||'—'}${r.isOvernight?'<br><span style="font-size:10px;color:#8a6000;font-weight:600">🌙 overnight</span>':''}</td>
         <td><strong>${r.contractNo||'—'}</strong></td>
-        <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType||'—'}</span></td>
+        <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType||'—'}</span>${r.isNmax?'<br><span style="font-size:10px;color:#8a6000;font-weight:700">Nmax</span>':''}</td>
         <td>${r.mixNo||'—'}</td>
         <td style="text-align:center;font-weight:600;color:${avColor}">${r.airVoids?r.airVoids+'%':'—'}</td>
         <td style="text-align:center;font-weight:600;color:${vmaColor}">${r.vma?r.vma+'%':'—'}</td>
@@ -898,7 +899,7 @@ function renderStep3(){
     <tr><td class="prop" style="font-weight:600">Air voids (%)</td><td class="avg-cell" id="res-av">—</td></tr>
     <tr><td class="prop" style="font-weight:600">VMA (%)</td><td class="avg-cell" id="res-vma">—</td></tr>
     <tr><td class="prop" style="font-weight:600">VFA (%)</td><td class="avg-cell" id="res-vfa">—</td></tr>
-    ${isSGC?`<tr><td class="prop" style="font-weight:600">%Gmm @ Nini</td><td class="avg-cell" id="res-nini">—</td></tr><tr><td class="prop" style="font-weight:600">%Gmm @ Ndes</td><td class="avg-cell" id="res-ndes">—</td></tr>`:`<tr><td class="prop" style="font-weight:700;color:#1f3864">Corr. stability (N)</td><td class="avg-cell" id="res-corr-stab" style="font-weight:700;color:#1f3864">—</td></tr><tr><td class="prop" style="font-weight:600">Avg flow (0.25mm)</td><td class="avg-cell" id="res-flow">—</td></tr>`}`;
+    ${isSGC?`<tr><td class="prop" style="font-weight:600">%Gmm @ Nini</td><td class="avg-cell" id="res-nini">—</td></tr><tr><td class="prop" style="font-weight:600">%Gmm @ Ndes</td><td class="avg-cell" id="res-ndes">—</td></tr>${isNmax?'<tr><td class="prop" style="font-weight:600;color:#8a6000">%Gmm @ Nmax</td><td class="avg-cell" id="res-nmax" style="color:#8a6000">—</td></tr>':''}`:`<tr><td class="prop" style="font-weight:700;color:#1f3864">Corr. stability (N)</td><td class="avg-cell" id="res-corr-stab" style="font-weight:700;color:#1f3864">—</td></tr><tr><td class="prop" style="font-weight:600">Avg flow (0.25mm)</td><td class="avg-cell" id="res-flow">—</td></tr>`}`;
   return`<div class="card">
   <div class="step-indicator">Step 3 of 3</div>
   <div class="section-title">Volumetrics &nbsp;<span class="badge badge-${fam==='Marshall'?'ms':fam==='SMA'?'sma':'sp'}">${fam}</span></div>
@@ -976,6 +977,16 @@ function recalcVol(){
     }
     if(np.length){const a=np.reduce((s,v)=>s+v,0)/np.length;setText('avg-nini-pct',roundUp(a,1)+'%');setText('res-nini',roundUp(a,1)+'%');}
     if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}
+    // Nmax heights (Superpave only, when Nmax checkbox is ticked)
+    if(fam==='Superpave'&&entryData.isNmax){
+      const nxp=[];
+      for(let i=0;i<nBriq;i++){
+        const gmb=gmbArr[i]||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;const hn=parseFloat(document.getElementById('b'+i+'-hnmax')?.value)||0;
+        if(gmb>0&&hd>0&&hn>0){const nx=gmb*(hd/hn)/gmmAvg*100;setText('b'+i+'-nmax-pct',roundUp(nx,1)+'%');nxp.push(nx);}
+        else setText('b'+i+'-nmax-pct','—');
+      }
+      if(nxp.length){const a=nxp.reduce((s,v)=>s+v,0)/nxp.length;setText('avg-nmax-pct',roundUp(a,1)+'%');setText('res-nmax',roundUp(a,1)+'%');}
+    }
   }
 
   // Marshall corrected stability + flow
@@ -998,7 +1009,7 @@ function saveVol3(){
     // Compute Gmb for downstream compatibility
     const fa1=parseFloat(a1),fa2=parseFloat(a2),fa3=parseFloat(a3);
     d.gmb.push(fa1>0&&fa2>fa3&&fa2>0?String(roundUp(fa1/(fa2-fa3),3)):'');
-    if(isSGC){d.hini.push(document.getElementById('b'+i+'-hini')?.value||'');d.hdes.push(document.getElementById('b'+i+'-hdes')?.value||'');}
+    if(isSGC){d.hini.push(document.getElementById('b'+i+'-hini')?.value||'');d.hdes.push(document.getElementById('b'+i+'-hdes')?.value||'');if(entryData.isNmax){if(!d.hnmax)d.hnmax=[];d.hnmax.push(document.getElementById('b'+i+'-hnmax')?.value||'');}}
     else{d.corrStab=document.getElementById('avg-stab-input')?.value||'';d.avgFlow=document.getElementById('avg-flow-input')?.value||'';}
   }
   for(let k=1;k<=4;k++){
@@ -1012,6 +1023,7 @@ function saveVol3(){
       if(vol>0)d['gmm'+k]=String(roundUp(mmix/vol,3));
     }
   }
+  d.isNmax=!!entryData.isNmax;
   entryData.vol3Data=d;
   entryData.notes=document.getElementById('e-notes')?.value||'';
 }
@@ -1033,13 +1045,15 @@ async function calcAndSave(){
   const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
   const briquettes=[];
   const _corrStab=parseFloat(entryData.vol3Data?.corrStab)||parseFloat(entryData.vol3Data?.avgStab)||0;const _avgFlow=parseFloat(entryData.vol3Data?.avgFlow)||0;
-  for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;}else{b.stab=i===0?_corrStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
+  for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;b.hnmax=parseFloat(entryData.vol3Data?.hnmax?.[i])||0;}else{b.stab=i===0?_corrStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
   const gmbAvg=briquettes.filter(b=>b.gmb>0).reduce((s,b)=>s+b.gmb,0)/Math.max(briquettes.filter(b=>b.gmb>0).length,1);
   const acPct=parseFloat(document.getElementById('e-acpct')?.value)||parseFloat(entryData.acContent)||0;
   const airVoids=gmmAvg>0&&gmbAvg>0?(1-gmbAvg/gmmAvg)*100:0;
   const vma=gsb>0?(1-gmbAvg*(1-acPct/100)/gsb)*100:0;const vfa=vma>0?(vma-airVoids)/vma*100:0;
-  let niniPct=null,ndesPct=null,niniStatus=null;
-  if(isSGC&&gmmAvg>0){const validB=briquettes.filter(b=>b.hini>0&&b.hdes>0&&b.gmb>0);if(validB.length){const avgHi=validB.reduce((s,b)=>s+b.hini,0)/validB.length,avgHd=validB.reduce((s,b)=>s+b.hdes,0)/validB.length;niniPct=gmbAvg/gmmAvg*(avgHd/avgHi)*100;ndesPct=gmbAvg/gmmAvg*100;niniStatus=niniPct<=(niniLimit||89.0)?'acceptable':niniPct<=NINOTE5?'note5':'rejectable';}}
+  let niniPct=null,ndesPct=null,niniStatus=null,nmaxPct=null;
+  if(isSGC&&gmmAvg>0){const validB=briquettes.filter(b=>b.hini>0&&b.hdes>0&&b.gmb>0);if(validB.length){const avgHi=validB.reduce((s,b)=>s+b.hini,0)/validB.length,avgHd=validB.reduce((s,b)=>s+b.hdes,0)/validB.length;niniPct=gmbAvg/gmmAvg*(avgHd/avgHi)*100;ndesPct=gmbAvg/gmmAvg*100;niniStatus=niniPct<=(niniLimit||89.0)?'acceptable':niniPct<=NINOTE5?'note5':'rejectable';}
+    if(entryData.isNmax){const validN=briquettes.filter(b=>b.hnmax>0&&b.hdes>0&&b.gmb>0);if(validN.length){const avgHn=validN.reduce((s,b)=>s+b.hnmax,0)/validN.length,avgHd=validN.reduce((s,b)=>s+b.hdes,0)/validN.length;nmaxPct=gmbAvg*(avgHd/avgHn)/gmmAvg*100;}}
+  }
   const jmfAC=parseFloat(entryData.jmfAC)||0;const acDiff=Math.abs(acPct-jmfAC);const acStatus=jmfAC>0?(acDiff<0.30?'acceptable':acDiff<=0.50?'borderline':'rejectable'):'acceptable';
   const isDFC=(entryData.mixType||'').toUpperCase().includes('DFC');const avStatus=evalAV(airVoids,isDFC);
   const jmfVMA=jmf?parseFloat(jmf.vmaTarget)||0:0;const vmaStatus=jmfVMA>0?(Math.abs(vma-jmfVMA)<1.0?'acceptable':Math.abs(vma-jmfVMA)<2.0?'borderline':'rejectable'):'acceptable';
@@ -1055,7 +1069,8 @@ async function calcAndSave(){
     airVoids:roundUp(airVoids,1),vma:roundUp(vma,1),vfa:roundUp(vfa,1),
     jmfVMA:jmfVMA?jmfVMA.toFixed(1):'',vmaStatus,
     gmb:gmbAvg>0?roundUp(gmbAvg,3):'',gmm:gmmAvg>0?roundUp(gmmAvg,3):'',
-    niniPct:niniPct?roundUp(niniPct,1):null,ndesPct:ndesPct?roundUp(ndesPct,1):null,
+    isOvernight:entryData.isOvernight||false,isNmax:entryData.isNmax||false,
+    niniPct:niniPct?roundUp(niniPct,1):null,ndesPct:ndesPct?roundUp(ndesPct,1):null,nmaxPct:nmaxPct?roundUp(nmaxPct,1):null,
     niniStatus,niniLimit,niniCount,ndesCount,
     gradActual:entryData.gradActual||{},gradStatus:entryData.gradStatus||{},
     cumRetained:entryData.cumRetained||{},massOrig:entryData.massOrig,massDry:entryData.massDry,
@@ -1253,6 +1268,8 @@ function printRecord(id){
       <div class="info-row"><span class="il">Gmm:</span><span class="iv">${r.gmm||'—'}</span></div>
       ${r.niniPct?`<div class="info-row"><span class="il">%Gmm Nini (N=${r.niniCount}):</span><span class="iv">${r.niniPct}%</span></div>`:''}
       ${r.ndesPct?`<div class="info-row"><span class="il">%Gmm Ndes (N=${r.ndesCount}):</span><span class="iv">${r.ndesPct}%</span></div>`:''}
+      ${r.nmaxPct?`<div class="info-row"><span class="il" style="color:#8a6000">%Gmm Nmax:</span><span class="iv" style="color:#8a6000;font-weight:700">${r.nmaxPct}%</span></div>`:''}
+      ${r.isOvernight?`<div class="info-row"><span class="il">Sample type:</span><span class="iv" style="color:#8a6000;font-weight:600">🌙 Overnight</span></div>`:''}
       ${r.testFamily==='Marshall'&&r.corrStab?`<div class="info-row"><span class="il">Corr. stability (N):</span><span class="iv" style="font-weight:700;color:#1f3864">${r.corrStab}</span></div>`:''}
       ${r.testFamily==='Marshall'&&r.avgFlow?`<div class="info-row"><span class="il">Avg. flow (0.25mm):</span><span class="iv">${r.avgFlow}</span></div>`:''}
       <div class="info-divider"></div>
