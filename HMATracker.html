@@ -183,7 +183,7 @@ const NINOTE5=89.5;
 function getSieves(fam){return fam==='Marshall'?SIEVES_M:fam==='SMA'?SIEVES_SMA:SIEVES_SP;}
 function fmt1(v,s=''){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(1)+s;}
 function fmt2(v,s=''){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(2)+s;}
-function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'});}
+const _FMT_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];function fmtDate(iso){if(!iso||iso==='—')return'—';try{const p=String(iso).split('-');if(p.length<3||!p[1])return iso;return _FMT_MONTHS[parseInt(p[1],10)-1]+' '+parseInt(p[2],10)+', '+p[0];}catch(e){return iso;}}
 function avg(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
 function stddev(arr){const a=avg(arr);if(a===null)return null;const v=arr.filter(x=>!isNaN(x)&&x!==null);return Math.sqrt(v.reduce((s,x)=>s+(x-a)**2,0)/v.length);}
 function range(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?[Math.min(...v),Math.max(...v)]:null;}
@@ -793,7 +793,7 @@ function generateSummary(){
     <tr><td class="left"><strong>VMA (%)</strong></td><td>${vmaVals.length}</td><td>${avg(vmaVals)!==null?avg(vmaVals).toFixed(1):'—'}</td><td>${vmaRange?vmaRange[0].toFixed(1):'—'}</td><td>${vmaRange?vmaRange[1].toFixed(1):'—'}</td><td>${vmaRange?(vmaRange[1]-vmaRange[0]).toFixed(1):'—'}</td><td>${stddev(vmaVals)!==null?stddev(vmaVals).toFixed(3):'—'}</td>${jmfACAvg?'<td>—</td>':''}</tr>
   </tbody></table>
   <table style="margin-top:14px"><thead><tr><th>Date</th><th>Contract</th><th>Mix no.</th><th>Mix design no.</th><th>Lot</th><th>Sub-lot</th><th>Sample</th><th>Mix type</th><th>AC%</th><th>Air voids%</th><th>VMA%</th></tr></thead>
-  <tbody>${selected.map(r=>`<tr><td>${r.date}</td><td>${r.contractNo||'—'}</td><td>${r.mixNo||'—'}</td><td>${r.jmf?.mixDesignNo||'—'}</td><td>${r.lot||'—'}</td><td>${r.subLot||'—'}</td><td>${r.sampleId||'—'}</td><td>${r.mixType}</td><td>${fmt2(r.acContent)}</td><td>${fmt1(r.airVoids)}</td><td>${fmt1(r.vma)}</td></tr>`).join('')}</tbody></table>
+  <tbody>${selected.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.contractNo||'—'}</td><td>${r.mixNo||'—'}</td><td>${r.jmf?.mixDesignNo||'—'}</td><td>${r.lot||'—'}</td><td>${r.subLot||'—'}</td><td>${r.sampleId||'—'}</td><td>${r.mixType}</td><td>${fmt2(r.acContent)}</td><td>${fmt1(r.airVoids)}</td><td>${fmt1(r.vma)}</td></tr>`).join('')}</tbody></table>
   <div class="footer">Capital Paving — Summary generated ${new Date().toLocaleString('en-CA')}</div>
   <div style="text-align:center;margin-top:12px" class="noprint"><button onclick="window.print()" style="padding:8px 20px;font-size:13px;cursor:pointer">Print / Save PDF</button></div>
   </body></html>`);
@@ -1602,7 +1602,7 @@ function renderJMF(){
     <td><span class="badge badge-${j.testFamily==='Marshall'?'ms':j.testFamily==='SMA'?'sma':'sp'}">${j.testFamily}</span></td>
     <td style="font-size:11px">${j.mixType}</td><td>${j.trafficCat||'—'}</td>
     <td>${fmt2(j.acTarget)}</td><td>${j.binder||'—'}</td><td>${j.season||'—'}</td>
-    <td style="font-size:11px">${j.designDate||'—'}</td>
+    <td style="font-size:11px">${fmtDate(j.designDate)}</td>
     <td>
       <button class="btn btn-sm" onclick="editJMF('${j.id}')">✏️</button>
       <button class="btn btn-sm btn-danger" onclick="deleteJMF('${j.id}')" style="margin-left:4px">🗑️</button>
@@ -1810,9 +1810,9 @@ function renderJobRegistry(){
         <td style="text-align:center">${mixCell}</td>
         <td style="text-align:center;font-size:12px;font-weight:700;color:#1f3864">${m.pgacId||'—'}</td>
         <td style="font-size:12px">${m.pgacGrade||'—'}</td>
-        <td style="font-size:11px;color:#555;white-space:nowrap">${m.submitted||'—'}</td>
         <td style="font-size:11px;color:#555">${m.addInfo||'—'}</td>
         <td style="font-size:11px;color:#555">${m.notes||'—'}</td>
+        <td style="font-size:11px;color:#555;white-space:nowrap">${fmtDate(m.submitted)}</td>
       </tr>`;
     }).join('');
   }).join('');
@@ -1833,9 +1833,9 @@ function renderJobRegistry(){
       <th style="text-align:center">Mix No.</th>
       <th style="text-align:center">PGAC ID</th>
       <th>PGAC Grade</th>
-      <th style="white-space:nowrap">Date Submitted to PM</th>
       <th style="min-width:140px">Additional Info</th>
       <th>Notes</th>
+      <th style="white-space:nowrap">Date Submitted to PM</th>
     </tr></thead>
     <tbody>${tableRows}</tbody>
   </table>
@@ -1962,7 +1962,7 @@ function renderACReport(){
     const rc=r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b';
     return`<tr>
       <td style="font-weight:700">${r.sampleId||'—'}</td>
-      <td>${r.dateSampled||r.date||'—'}</td>
+      <td>${fmtDate(r.dateSampled||r.date)}</td>
       <td>${r.contractNo||'—'}</td>
       <td>${r.job||'—'}</td>
       <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}" style="font-size:10px">${r.mixType||'—'}</span></td>
@@ -2031,7 +2031,7 @@ function printACReport(){
     const dc=dev===null?'#555':Math.abs(dev)>0.5?'#c0392b':Math.abs(dev)>0.3?'#8a6000':'#1a6b1a';
     const rc=r.acStatus==='acceptable'?'#1a6b1a':r.acStatus==='borderline'?'#8a6000':'#c0392b';
     return`<tr>
-      <td>${r.sampleId||'—'}</td><td>${r.dateSampled||r.date||'—'}</td>
+      <td>${r.sampleId||'—'}</td><td>${fmtDate(r.dateSampled||r.date)}</td>
       <td>${r.contractNo||'—'}</td><td>${r.job||'—'}</td>
       <td>${r.mixType||'—'}</td><td>${r.mixNo||'—'}</td>
       <td style="text-align:center">${!isNaN(designAC)&&designAC>0?designAC.toFixed(2)+'%':'—'}</td>
