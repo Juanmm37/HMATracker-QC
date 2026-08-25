@@ -1556,7 +1556,6 @@ function printRecord(id){
       ${r.niniPct?`<div class="info-row"><span class="il">%Gmm Nini (N=${r.niniCount}):</span><span class="iv">${r.niniPct}%</span></div>`:''}
       ${r.ndesPct?`<div class="info-row"><span class="il">%Gmm Ndes (N=${r.ndesCount}):</span><span class="iv">${r.ndesPct}%</span></div>`:''}
       ${r.nmaxPct?`<div class="info-row"><span class="il" style="color:#8a6000">%Gmm Nmax:</span><span class="iv" style="color:#8a6000;font-weight:700">${r.nmaxPct}%</span></div>`:''}
-      ${r.isOvernight?`<div class="info-row"><span class="il">Sample type:</span><span class="iv" style="color:#8a6000;font-weight:600">🌙 Overnight</span></div>`:''}
       ${r.testFamily==='Marshall'&&r.corrStab?`<div class="info-row"><span class="il">Corr. stability (N):</span><span class="iv" style="font-weight:700;color:#1f3864">${r.corrStab}</span></div>`:''}
       ${r.testFamily==='Marshall'&&r.avgFlow?`<div class="info-row"><span class="il">Avg. flow (0.25mm):</span><span class="iv">${r.avgFlow}</span></div>`:''}
       <div class="info-divider"></div>
