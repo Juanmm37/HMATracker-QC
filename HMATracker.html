@@ -1788,7 +1788,11 @@ function jrEditJob(year,jobNo){
 function jrAddMix(){jrSnapshotForm();jobRegEditing.mixes.push({ticketDesc:'',mixNo:'',pgacId:'',pgacGrade:'',addInfo:'',notes:'',submitted:''});renderView();}
 function jrRemoveMix(i){jrSnapshotForm();jobRegEditing.mixes.splice(i,1);renderView();}
 async function saveJobRegistryEdits(){
-  const json=JSON.stringify(db.jobRegistryEdits||{});
+  // Stamp last-modified time and user into the blob itself
+  if(!db.jobRegistryEdits)db.jobRegistryEdits={};
+  db.jobRegistryEdits._lastModified=new Date().toISOString();
+  db.jobRegistryEdits._lastModifiedBy=currentUser?.name||'';
+  const json=JSON.stringify(db.jobRegistryEdits);
   if(db.jobRegNoteId){
     const r=await _db.from('production_notes').update({note:json,note_date:'1900-01-02',last_modified_by:currentUser?.id||null}).eq('id',db.jobRegNoteId);
     if(r.error)console.error('jr edits save:',r.error);
@@ -1797,6 +1801,60 @@ async function saveJobRegistryEdits(){
     if(r.error)console.error('jr edits insert:',r.error);
     else if(r.data)db.jobRegNoteId=r.data.id;
   }
+}
+function printJobRegistry(){
+  const jobs=getJobRegistry(jobRegYear);
+  const jmfByMixNo=Object.fromEntries(db.jmfs.map(j=>[j.mixNo,j]));
+  function lookupJmfP(m){const mn=(m.mixNo||'').trim(),pid=(m.pgacId||'').trim(),b=mn.replace(/[A-Za-z]+$/,'');return jmfByMixNo[mn+pid]||jmfByMixNo[mn]||jmfByMixNo[b+pid]||jmfByMixNo[b]||null;}
+  const now=new Date();
+  const genDate=_FMT_MONTHS[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
+  const lm=db.jobRegistryEdits?._lastModified;
+  const lmDate=lm?fmtDate(lm.slice(0,10)):'—';
+  const lmBy=db.jobRegistryEdits?._lastModifiedBy||'';
+  let rows='';
+  jobs.forEach(job=>{
+    const mixes=job.mixes||[];
+    if(!mixes.length){
+      rows+=`<tr><td style="font-weight:700">${job.jobNo}</td><td>${job.jobName}</td><td colspan="8" style="color:#aaa;font-style:italic">No mix lines</td></tr>`;
+      return;
+    }
+    mixes.forEach((m,i)=>{
+      const jmf=lookupJmfP(m);
+      const mdNo=jmf?.mixDesignNo||'—';
+      const mnStyle=!jmf||!jmf.acTarget?'color:#b91c1c;font-weight:700':'font-weight:700';
+      rows+=`<tr>${i===0?`<td rowspan="${mixes.length}" style="font-weight:700;vertical-align:top;border-right:2px solid #ccc">${job.jobNo}</td><td rowspan="${mixes.length}" style="vertical-align:top;border-right:1px solid #eee">${job.jobName}</td>`:''}<td>${m.ticketDesc||'—'}</td><td style="text-align:center;font-size:10px;color:#555">${mdNo}</td><td style="text-align:center;${mnStyle}">${m.mixNo||'?'}</td><td style="text-align:center;font-weight:700">${m.pgacId||'—'}</td><td>${m.pgacGrade||'—'}</td><td style="font-size:10px">${m.addInfo||'—'}</td><td style="font-size:10px">${m.notes||'—'}</td><td style="font-size:10px;white-space:nowrap">${m.submitted?fmtDate(m.submitted):'—'}</td></tr>`;
+    });
+  });
+  const win=window.open('','_blank','width=1200,height=850');
+  win.document.write(`<!DOCTYPE html><html><head><title>Job Registry ${jobRegYear}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;padding:14px;color:#000}
+  .ph{display:flex;align-items:center;gap:16px;padding:4px 0 8px;border-bottom:3px solid #1f3864;margin-bottom:10px}
+  .pt{font-size:16px;font-weight:900;color:#1f3864;letter-spacing:.05em}.ps{font-size:10px;color:#555;margin-top:3px}
+  table{width:100%;border-collapse:collapse;font-size:10px}
+  th{background:#1f3864;color:#fff;padding:4px 6px;font-size:9px;text-align:center}th.tl{text-align:left}
+  td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top}
+  tr:last-child td{border-bottom:2px solid #ccc}
+  .footer{margin-top:12px;font-size:8px;color:#888;border-top:1px solid #ccc;padding-top:5px;text-align:center}
+  @media print{.noprint{display:none}body{padding:8px}@page{margin:10mm;size:landscape}}</style>
+  </head><body>
+  <div class="ph">
+    <img src="${CAPITAL_LOGO}" style="height:70px;width:auto;flex-shrink:0">
+    <div style="flex:1;text-align:center">
+      <div class="pt">JOB REGISTRY — ${jobRegYear}</div>
+      <div class="ps">Capital Paving Inc. &nbsp;|&nbsp; Report generated: ${genDate} &nbsp;|&nbsp; Last modified: ${lmDate}${lmBy?' by '+lmBy:''}</div>
+    </div>
+  </div>
+  <table><thead><tr>
+    <th class="tl">Job No.</th><th class="tl">Job Name</th><th class="tl">Ticket Description</th>
+    <th>Mix Design No.</th><th>Mix No.</th><th>PGAC ID</th><th class="tl">PGAC Grade</th>
+    <th class="tl">Additional Info</th><th class="tl">Notes</th><th>Date Submitted to PM</th>
+  </tr></thead><tbody>${rows}</tbody></table>
+  <div class="footer">Capital Paving — Job Registry ${jobRegYear} — Printed ${genDate}</div>
+  <div style="text-align:center;margin-top:12px" class="noprint">
+    <button onclick="window.print()" style="padding:8px 22px;font-size:13px;cursor:pointer;background:#1f3864;color:#fff;border:none;border-radius:6px">Print / Save PDF</button>
+  </div>
+  </body></html>`);
+  win.document.close();
 }
 async function jrSaveJob(){
   jrSnapshotForm();
