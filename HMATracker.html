@@ -769,19 +769,26 @@ function sieveKeydown(e,idx){
 // Column-aware Tab / ArrowDown / ArrowUp navigation for multi-column tables.
 // Inputs must have data-nav-group, data-nav-col, data-nav-row attributes.
 function tableKeydown(e){
-  if(e.key!=='Tab'&&e.key!=='ArrowDown'&&e.key!=='ArrowUp')return;
+  if(e.key!=='Tab'&&e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
   e.preventDefault();
   const group=e.target.dataset.navGroup;
   const col=parseInt(e.target.dataset.navCol);
   const row=parseInt(e.target.dataset.navRow);
-  const dir=e.key==='ArrowUp'?-1:1;
-  // Try next/prev row in same column first
-  let next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${col}"][data-nav-row="${row+dir}"]`);
-  if(!next){
-    // Wrap to next/prev column
-    const nextCol=col+dir;
-    if(dir>0) next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${nextCol}"][data-nav-row="0"]`);
-    else{const all=document.querySelectorAll(`[data-nav-group="${group}"][data-nav-col="${nextCol}"]`);next=all[all.length-1]||null;}
+  let next=null;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+    // Move to same row in adjacent column
+    const dir=e.key==='ArrowRight'?1:-1;
+    next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${col+dir}"][data-nav-row="${row}"]`);
+  } else {
+    const dir=e.key==='ArrowUp'?-1:1;
+    // Try next/prev row in same column first
+    next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${col}"][data-nav-row="${row+dir}"]`);
+    if(!next){
+      // Wrap to next/prev column
+      const nextCol=col+dir;
+      if(dir>0) next=document.querySelector(`[data-nav-group="${group}"][data-nav-col="${nextCol}"][data-nav-row="0"]`);
+      else{const all=document.querySelectorAll(`[data-nav-group="${group}"][data-nav-col="${nextCol}"]`);next=all[all.length-1]||null;}
+    }
   }
   if(next){next.focus();next.select();}
 }
