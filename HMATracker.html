@@ -1596,7 +1596,7 @@ function jmfExpiryChip(designDate){
 }
 function renderJMF(){
   if(editingJmf!==null)return renderJMFForm();
-  const rows=db.jmfs.map(j=>`<tr>
+  const rows=[...db.jmfs].sort((a,b)=>a.mixNo.localeCompare(b.mixNo,undefined,{numeric:true,sensitivity:'base'})).map(j=>`<tr>
     <td><strong>${j.mixNo}</strong></td>
     <td style="font-size:11px">${j.mixDesignNo||'—'}</td>
     <td><span class="badge badge-${j.testFamily==='Marshall'?'ms':j.testFamily==='SMA'?'sma':'sp'}">${j.testFamily}</span></td>
