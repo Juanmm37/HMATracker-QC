@@ -541,13 +541,12 @@ function supabaseTestRecordToRecord(tr){
 
 // ── DATA LOADING ──────────────────────────────────────────────────────────────
 async function loadFromSupabase(){
-  const [mds,trs,ctrs,pns,cmds,sett]=await Promise.all([
+  const [mds,trs,ctrs,pns,cmds]=await Promise.all([
     _db.from('mix_designs').select('*').order('created_at'),
     _db.from('test_records').select('*').order('sample_id',{ascending:true,nullsFirst:false}),
     _db.from('contracts').select('id,contract_number,year').order('year',{ascending:false}),
-    _db.from('production_notes').select('*, mix_designs(mix_number), contracts(contract_number)').order('note_date',{ascending:false}),
+    _db.from('production_notes').select('*,mix_designs(mix_number),contracts(contract_number)').order('note_date',{ascending:false}),
     _db.from('contract_mix_designs').select('id,mix_design_id,contract_id').order('created_at'),
-    _db.from('app_settings').select('key,value').eq('key','flask_tares').maybeSingle(),
   ]);
   if(mds.error)console.error('mix_designs:',mds.error);
   if(trs.error)console.error('test_records:',trs.error);
@@ -557,11 +556,14 @@ async function loadFromSupabase(){
   db.jmfs=(mds.data||[]).map(supabaseMixDesignToJmf);
   db.records=(trs.data||[]).map(supabaseTestRecordToRecord);
   db.contracts=ctrs.data||[];
-  db.productionNotes=pns.data||[];
   db.contractMixDesigns=cmds.data||[];
-  // Sync flask tare weights from Supabase → localStorage (overrides local if DB has them)
-  if(sett.data?.value){
-    try{localStorage.setItem('hma_flask_weights',JSON.stringify(sett.data.value));}catch(e){}
+  // Separate flask-tare sentinel record from real production notes
+  const allNotes=pns.data||[];
+  const flaskRow=allNotes.find(n=>n.category==='__flask_tares__');
+  db.productionNotes=allNotes.filter(n=>n.category!=='__flask_tares__');
+  db.flaskTareNoteId=flaskRow?flaskRow.id:null;
+  if(flaskRow?.note){
+    try{localStorage.setItem('hma_flask_weights',flaskRow.note);}catch(e){}
   }
 }
 
