@@ -1829,7 +1829,16 @@ function renderJobRegistry(){
   const curYear=new Date().getFullYear().toString();
   if(!allYears.includes(curYear))allYears.unshift(curYear);
   if(!allYears.includes(jobRegYear))jobRegYear=allYears[0];
-  function lookupJmf(m){return jmfByMixNo[m.mixNo+(m.pgacId||'')]||jmfByMixNo[m.mixNo]||null;}
+  function lookupJmf(m){
+    const mn=(m.mixNo||'').trim();
+    const pid=(m.pgacId||'').trim();
+    const mnBase=mn.replace(/[A-Za-z]+$/,''); // strip trailing letters: "S87O"→"S87"
+    return jmfByMixNo[mn+pid]      // "S87"+"O"="S87O"  (normal case)
+        || jmfByMixNo[mn]          // "S87O" typed directly, or plain "S87"
+        || jmfByMixNo[mnBase+pid]  // "S87O"+"O" → base "S87"+"O"="S87O"
+        || jmfByMixNo[mnBase]      // last resort: base number alone
+        || null;
+  }
   const yearSelect=`<select style="padding:5px 10px;border:1px solid #c8d4e8;border-radius:6px;font-size:14px;color:#1f3864;background:#fff;font-weight:600" onchange="jobRegYear=this.value;renderView()">
     ${allYears.map(y=>`<option value="${y}" ${y===jobRegYear?'selected':''}>${y}</option>`).join('')}
   </select>`;
