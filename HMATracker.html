@@ -1776,11 +1776,14 @@ function renderJobRegistry(){
     </div>`;
   }
 
+  // Helper: look up JMF by combining mixNo+pgacId (e.g. S87+O → S87O), fallback to base number
+  function lookupJmf(m){return jmfByMixNo[m.mixNo+(m.pgacId||'')]||jmfByMixNo[m.mixNo]||null;}
+
   // Count stubs across all mixes for banner
   let totalStubs=0,totalMixes=0;
   jobs.forEach(job=>job.mixes.forEach(m=>{
     totalMixes++;
-    const jmf=jmfByMixNo[m.mixNo];
+    const jmf=lookupJmf(m);
     if(!jmf||!jmf.acTarget)totalStubs++;
   }));
   const banner=totalStubs>0
@@ -1790,7 +1793,7 @@ function renderJobRegistry(){
   const tableRows=jobs.map(job=>{
     const mixes=job.mixes;
     return mixes.map((m,idx)=>{
-      const jmf=jmfByMixNo[m.mixNo];
+      const jmf=lookupJmf(m);
       const isStub=!jmf||!jmf.acTarget;
       const mixDesignNo=jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—';
       const mixCell=isStub
@@ -1803,8 +1806,8 @@ function renderJobRegistry(){
       return`<tr style="${idx===mixes.length-1?'border-bottom:2px solid #d0d8ea':''}">
         ${jobNoCell}
         <td style="font-size:12px">${m.ticketDesc||'—'}</td>
-        <td style="text-align:center">${mixCell}</td>
         <td style="font-size:11px;color:#555;text-align:center">${mixDesignNo}</td>
+        <td style="text-align:center">${mixCell}</td>
         <td style="text-align:center;font-size:12px">${m.pgacId||'—'}</td>
         <td style="font-size:12px">${m.pgacGrade||'—'}</td>
         <td style="font-size:11px;color:#555">${m.supplier||'—'}</td>
@@ -1826,8 +1829,8 @@ function renderJobRegistry(){
       <th style="white-space:nowrap">Job No.</th>
       <th>Job Name</th>
       <th>Ticket Description</th>
-      <th style="text-align:center">Mix No.</th>
       <th style="text-align:center;white-space:nowrap">Mix Design No.</th>
+      <th style="text-align:center">Mix No.</th>
       <th style="text-align:center">PGAC ID</th>
       <th>PGAC Grade</th>
       <th>Supplier</th>
