@@ -1098,7 +1098,23 @@ function step2Next(){
 function marshallVCF(vol){if(!vol||vol<=0)return 1.00;if(vol<=470)return 1.19;if(vol<=482)return 1.14;if(vol<=495)return 1.09;if(vol<=508)return 1.04;if(vol<=522)return 1.00;if(vol<=535)return 0.96;if(vol<=546)return 0.93;if(vol<=559)return 0.89;if(vol<=573)return 0.86;return 0.83;}
 function getFlaskWeights(){try{return JSON.parse(localStorage.getItem('hma_flask_weights'))||{f1a:'',f1w:'',f2a:'',f2w:'',f3a:'',f3w:'',f4a:'',f4w:'',calibDate:''};}catch(e){return{f1a:'',f1w:'',f2a:'',f2w:'',f3a:'',f3w:'',f4a:'',f4w:'',calibDate:''};}}
 function toggleFlaskEdit(){const el=document.getElementById('flask-edit-form');if(el)el.style.display=el.style.display==='none'?'block':'none';}
-async function saveFlaskTares(){const fw={f1a:document.getElementById('ft-f1a')?.value||'',f1w:document.getElementById('ft-f1w')?.value||'',f2a:document.getElementById('ft-f2a')?.value||'',f2w:document.getElementById('ft-f2w')?.value||'',f3a:document.getElementById('ft-f3a')?.value||'',f3w:document.getElementById('ft-f3w')?.value||'',f4a:document.getElementById('ft-f4a')?.value||'',f4w:document.getElementById('ft-f4w')?.value||'',calibDate:document.getElementById('ft-calib-date')?.value||''};localStorage.setItem('hma_flask_weights',JSON.stringify(fw));const{error}=await _db.from('app_settings').upsert({key:'flask_tares',value:fw,updated_at:new Date().toISOString()},{onConflict:'key'});if(error)console.error('flask tares save:',error);saveVol3();renderView();}
+async function saveFlaskTares(){
+  const fw={f1a:document.getElementById('ft-f1a')?.value||'',f1w:document.getElementById('ft-f1w')?.value||'',f2a:document.getElementById('ft-f2a')?.value||'',f2w:document.getElementById('ft-f2w')?.value||'',f3a:document.getElementById('ft-f3a')?.value||'',f3w:document.getElementById('ft-f3w')?.value||'',f4a:document.getElementById('ft-f4a')?.value||'',f4w:document.getElementById('ft-f4w')?.value||'',calibDate:document.getElementById('ft-calib-date')?.value||''};
+  const json=JSON.stringify(fw);
+  localStorage.setItem('hma_flask_weights',json);
+  // Upsert into production_notes using a sentinel category='__flask_tares__'
+  let dbErr=null;
+  if(db.flaskTareNoteId){
+    const r=await _db.from('production_notes').update({note:json,note_date:'1900-01-01',last_modified_by:currentUser?.id||null}).eq('id',db.flaskTareNoteId);
+    dbErr=r.error;
+  } else {
+    const r=await _db.from('production_notes').insert({category:'__flask_tares__',note:json,note_date:'1900-01-01',mix_design_id:null,contract_id:null,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null}).select('id').single();
+    dbErr=r.error;
+    if(!dbErr&&r.data)db.flaskTareNoteId=r.data.id;
+  }
+  if(dbErr){alert('Flask tares saved locally but cloud sync failed: '+dbErr.message);console.error(dbErr);}
+  saveVol3();renderView();
+}
 
 function renderStep3(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;const jmf=entryData.jmf;
