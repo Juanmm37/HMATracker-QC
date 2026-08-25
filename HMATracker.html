@@ -1788,18 +1788,27 @@ function jrEditJob(year,jobNo){
 function jrAddMix(){jrSnapshotForm();jobRegEditing.mixes.push({ticketDesc:'',mixNo:'',pgacId:'',pgacGrade:'',addInfo:'',notes:'',submitted:''});renderView();}
 function jrRemoveMix(i){jrSnapshotForm();jobRegEditing.mixes.splice(i,1);renderView();}
 async function saveJobRegistryEdits(){
-  // Stamp last-modified time and user into the blob itself
   if(!db.jobRegistryEdits)db.jobRegistryEdits={};
   db.jobRegistryEdits._lastModified=new Date().toISOString();
   db.jobRegistryEdits._lastModifiedBy=currentUser?.name||'';
   const json=JSON.stringify(db.jobRegistryEdits);
+  // If we don't have the sentinel row ID in memory, query for it first
+  // (guards against the case where .select().single() didn't return it on insert)
+  if(!db.jobRegNoteId){
+    const existing=await _db.from('production_notes').select('id').eq('category','__job_registry_edits__').maybeSingle();
+    if(existing.data?.id)db.jobRegNoteId=existing.data.id;
+  }
   if(db.jobRegNoteId){
     const r=await _db.from('production_notes').update({note:json,note_date:'1900-01-02',last_modified_by:currentUser?.id||null}).eq('id',db.jobRegNoteId);
-    if(r.error)console.error('jr edits save:',r.error);
+    if(r.error){console.error('jr edits update:',r.error);alert('Error saving Job Registry: '+r.error.message);}
   } else {
-    const r=await _db.from('production_notes').insert({category:'__job_registry_edits__',note:json,note_date:'1900-01-02',mix_design_id:null,contract_id:null,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null}).select('id').single();
-    if(r.error)console.error('jr edits insert:',r.error);
-    else if(r.data)db.jobRegNoteId=r.data.id;
+    const r=await _db.from('production_notes').insert({category:'__job_registry_edits__',note:json,note_date:'1900-01-02',mix_design_id:null,contract_id:null,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null});
+    if(r.error){console.error('jr edits insert:',r.error);alert('Error saving Job Registry: '+r.error.message);}
+    else{
+      // Fetch the ID we just created
+      const row=await _db.from('production_notes').select('id').eq('category','__job_registry_edits__').maybeSingle();
+      if(row.data?.id)db.jobRegNoteId=row.data.id;
+    }
   }
 }
 function printJobRegistry(){
