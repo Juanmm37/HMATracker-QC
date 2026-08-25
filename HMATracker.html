@@ -1941,10 +1941,16 @@ function renderJobRegistry(){
       </tr>`;
     }).join('');
   }).join('');
+  const lmRaw=db.jobRegistryEdits?._lastModified;
+  const lmDisplay=lmRaw?fmtDate(lmRaw.slice(0,10))+(db.jobRegistryEdits._lastModifiedBy?' by '+db.jobRegistryEdits._lastModifiedBy:''):'—';
   return`<div class="card" style="padding:0;overflow:hidden">
-  <div style="padding:14px 18px 10px;border-bottom:1px solid #e8edf5;display:flex;align-items:center;gap:12px">
-    <div class="section-title" style="margin:0;flex:1">Job Registry</div>
+  <div style="padding:14px 18px 10px;border-bottom:1px solid #e8edf5;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:160px">
+      <div class="section-title" style="margin:0">Job Registry</div>
+      <div style="font-size:10px;color:#888;margin-top:2px">Last modified: ${lmDisplay}</div>
+    </div>
     ${yearSelect}
+    <button class="btn" onclick="printJobRegistry()" style="font-size:12px;padding:5px 14px;background:#f0f4ff;color:#1f3864;border:1px solid #c8d4e8">🖨 Print</button>
     <button class="btn btn-primary" onclick="jrNewJob()" style="font-size:12px;padding:5px 14px">+ New job</button>
   </div>
   ${banner}
