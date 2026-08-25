@@ -1483,66 +1483,110 @@ async function deleteJMF(id){
 
 // ── JOB REGISTRY ─────────────────────────────────────────────────────────────
 function renderJobRegistry(){
-  // Build a map of mix_design_id → JMF for O(1) lookup
   const jmfById=Object.fromEntries(db.jmfs.map(j=>[j.id,j]));
-  // Build a map of contract_id → contract row
   const contractById=Object.fromEntries(db.contracts.map(c=>[c.id,c]));
-  // Group contract_mix_designs by contract
+
+  // Available years from contracts, descending
+  const years=[...new Set(db.contracts.map(c=>String(c.year)).filter(Boolean))].sort((a,b)=>b-a);
+  if(!years.length)return`<div class="card"><div class="empty-state">No contracts found.</div></div>`;
+
+  // Snap jobRegYear to a valid year
+  if(!years.includes(jobRegYear))jobRegYear=years[0];
+
+  const yearNum=parseInt(jobRegYear);
+
+  // Group contract_mix_designs by contract, filter to selected year
   const byContract={};
   db.contractMixDesigns.forEach(cmd=>{
-    const cid=cmd.contract_id;
-    if(!byContract[cid])byContract[cid]=[];
-    if(!byContract[cid].some(x=>x.mix_design_id===cmd.mix_design_id))
-      byContract[cid].push(cmd);
+    const c=contractById[cmd.contract_id];
+    if(!c||String(c.year)!==jobRegYear)return;
+    if(!byContract[cmd.contract_id])byContract[cmd.contract_id]=[];
+    if(!byContract[cmd.contract_id].some(x=>x.mix_design_id===cmd.mix_design_id))
+      byContract[cmd.contract_id].push(cmd);
   });
-  if(!Object.keys(byContract).length){
-    return`<div class="card"><div class="empty-state">No contract–mix links found. Links are created automatically when test records are saved.</div></div>`;
+
+  // Sort contracts by contract number for this year
+  const sortedContracts=db.contracts
+    .filter(c=>String(c.year)===jobRegYear&&byContract[c.id]&&byContract[c.id].length)
+    .sort((a,b)=>(a.contract_number||'').localeCompare(b.contract_number||'',undefined,{numeric:true}));
+
+  const yearSelect=`<select style="padding:5px 10px;border:1px solid #c8d4e8;border-radius:6px;font-size:14px;color:#1f3864;background:#fff;font-weight:600" onchange="jobRegYear=this.value;renderView()">
+    ${years.map(y=>`<option value="${y}" ${y===jobRegYear?'selected':''}>${y}</option>`).join('')}
+  </select>`;
+
+  if(!sortedContracts.length){
+    return`<div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px 10px;border-bottom:1px solid #e8edf5;display:flex;align-items:center;gap:12px">
+      <div class="section-title" style="margin:0;flex:1">Job Registry — ${jobRegYear}</div>${yearSelect}
+    </div>
+    <div class="empty-state">No contract–mix links found for ${jobRegYear}. Links are created automatically when test records are saved.</div>
+    </div>`;
   }
-  // Sort contracts by year desc, then contract number
-  const sortedContractIds=Object.keys(byContract).sort((a,b)=>{
-    const ca=contractById[a]||{},cb=contractById[b]||{};
-    if((cb.year||0)!==(ca.year||0))return (cb.year||0)-(ca.year||0);
-    return (ca.contract_number||'').localeCompare(cb.contract_number||'');
-  });
-  const rows=sortedContractIds.map(cid=>{
-    const contract=contractById[cid]||{};
-    const cmds=byContract[cid];
-    const mixBadges=cmds.map(cmd=>{
+
+  // Stub count for this year's contracts
+  const allCmds=sortedContracts.flatMap(c=>byContract[c.id]||[]);
+  const totalStubs=allCmds.filter(cmd=>{const j=jmfById[cmd.mix_design_id];return !j||!j.acTarget;}).length;
+  const banner=totalStubs>0
+    ?`<div class="info-note" style="margin:0 0 0 0;border-radius:0;border-left:none;border-right:none;background:#fef2f2;border-color:#fca5a5;color:#b91c1c;padding:8px 18px"><strong>${totalStubs} mix design${totalStubs===1?'':'s'} still need JMF data</strong> — red mix numbers below have no targets entered. Open Mix Design Library to complete them.</div>`
+    :`<div class="info-note" style="margin:0;border-radius:0;border-left:none;border-right:none;background:#f0fdf4;border-color:#86efac;color:#166534;padding:8px 18px">All mix designs for ${jobRegYear} have JMF data on file.</div>`;
+
+  // Build table rows — rowspan the Job No. column across all mixes for each contract
+  const tableRows=sortedContracts.map(contract=>{
+    const cmds=byContract[contract.id]||[];
+    return cmds.map((cmd,idx)=>{
       const jmf=jmfById[cmd.mix_design_id];
       const isStub=!jmf||!jmf.acTarget;
       const mixLabel=jmf?jmf.mixNo:'?';
-      const mixDetail=jmf&&jmf.mixDesignNo?` / ${jmf.mixDesignNo}`:'';
-      const title=isStub?'No JMF entered — open Mix Design Library to complete this record':'JMF on file';
-      const style=isStub
-        ?'background:#fde8e8;color:#b91c1c;border:1px solid #fca5a5;cursor:help'
-        :'background:#e8f5e9;color:#166534;border:1px solid #86efac';
-      return`<span class="badge" style="font-size:11px;padding:3px 8px;border-radius:4px;margin:2px;display:inline-block;${style}" title="${title}">${mixLabel}${mixDetail}</span>`;
+      const mixDesignNo=jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—';
+      const ticketDesc=jmf&&jmf.mixType?jmf.mixType:'—';
+      const pgacId=jmf&&jmf.trafficCat?jmf.trafficCat:'—';
+      const pgacGrade=jmf&&jmf.binder?jmf.binder:'—';
+      const mixCell=isStub
+        ?`<span title="No JMF entered — open Mix Design Library to complete" style="font-weight:700;color:#b91c1c;background:#fde8e8;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;cursor:help;white-space:nowrap">${mixLabel}</span>`
+        :`<span style="font-weight:700;color:#1f3864">${mixLabel}</span>`;
+      const jobNoCell=idx===0
+        ?`<td rowspan="${cmds.length}" style="font-weight:700;vertical-align:top;padding-top:9px;white-space:nowrap;border-right:2px solid #d0d8ea">${contract.contract_number||'—'}</td>
+           <td rowspan="${cmds.length}" style="vertical-align:top;padding-top:9px;color:#999;font-style:italic;border-right:1px solid #e8edf5">—</td>`
+        :'';
+      return`<tr style="${idx===cmds.length-1?'border-bottom:2px solid #d0d8ea':''}">
+        ${jobNoCell}
+        <td style="font-size:12px">${ticketDesc}</td>
+        <td style="text-align:center">${mixCell}</td>
+        <td style="font-size:11px;color:#555;text-align:center">${mixDesignNo}</td>
+        <td style="text-align:center;font-size:12px">${pgacId}</td>
+        <td style="font-size:12px">${pgacGrade}</td>
+        <td style="color:#bbb;font-size:11px;text-align:center">—</td>
+        <td style="color:#bbb;font-size:11px">—</td>
+        <td style="color:#bbb;font-size:11px">—</td>
+      </tr>`;
     }).join('');
-    const stubCount=cmds.filter(cmd=>{const j=jmfById[cmd.mix_design_id];return !j||!j.acTarget;}).length;
-    const stubBadge=stubCount>0?`<span style="font-size:10px;color:#b91c1c;font-weight:700;margin-left:6px">${stubCount} incomplete</span>`:'';
-    return`<tr>
-      <td><strong>${contract.contract_number||'—'}</strong></td>
-      <td style="color:#666">${contract.year||'—'}</td>
-      <td>${mixBadges}${stubBadge}</td>
-      <td style="text-align:center">${cmds.length}</td>
-    </tr>`;
   }).join('');
-  const totalStubs=db.contractMixDesigns.filter(cmd=>{const j=jmfById[cmd.mix_design_id];return !j||!j.acTarget;}).length;
-  const banner=totalStubs>0
-    ?`<div class="info-note" style="margin-bottom:12px;background:#fef2f2;border-color:#fca5a5;color:#b91c1c"><strong>${totalStubs} mix design${totalStubs===1?'':'s'} still need JMF data</strong> — red badges below indicate mix designs with no targets entered. Open Mix Design Library to complete them.</div>`
-    :`<div class="info-note" style="margin-bottom:12px;background:#f0fdf4;border-color:#86efac;color:#166534">All mix designs have JMF data on file.</div>`;
-  return`<div class="card" style="padding:0;overflow:hidden">
-  <div style="padding:14px 18px 10px;border-bottom:1px solid #e8edf5">
-    <div class="section-title" style="margin:0">Job Registry</div>
-    <div style="font-size:12px;color:#666;margin-top:2px">Contracts and their linked mix designs — red = no JMF entered yet</div>
-  </div>
-  <div style="padding:12px 18px">${banner}</div>
-  <table class="records-table">
-    <thead><tr><th>Contract no.</th><th>Year</th><th>Mix designs</th><th style="text-align:center">Count</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
 
+  return`<div class="card" style="padding:0;overflow:hidden">
+  <div style="padding:14px 18px 10px;border-bottom:1px solid #e8edf5;display:flex;align-items:center;gap:12px">
+    <div class="section-title" style="margin:0;flex:1">Job Registry</div>
+    ${yearSelect}
+  </div>
+  ${banner}
+  <div style="overflow-x:auto">
+  <table class="records-table" style="min-width:900px;border-collapse:collapse">
+    <thead><tr>
+      <th style="white-space:nowrap">Job No.</th>
+      <th>Job Name</th>
+      <th>Ticket Description</th>
+      <th style="text-align:center">Mix No.</th>
+      <th style="text-align:center;white-space:nowrap">Mix Design No.</th>
+      <th style="text-align:center">PGAC ID</th>
+      <th>PGAC Grade</th>
+      <th>Supplier</th>
+      <th style="min-width:140px">Additional Info</th>
+      <th>Notes</th>
+    </tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  </div>
+  </div>`;
+}
 // ── PRODUCTION NOTES ──────────────────────────────────────────────────────────
 function renderProdNotes(){
   const today=new Date().toISOString().split('T')[0];
