@@ -717,28 +717,24 @@ function renderStep2(){
 function getDLS(mixType){
   if(!mixType)return'9.5';
   const mt=mixType.toUpperCase();
-  if(mt.includes('SP 4.75')||mt.includes('SP4.75'))return'4.75';
-  if(mt.includes('SP 9.5')||mt.includes('SP9.5'))return'9.5';
-  if(mt.includes('SP 12.5')||mt.includes('SP12.5'))return'13.2';
-  if(mt.includes('SP 19')||mt.includes('SP19'))return'19.0';
-  if(mt.includes('SP 25')||mt.includes('SP25'))return'26.5';
-  if(mt.includes('SMA 9.5')||mt.includes('SMA9.5'))return'9.5';
-  if(mt.includes('SMA 12.5')||mt.includes('SMA12.5'))return'13.2';
-  if(mt.includes('HL1'))return'4.75';
-  if(mt.includes('HL2'))return'9.5';
+  // OPSS.MUNI 310 Table 1 — Designated Large Sieve by Mix Type
+  if(mt.includes('SP 4.75')||mt.includes('SP4.75'))return'2.36';
+  if(mt.includes('SP 9.5')||mt.includes('SP9.5'))return'4.75';
+  if(mt.includes('SP 12.5')||mt.includes('SP12.5'))return'9.5';
+  if(mt.includes('SP 19')||mt.includes('SP19'))return'12.5';
+  if(mt.includes('SP 25')||mt.includes('SP25'))return'19.0';
+  if(mt.includes('SMA 9.5')||mt.includes('SMA9.5'))return'4.75';
+  if(mt.includes('SMA 12.5')||mt.includes('SMA12.5'))return'9.5';
+  if(mt.includes('HL1'))return'9.5';
+  if(mt.includes('HL2'))return'2.36';
   if(mt.includes('HL3'))return'9.5';
-  if(mt.includes('HL4'))return'19.0';
-  if(mt.includes('HL8'))return'26.5';
-  if(mt.includes('MDBC')||mt.includes('HDBC'))return'26.5';
+  if(mt.includes('HL4'))return'13.2';
+  if(mt.includes('HL8'))return'16.0';
+  if(mt.includes('MDBC')||mt.includes('HDBC'))return'16.0';
   if(mt.includes('DFC'))return'9.5';
   return'9.5';
 }
-function isKeySieve(sieve,dls){
-  const s=String(parseFloat(sieve));const d=parseFloat(dls);
-  // Sub-max control sieve per OPSS (DLS = one step below nominal max in Ontario metric series)
-  const subMax=d>=26.5?19:d>=19?16:d>=13.2?9.5:d>=9.5?4.75:null;
-  return s===String(d)||(subMax!==null&&s===String(subMax))||s==='4.75'||s==='0.6'||s==='0.075';
-}
+function isKeySieve(sieve,dls){const s=String(parseFloat(sieve));return s===String(parseFloat(dls))||s==='4.75'||s==='0.6'||s==='0.075';}
 function getGradTol(sieve,isSurface,dls){if(dls&&!isKeySieve(sieve,dls))return null;const s=parseFloat(sieve);if(s>=4.75)return isSurface?5.0:7.0;if(s>=0.6)return isSurface?3.5:4.5;if(s>=0.075)return 2.0;return null;}
 
 // Global capture-phase: prevent ArrowUp/Down from changing number input values — fires
