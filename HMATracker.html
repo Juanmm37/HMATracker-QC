@@ -1340,6 +1340,7 @@ function renderJMF(){
 function renderJMFForm(){
   const isNew=editingJmf==='new'||editingJmf==='__temp__';
   const jmf=isNew?(db.jmfs.find(j=>j.id==='__temp__')||{}):db.jmfs.find(j=>j.id===editingJmf)||{};
+  const famSelected=!!jmf.testFamily;
   const fam=jmf.testFamily||'Superpave';const cat=jmf.trafficCat||'C';const g=GYR[cat]||{nini:7,ndes:75,nmax:115};
   const sieves=getSieves(fam);
   const mixOpts=(MIX_TYPES[fam]||[]).map(m=>`<option value="${m}" ${jmf.mixType===m?'selected':''}>${m}</option>`).join('');
