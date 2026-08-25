@@ -733,7 +733,7 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
       return`<tr>
         ${showCheck?`<td class="checkbox-col"><input type="checkbox" class="rec-check" data-id="${r.id}"></td>`:''}
         <td style="font-weight:700">${r.sampleId||'—'}</td>
-        <td>${r.dateSampled||r.date||'—'}${r.isOvernight?'<br><span style="font-size:10px;color:#8a6000;font-weight:600">🌙 overnight</span>':''}</td>
+        <td>${fmtDate(r.dateSampled||r.date)}${r.isOvernight?'<br><span style="font-size:10px;color:#8a6000;font-weight:600">🌙 overnight</span>':''}</td>
         <td><strong>${r.contractNo||'—'}</strong></td>
         <td><span class="badge badge-${r.testFamily==='Marshall'?'ms':r.testFamily==='SMA'?'sma':'sp'}">${r.mixType||'—'}</span>${r.isNmax?'<br><span style="font-size:10px;color:#8a6000;font-weight:700">Nmax</span>':''}</td>
         <td>${r.mixNo||'—'}</td>
