@@ -1545,7 +1545,7 @@ function printRecord(id){
       <div class="info-row"><span class="il">Lot / Sub-lot:</span><span class="iv">${r.lot&&r.subLot?r.lot+'-'+parseInt(r.subLot):r.lot||r.subLot||'—'}</span></div>
       <div class="info-row"><span class="il">Sample #:</span><span class="iv">${r.sampleId||'—'}</span></div>
       <div class="info-row"><span class="il">Ticket no.:</span><span class="iv">${r.ticketNo||'—'}</span></div>
-      <div class="info-row"><span class="il">Technician:</span><span class="iv">${r.tech||'—'}</span></div>
+      <div class="info-row"><span class="il">Sampled by:</span><span class="iv">${r.bySampled||'—'}</span></div>
       <div class="info-divider"></div>
       <div class="info-row"><span class="il">AC content:</span><span class="iv" style="color:${acStatusColor}">${r.acContent}%${jmfAC>0?' (JMF: '+jmfAC.toFixed(2)+'%)':''}${stBadge(r.acStatus)}</span></div>
       <div class="info-row"><span class="il">Air voids:</span><span class="iv" style="color:${avColor}">${r.airVoids}%${stBadge(r.avStatus)}</span></div>
