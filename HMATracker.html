@@ -932,7 +932,7 @@ function step1Next(){
     contractNo:document.getElementById('e-contract').value,
     job:document.getElementById('e-job').value,location:document.getElementById('e-location').value,
     tech:entryData.tech||'',
-    lot:document.getElementById('e-lot').value,subLot:document.getElementById('e-sublot').value,
+    lot:document.getElementById('e-lot').value,subLot:document.getElementById('e-sublot').value?String(parseInt(document.getElementById('e-sublot').value,10)):'',
     sampleId:document.getElementById('e-sampleid').value,
     ticketNo:document.getElementById('e-ticketno').value,
     isOvernight:document.getElementById('e-overnight')?.checked||false,
