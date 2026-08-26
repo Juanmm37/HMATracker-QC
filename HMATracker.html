@@ -923,6 +923,13 @@ function setEntryFamily(fam){
   entryData.testFamily=fam;entryData.mixType='';entryData.jmfId=null;entryData.jmf=null;
   renderView();
 }
+function autoFillMixType(){
+  const jmfId=document.getElementById('e-jmf')?.value;
+  const jmf=db.jmfs.find(j=>j.id===jmfId);
+  if(!jmf||!jmf.mixType)return;
+  const sel=document.getElementById('e-mixtype');
+  if(sel)sel.value=jmf.mixType;
+}
 function step1Next(){
   const fam=entryData.testFamily||'Superpave';
   const jmfId=document.getElementById('e-jmf').value;
