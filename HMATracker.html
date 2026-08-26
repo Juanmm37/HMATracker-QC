@@ -1282,7 +1282,7 @@ function recalcVol(){
         if(gmb>0&&hd>0&&hn>0){const nx=parseFloat(roundUp(gmb*(hd/hn)/gmmAvg*100,1));setText('b'+i+'-nmax-pct',nx.toFixed(1)+'%');nxp.push(nx);}
         else setText('b'+i+'-nmax-pct','—');
       }
-      if(nxp.length){const a=nxp.reduce((s,v)=>s+v,0)/nxp.length;setText('avg-nmax-pct',roundUp(a,1)+'%');setText('res-nmax',roundUp(a,1)+'%');}
+      if(nxp.length){const a=avgRounded(nxp,1);setText('avg-nmax-pct',a.toFixed(1)+'%');setText('res-nmax',a.toFixed(1)+'%');}
     }
   }
 
