@@ -1882,11 +1882,14 @@ function startEntryFromJobReg(jobNo,mixNo,year){
   const jmf=db.jmfs.find(j=>j.mixNo===mixNo);
   const prefix=jobNo.split('-')[0]||'';
   const season=prefix.length===2?'20'+prefix:prefix;
+  // Infer family from mix number prefix as a reliable fallback (M=Marshall, S=Superpave)
+  const inferredFamily=mixNo.startsWith('S')?'Superpave':mixNo.startsWith('M')?'Marshall':'SMA';
+  const testFamily=(jmf&&jmf.testFamily)||inferredFamily;
   // Navigate to entry view with pre-filled data (bypass showView reset)
   currentView='entry';entryStep=1;editingRecordId=null;
   document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','records','jmf','prodnotes','acreport'][i]==='entry');});
   entryData={
-    testFamily:jmf?jmf.testFamily:null,
+    testFamily,
     mixType:jmf?jmf.mixType:'',
     jmfId:jmf?jmf.id:null,
     jmf:jmf||null,
