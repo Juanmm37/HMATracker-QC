@@ -1922,44 +1922,54 @@ function renderJobRegistry(){
   const yearSelect=`<select style="padding:5px 10px;border:1px solid #c8d4e8;border-radius:6px;font-size:14px;color:#1f3864;background:#fff;font-weight:600" onchange="jobRegYear=this.value;renderView()">
     ${allYears.map(y=>`<option value="${y}" ${y===jobRegYear?'selected':''}>${y}</option>`).join('')}
   </select>`;
-  const jobs=getJobRegistry(jobRegYear);
+  const allJobs=getJobRegistry(jobRegYear);
+  const isSmallJob=j=>/^(OS|SJ)/i.test((j.jobNo||'').trim());
+  const regularJobs=allJobs.filter(j=>!isSmallJob(j));
+  const smallJobs=allJobs.filter(j=>isSmallJob(j));
   let totalStubs=0,totalMixes=0;
-  jobs.forEach(job=>job.mixes.forEach(m=>{totalMixes++;const jmf=lookupJmf(m);if(!jmf||!jmf.acTarget)totalStubs++;}));
+  regularJobs.forEach(job=>job.mixes.forEach(m=>{totalMixes++;const jmf=lookupJmf(m);if(!jmf||!jmf.acTarget)totalStubs++;}));
   const banner=totalStubs>0
     ?`<div class="info-note" style="margin:0;border-radius:0;border-left:none;border-right:none;background:#fef2f2;border-color:#fca5a5;color:#b91c1c;padding:8px 18px"><strong>${totalStubs} of ${totalMixes} mix design${totalStubs===1?'':'s'} still need JMF data</strong> — red mix numbers below have no targets entered. Open Mix Design Library to complete them.</div>`
     :totalMixes>0?`<div class="info-note" style="margin:0;border-radius:0;border-left:none;border-right:none;background:#f0fdf4;border-color:#86efac;color:#166534;padding:8px 18px">All ${totalMixes} mix designs for ${jobRegYear} have JMF data on file.</div>`:'';
-  const tableRows=jobs.map(job=>{
-    const mixes=job.mixes;
-    const actionBtns=`<button onclick="jrEditJob('${jobRegYear}','${job.jobNo}')" title="Edit job" style="background:none;border:none;cursor:pointer;font-size:12px;color:#1f3864;padding:0 2px;opacity:0.6">✏️</button><button onclick="jrDeleteJob('${jobRegYear}','${job.jobNo}')" title="Delete job" style="background:none;border:none;cursor:pointer;font-size:12px;color:#b91c1c;padding:0 2px;opacity:0.6">🗑</button>`;
-    if(!mixes.length)return`<tr style="border-bottom:2px solid #d0d8ea">
-      <td style="font-weight:700;white-space:nowrap;border-right:2px solid #d0d8ea">${job.jobNo} ${actionBtns}</td>
-      <td style="font-size:12px;border-right:1px solid #e8edf5">${job.jobName}</td>
-      <td colspan="8" style="color:#aaa;font-style:italic;font-size:12px">No mix lines</td>
-    </tr>`;
-    return mixes.map((m,idx)=>{
-      const jmf=lookupJmf(m);
-      const isStub=!jmf||!jmf.acTarget;
-      const mixDesignNo=jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—';
-      const mixCell=isStub
-        ?`<span title="No JMF entered" style="font-weight:700;color:#b91c1c;background:#fde8e8;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;cursor:help;white-space:nowrap">${m.mixNo||'?'}</span>`
-        :`<span style="font-weight:700;color:#1f3864">${m.mixNo}</span>`;
-      const jobNoCell=idx===0
-        ?`<td rowspan="${mixes.length}" style="font-weight:700;vertical-align:top;padding-top:9px;white-space:nowrap;border-right:2px solid #d0d8ea">${job.jobNo} ${actionBtns}</td>
-          <td rowspan="${mixes.length}" style="vertical-align:top;padding-top:9px;font-size:12px;border-right:1px solid #e8edf5">${job.jobName}</td>`
-        :'';
-      return`<tr style="${idx===mixes.length-1?'border-bottom:2px solid #d0d8ea':''}">
-        ${jobNoCell}
-        <td style="font-size:12px">${m.ticketDesc||'—'}</td>
-        <td style="font-size:11px;color:#555;text-align:center">${mixDesignNo}</td>
-        <td style="text-align:center">${mixCell}</td>
-        <td style="text-align:center;font-size:12px;font-weight:700;color:#1f3864">${m.pgacId||'—'}</td>
-        <td style="font-size:12px">${m.pgacGrade||'—'}</td>
-        <td style="font-size:11px;color:#555">${m.addInfo||'—'}</td>
-        <td style="font-size:11px;color:#555">${m.notes||'—'}</td>
-        <td style="font-size:11px;color:#555;white-space:nowrap">${fmtDate(m.submitted)}</td>
+  function buildJobRows(jobs){
+    return jobs.map(job=>{
+      const mixes=job.mixes;
+      const yr=jobRegYear;
+      const jn=job.jobNo;
+      const actionBtns=`<button onclick="jrEditJob('${yr}','${jn}')" title="Edit job" style="background:none;border:none;cursor:pointer;font-size:12px;color:#1f3864;padding:0 2px;opacity:0.6">✏️</button><button onclick="jrDeleteJob('${yr}','${jn}')" title="Delete job" style="background:none;border:none;cursor:pointer;font-size:12px;color:#b91c1c;padding:0 2px;opacity:0.6">🗑</button>`;
+      if(!mixes.length)return`<tr style="border-bottom:2px solid #d0d8ea">
+        <td style="font-weight:700;white-space:nowrap;border-right:2px solid #d0d8ea">${jn} ${actionBtns}</td>
+        <td style="font-size:12px;border-right:1px solid #e8edf5">${job.jobName}</td>
+        <td colspan="8" style="color:#aaa;font-style:italic;font-size:12px">No mix lines</td>
       </tr>`;
+      return mixes.map((m,idx)=>{
+        const jmf=lookupJmf(m);
+        const isStub=!jmf||!jmf.acTarget;
+        const mixDesignNo=jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—';
+        const mixCell=isStub
+          ?`<span title="No JMF entered" style="font-weight:700;color:#b91c1c;background:#fde8e8;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;cursor:help;white-space:nowrap">${m.mixNo||'?'}</span>`
+          :`<span style="font-weight:700;color:#1f3864">${m.mixNo}</span>`;
+        const jobNoCell=idx===0
+          ?`<td rowspan="${mixes.length}" style="font-weight:700;vertical-align:top;padding-top:9px;white-space:nowrap;border-right:2px solid #d0d8ea">${jn} ${actionBtns}</td>
+            <td rowspan="${mixes.length}" style="vertical-align:top;padding-top:9px;font-size:12px;border-right:1px solid #e8edf5">${job.jobName}</td>`
+          :'';
+        return`<tr style="${idx===mixes.length-1?'border-bottom:2px solid #d0d8ea':''}">
+          ${jobNoCell}
+          <td style="font-size:12px">${m.ticketDesc||'—'}</td>
+          <td style="font-size:11px;color:#555;text-align:center">${mixDesignNo}</td>
+          <td style="text-align:center">${mixCell}</td>
+          <td style="text-align:center;font-size:12px;font-weight:700;color:#1f3864">${m.pgacId||'—'}</td>
+          <td style="font-size:12px">${m.pgacGrade||'—'}</td>
+          <td style="font-size:11px;color:#555">${m.addInfo||'—'}</td>
+          <td style="font-size:11px;color:#555">${m.notes||'—'}</td>
+          <td style="font-size:11px;color:#555;white-space:nowrap">${fmtDate(m.submitted)}</td>
+        </tr>`;
+      }).join('');
     }).join('');
-  }).join('');
+  }
+  const tableRows=buildJobRows(regularJobs);
+  const smallSeparator=`<tr><td colspan="10" style="background:#f5f0e0;border-top:3px solid #b8972a;border-bottom:2px solid #b8972a;padding:7px 14px;font-weight:700;font-size:11px;color:#7a5c1e;letter-spacing:.06em;text-transform:uppercase">&#9660; &nbsp;Small Jobs (SJ) / Outside Sales (OS)</td></tr>`;
+  const smallRows=smallJobs.length?smallSeparator+buildJobRows(smallJobs):'';
   const lmRaw=db.jobRegistryEdits?._lastModified;
   const lmDisplay=lmRaw?fmtDate(lmRaw.slice(0,10))+(db.jobRegistryEdits._lastModifiedBy?' by '+db.jobRegistryEdits._lastModifiedBy:''):'—';
   return`<div class="card" style="padding:0;overflow:hidden">
@@ -1987,7 +1997,7 @@ function renderJobRegistry(){
       <th>Notes</th>
       <th style="white-space:nowrap">Date Submitted to PM</th>
     </tr></thead>
-    <tbody>${jobs.length?tableRows:`<tr><td colspan="10" style="text-align:center;color:#aaa;padding:24px">No jobs for ${jobRegYear} — click <strong>+ New job</strong> to add one.</td></tr>`}</tbody>
+    <tbody>${regularJobs.length||smallJobs.length?tableRows+smallRows:`<tr><td colspan="10" style="text-align:center;color:#aaa;padding:24px">No jobs for ${jobRegYear} — click <strong>+ New job</strong> to add one.</td></tr>`}</tbody>
   </table>
   </div>
   </div>`;
