@@ -187,6 +187,7 @@ function avg(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?v.r
 function stddev(arr){const a=avg(arr);if(a===null)return null;const v=arr.filter(x=>!isNaN(x)&&x!==null);return Math.sqrt(v.reduce((s,x)=>s+(x-a)**2,0)/v.length);}
 function range(arr){const v=arr.filter(x=>!isNaN(x)&&x!==null);return v.length?[Math.min(...v),Math.max(...v)]:null;}
 function roundUp(val,dec){const m=Math.pow(10,dec);return(Math.floor(+val*m+0.5+1e-9)/m).toFixed(dec);}
+function avgRounded(arr,dec){if(!arr.length)return 0;const m=Math.pow(10,dec);const s=arr.reduce((a,v)=>a+Math.round(v*m),0);return Math.floor(s/arr.length+0.5)/m;}
 
 // ── SUPABASE ─────────────────────────────────────────────────────────────────
 const SUPA_URL='https://gndkcdfvntmixdvpgbah.supabase.co';
