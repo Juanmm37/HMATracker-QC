@@ -1247,7 +1247,7 @@ function recalcVol(){
     if(famix>0&&famixw>0&&fA>0&&fW>0){
       const mmix=famix-fA;const mmixw=famixw-fW;const vol=mmix-mmixw;
       setText('r-mmix'+k,mmix.toFixed(1));setText('r-mmixw'+k,mmixw.toFixed(1));setText('r-vol'+k,vol.toFixed(1));
-      if(vol>0){const gmm=mmix/vol;setText('r-gmm'+k,roundUp(gmm,3));gmms.push(gmm);}
+      if(vol>0){const gmm=mmix/vol;const gmmR=parseFloat(roundUp(gmm,3));setText('r-gmm'+k,gmmR.toFixed(3));gmms.push(gmmR);}
       else setText('r-gmm'+k,'—');
     }else{setText('r-mmix'+k,'—');setText('r-mmixw'+k,'—');setText('r-vol'+k,'—');setText('r-gmm'+k,'—');}
   }
