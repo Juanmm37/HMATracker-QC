@@ -1779,6 +1779,17 @@ function jrSnapshotForm(){
   }));
 }
 function jrNewJob(){jobRegEditing={jobNo:'',jobName:'',year:jobRegYear,mixes:[],isNew:true};renderView();}
+async function jrDeleteJob(year,jobNo){
+  if(!confirm(`Delete job ${jobNo}? This cannot be undone.`))return;
+  if(!db.jobRegistryEdits)db.jobRegistryEdits={};
+  if(!db.jobRegistryEdits[year])db.jobRegistryEdits[year]=[];
+  // Mark as deleted so it overrides base data too
+  const existing=db.jobRegistryEdits[year].findIndex(j=>j.jobNo===jobNo);
+  if(existing>=0)db.jobRegistryEdits[year][existing]={jobNo,__deleted:true};
+  else db.jobRegistryEdits[year].push({jobNo,__deleted:true});
+  await saveJobRegistryEdits();
+  renderView();
+}
 function jrEditJob(year,jobNo){
   const job=getJobRegistry(year).find(j=>j.jobNo===jobNo);
   if(!job)return;
