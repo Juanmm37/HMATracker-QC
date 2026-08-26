@@ -543,7 +543,7 @@ function supabaseTestRecordToRecord(tr){
 async function loadFromSupabase(){
   const [mds,trs,ctrs,pns,cmds]=await Promise.all([
     _db.from('mix_designs').select('*').order('created_at'),
-    _db.from('test_records').select('*').order('sample_id',{ascending:true,nullsFirst:false}),
+    _db.from('test_records').select('*').order('sample_id',{ascending:false,nullsFirst:false}),
     _db.from('contracts').select('id,contract_number,year').order('year',{ascending:false}),
     _db.from('production_notes').select('*,mix_designs(mix_number),contracts(contract_number)').order('note_date',{ascending:false}),
     _db.from('contract_mix_designs').select('id,mix_design_id,contract_id').order('created_at'),
