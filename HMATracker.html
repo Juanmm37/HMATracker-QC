@@ -1226,7 +1226,7 @@ function recalcVol(){
     if(a2>0&&a3>0&&a2>a3){
       const vol=a2-a3;
       setText('b'+i+'-vol',vol.toFixed(1));
-      if(a1>0){const gmb=a1/vol;setText('b'+i+'-gmb',roundUp(gmb,3));gmbArr[i]=gmb;brdVolArr[i]=vol;}
+      if(a1>0){const gmb=a1/vol;const gmbR=parseFloat(roundUp(gmb,3));setText('b'+i+'-gmb',gmbR.toFixed(3));gmbArr[i]=gmbR;brdVolArr[i]=vol;}
       else setText('b'+i+'-gmb','—');
     }else{setText('b'+i+'-vol','—');setText('b'+i+'-gmb','—');}
   }
