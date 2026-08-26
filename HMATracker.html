@@ -1272,8 +1272,8 @@ function recalcVol(){
       if(gmb>0&&hi>0&&hd>0){const ni=parseFloat(roundUp(gmb/gmmAvg*(hd/hi)*100,1));const nd=parseFloat(roundUp(gmb/gmmAvg*100,1));setText('b'+i+'-nini-pct',ni.toFixed(1)+'%');setText('b'+i+'-ndes-pct',nd.toFixed(1)+'%');np.push(ni);ndp.push(nd);}
       else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}
     }
-    if(np.length){const a=np.reduce((s,v)=>s+v,0)/np.length;setText('avg-nini-pct',roundUp(a,1)+'%');setText('res-nini',roundUp(a,1)+'%');}
-    if(ndp.length){const a=ndp.reduce((s,v)=>s+v,0)/ndp.length;setText('avg-ndes-pct',roundUp(a,1)+'%');setText('res-ndes',roundUp(a,1)+'%');}
+    if(np.length){const a=avgRounded(np,1);setText('avg-nini-pct',a.toFixed(1)+'%');setText('res-nini',a.toFixed(1)+'%');}
+    if(ndp.length){const a=avgRounded(ndp,1);setText('avg-ndes-pct',a.toFixed(1)+'%');setText('res-ndes',a.toFixed(1)+'%');}
     // Nmax heights (Superpave only, when Nmax checkbox is ticked)
     if(fam==='Superpave'&&entryData.isNmax){
       const nxp=[];
