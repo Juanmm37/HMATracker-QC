@@ -878,7 +878,7 @@ function renderStep1(){
     <div class="form-group"><label>MTO Contract Number</label><input type="text" id="e-job" value="${entryData.job||''}" placeholder="e.g. 2026-47210"></div>
     <div class="form-group"><label>Location</label><input type="text" id="e-location" value="${entryData.location||''}" placeholder="e.g. 10 Goodrich Dr"></div>
     <div class="form-group"><label>Lot (optional)</label><input type="text" id="e-lot" value="${entryData.lot||''}" placeholder="e.g. 1"></div>
-    <div class="form-group"><label>Sub-lot (optional)</label><input type="number" id="e-sublot" value="${entryData.subLot||''}" min="1" max="10" placeholder="e.g. 3"></div>
+    <div class="form-group"><label>Sub-lot (optional)</label><input type="number" step="1" id="e-sublot" value="${entryData.subLot||''}" min="1" max="10" placeholder="e.g. 3"></div>
     <div class="form-group"><label>Lab Sample #</label><input type="text" id="e-sampleid" value="${entryData.sampleId||''}" placeholder="e.g. 26015"></div>
     <div class="form-group"><label>Ticket no.</label><input type="text" id="e-ticketno" value="${entryData.ticketNo||''}" placeholder="e.g. 123456"></div>
   </div>
