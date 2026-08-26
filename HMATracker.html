@@ -1946,7 +1946,7 @@ function renderJobRegistry(){
       return mixes.map((m,idx)=>{
         const jmf=lookupJmf(m);
         const isStub=!jmf||!jmf.acTarget;
-        const mixDesignNo=jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—';
+        const mixDesignNo=m.mixDesignNo||(jmf&&jmf.mixDesignNo?jmf.mixDesignNo:'—');
         const mixCell=isStub
           ?`<span title="No JMF entered" style="font-weight:700;color:#b91c1c;background:#fde8e8;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;cursor:help;white-space:nowrap">${m.mixNo||'?'}</span>`
           :`<span style="font-weight:700;color:#1f3864">${m.mixNo}</span>`;
