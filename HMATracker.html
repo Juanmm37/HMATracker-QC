@@ -1803,7 +1803,8 @@ async function saveJobRegistryEdits(){
     if(r.error){console.error('jr edits update:',r.error);alert('Error saving Job Registry: '+r.error.message);}
   } else {
     const dummyMixId=db.jmfs[0]?.id||null;
-    const r=await _db.from('production_notes').insert({category:'__job_registry_edits__',note:json,note_date:'1900-01-02',mix_design_id:dummyMixId,contract_id:null,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null});
+    const dummyContractId=db.contracts[0]?.id||null;
+    const r=await _db.from('production_notes').insert({category:'__job_registry_edits__',note:json,note_date:'1900-01-02',mix_design_id:dummyMixId,contract_id:dummyContractId,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null});
     if(r.error){console.error('jr edits insert:',r.error);alert('Error saving Job Registry: '+r.error.message);}
     else{
       // Fetch the ID we just created
