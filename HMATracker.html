@@ -1268,7 +1268,7 @@ function recalcVol(){
     const np=[],ndp=[];
     for(let i=0;i<nBriq;i++){
       const gmb=gmbArr[i]||0;const hi=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;const hd=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;
-      if(gmb>0&&hi>0&&hd>0){const ni=gmb/gmmAvg*(hd/hi)*100;const nd=gmb/gmmAvg*100;setText('b'+i+'-nini-pct',roundUp(ni,1)+'%');setText('b'+i+'-ndes-pct',roundUp(nd,1)+'%');np.push(ni);ndp.push(nd);}
+      if(gmb>0&&hi>0&&hd>0){const ni=parseFloat(roundUp(gmb/gmmAvg*(hd/hi)*100,1));const nd=parseFloat(roundUp(gmb/gmmAvg*100,1));setText('b'+i+'-nini-pct',ni.toFixed(1)+'%');setText('b'+i+'-ndes-pct',nd.toFixed(1)+'%');np.push(ni);ndp.push(nd);}
       else{setText('b'+i+'-nini-pct','—');setText('b'+i+'-ndes-pct','—');}
     }
     if(np.length){const a=np.reduce((s,v)=>s+v,0)/np.length;setText('avg-nini-pct',roundUp(a,1)+'%');setText('res-nini',roundUp(a,1)+'%');}
