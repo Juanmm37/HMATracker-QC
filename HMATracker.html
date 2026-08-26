@@ -1876,6 +1876,31 @@ async function jrDeleteJob(year,jobNo){
   await saveJobRegistryEdits();
   renderView();
 }
+function startEntryFromJobReg(jobNo,mixNo,year){
+  const job=getJobRegistry(year).find(j=>j.jobNo===jobNo);
+  if(!job)return;
+  const jmf=db.jmfs.find(j=>j.mixNo===mixNo);
+  const prefix=jobNo.split('-')[0]||'';
+  const season=prefix.length===2?'20'+prefix:prefix;
+  // Navigate to entry view with pre-filled data (bypass showView reset)
+  currentView='entry';entryStep=1;editingRecordId=null;
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','records','jmf','prodnotes','acreport'][i]==='entry');});
+  entryData={
+    testFamily:jmf?jmf.testFamily:null,
+    mixType:jmf?jmf.mixType:'',
+    jmfId:jmf?jmf.id:null,
+    jmf:jmf||null,
+    mixNo:jmf?jmf.mixNo:mixNo,
+    mixDesignNo:jmf?jmf.mixDesignNo:'',
+    contractNo:jobNo,
+    location:job.jobName,
+    season,
+    job:'',
+    dateSampled:new Date().toISOString().split('T')[0],
+    dateTested:new Date().toISOString().split('T')[0],
+  };
+  renderView();
+}
 function jrEditJob(year,jobNo){
   const job=getJobRegistry(year).find(j=>j.jobNo===jobNo);
   if(!job)return;
