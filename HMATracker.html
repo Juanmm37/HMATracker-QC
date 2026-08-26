@@ -1546,7 +1546,7 @@ function printRecord(id){
       <div class="info-row"><span class="il">Date sample:</span><span class="iv">${fmtPrintDate(r.date)}${r.isOvernight?' <span style="color:#8a6000;font-weight:700">🌙 overnight</span>':''}</span></div>
       <div class="info-row"><span class="il">Date tested:</span><span class="iv">${fmtPrintDate(r.dateTested)}</span></div>
       <div class="info-row"><span class="il">Contract no.:</span><span class="iv">${r.contractNo||'—'}</span></div>
-      <div class="info-row"><span class="il">Location:</span><span class="iv">${(r.location||'—').substring(0,22)}</span></div>
+      <div class="info-row"><span class="il">Job Name:</span><span class="iv">${(r.location||'—').substring(0,22)}</span></div>
       <div class="info-row"><span class="il">Mix type:</span><span class="iv">${r.mixType}</span></div>
       <div class="info-row"><span class="il">Mix number:</span><span class="iv">${r.mixNo}</span></div>
       <div class="info-row"><span class="il">PGAC type:</span><span class="iv">${(jmf||r.jmf)?.binder||'—'}</span></div>
