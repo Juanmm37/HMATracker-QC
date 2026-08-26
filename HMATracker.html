@@ -658,7 +658,7 @@ function renderRecords(){
   const contractFilter=(document.getElementById('filter-contract')?.value||'').toLowerCase();
   const mixFilter=(document.getElementById('filter-mix')?.value||'').toLowerCase();
   const summaryMode=document.getElementById('summary-mode')?.checked||false;
-  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?ai-bi:(a.sampleId||'').localeCompare(b.sampleId||'');});
+  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?bi-ai:(b.sampleId||'').localeCompare(a.sampleId||'');});
   if(contractFilter)recs=recs.filter(r=>(r.contractNo||'').toLowerCase().includes(contractFilter)||(r.job||'').toLowerCase().includes(contractFilter));
   if(mixFilter)recs=recs.filter(r=>(r.mixNo||'').toLowerCase().includes(mixFilter)||(r.mixType||'').toLowerCase().includes(mixFilter));
   const contracts=[...new Set(db.records.map(r=>r.contractNo).filter(Boolean))];
@@ -705,7 +705,7 @@ function filterRecords(){
   const cf=(document.getElementById('filter-contract')?.value||'').toLowerCase();
   const mf=(document.getElementById('filter-mix')?.value||'').toLowerCase();
   const sm=document.getElementById('summary-mode')?.checked||false;
-  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?ai-bi:(a.sampleId||'').localeCompare(b.sampleId||'');});
+  let recs=[...db.records].sort((a,b)=>{const ai=parseInt(a.sampleId)||0,bi=parseInt(b.sampleId)||0;return ai!==bi?bi-ai:(b.sampleId||'').localeCompare(a.sampleId||'');});
   if(cf)recs=recs.filter(r=>(r.contractNo||'').toLowerCase().includes(cf)||(r.job||'').toLowerCase().includes(cf));
   if(mf)recs=recs.filter(r=>(r.mixNo||'').toLowerCase().includes(mf)||(r.mixType||'').toLowerCase().includes(mf));
   const el=document.getElementById('records-list');
