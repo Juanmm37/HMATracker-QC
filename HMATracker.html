@@ -1761,7 +1761,7 @@ function getJobRegistry(year){
   const base=(JOB_REGISTRY_DATA[year]||[]).map(j=>({...j,mixes:j.mixes.map(m=>({...m}))}));
   const edits=(db.jobRegistryEdits||{})[year]||[];
   edits.forEach(ej=>{const i=base.findIndex(j=>j.jobNo===ej.jobNo);if(i>=0)base[i]=ej;else base.push(ej);});
-  return base.sort((a,b)=>a.jobNo.localeCompare(b.jobNo,undefined,{numeric:true}));
+  return base.filter(j=>!j.__deleted).sort((a,b)=>a.jobNo.localeCompare(b.jobNo,undefined,{numeric:true}));
 }
 function jrSnapshotForm(){
   if(!jobRegEditing)return;
