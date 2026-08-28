@@ -1963,8 +1963,7 @@ function printJobRegistry(){
     });
   });
   const win=window.open('','_blank','width=1200,height=850');
-  const jrDate=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  win.document.write(`<!DOCTYPE html><html><head><title>Job Registry ${jobRegYear} - ${jrDate}</title>
+  win.document.write(`<!DOCTYPE html><html><head><title>Job Registry ${jobRegYear} - ${genDate}</title>
   <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;padding:14px;color:#000}
   .ph{display:flex;align-items:center;gap:16px;padding:4px 0 8px;border-bottom:3px solid #1f3864;margin-bottom:10px}
   .pt{font-size:16px;font-weight:900;color:#1f3864;letter-spacing:.05em}.ps{font-size:10px;color:#555;margin-top:3px}
