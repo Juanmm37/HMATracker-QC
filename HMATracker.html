@@ -567,7 +567,10 @@ async function loadFromSupabase(){
   db.jobRegNoteId=jrEditsRow?jrEditsRow.id:null;
   try{db.jobRegistryEdits=jrEditsRow?.note?JSON.parse(jrEditsRow.note):{};}catch(e){db.jobRegistryEdits={};}
   if(flaskRow?.note){
-    try{localStorage.setItem('hma_flask_weights',flaskRow.note);}catch(e){}
+    try{
+      db.flaskTares=JSON.parse(flaskRow.note);
+      localStorage.setItem('hma_flask_weights',flaskRow.note);
+    }catch(e){}
   }
 }
 
