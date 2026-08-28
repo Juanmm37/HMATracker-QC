@@ -1125,7 +1125,7 @@ async function saveFlaskTares(){
     const r=await _db.from('production_notes').update({note:json,note_date:'1900-01-01',last_modified_by:currentUser?.id||null}).eq('id',db.flaskTareNoteId);
     dbErr=r.error;
   } else {
-    const r=await _db.from('production_notes').insert({category:'__flask_tares__',note:json,note_date:'1900-01-01',mix_design_id:null,contract_id:null,entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null}).select('id').single();
+    const r=await _db.from('production_notes').insert({category:'__flask_tares__',note:json,note_date:'1900-01-01',entered_by:currentUser?.id||null,last_modified_by:currentUser?.id||null}).select('id').single();
     dbErr=r.error;
     if(!dbErr&&r.data)db.flaskTareNoteId=r.data.id;
   }
