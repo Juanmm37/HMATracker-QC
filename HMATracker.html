@@ -2135,7 +2135,7 @@ function _renderMixSection(mix,jobMixes){
       const avCol=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):null;
       const compCol=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):null;
       let dateShort='';
-      if(cell?.date){try{const[y,m,d]=cell.date.split('-').map(Number);dateShort=new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch(e){}}
+      if(cell?.date){try{const[y,m,d]=cell.date.split('-').map(Number);dateShort=new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){}}
       return`<td style="text-align:center;vertical-align:top;padding:5px 4px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixKey}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
         ${hasData?`
           ${dateShort?`<div style="font-size:9px;color:${muted};margin-bottom:3px;font-style:italic">${dateShort}</div>`:''}
