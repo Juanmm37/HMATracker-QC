@@ -1932,14 +1932,26 @@ async function saveJMF(){
       gradation,
     },
   };
-  let err;
+  let err, newId;
   if(isNew){
     payload.created_by=currentUser?.id;
-    const {error}=await _db.from('mix_designs').insert(payload);err=error;
+    const {data,error}=await _db.from('mix_designs').insert(payload).select('id').single();
+    err=error;newId=data?.id;
   } else {
     const {error}=await _db.from('mix_designs').update(payload).eq('id',editingJmf);err=error;
   }
   if(err){alert('Save failed: '+err.message);return;}
+  if(isNew&&newId&&_pendingJmfPdf){
+    const f=_pendingJmfPdf;_pendingJmfPdf=null;
+    const {error:upErr}=await _db.storage.from('jmf-pdfs').upload(newId+'.pdf',f,{upsert:true,contentType:'application/pdf'});
+    if(!upErr){
+      const {data:urlData}=_db.storage.from('jmf-pdfs').getPublicUrl(newId+'.pdf');
+      const pdfUrl=urlData.publicUrl;
+      const jt={...payload.jmf_targets,pdfUrl};
+      await _db.from('mix_designs').update({jmf_targets:jt}).eq('id',newId);
+    }
+  }
+  _pendingJmfPdf=null;
   editingJmf=null;
   db.jmfs=db.jmfs.filter(j=>j.id!=='__temp__');
   await loadFromSupabase();renderView();
