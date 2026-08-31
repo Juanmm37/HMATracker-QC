@@ -1442,7 +1442,10 @@ function recalcCore(){
   } else {setText('core-av','—');}
 }
 
-function evalAV(av,isDFC){if(isDFC)return av>=2.5&&av<=4.5?'acceptable':av>=2.0&&av<=5.0?'borderline':'rejectable';return av>=3.0&&av<=5.0?'acceptable':av>=2.0&&av<=6.0?'borderline':'rejectable';}
+function evalAV(av,isDFC,spec){
+  const d=isDFC?(spec?.avDFC||OPSS310_SPEC.avDFC):(spec?.avOther||OPSS310_SPEC.avOther);
+  return av>=d.lo&&av<=d.hi?'acceptable':av>=d.borderLo&&av<=d.borderHi?'borderline':'rejectable';
+}
 function worstSt(s){if(s.includes('rejectable'))return'rejectable';if(s.includes('borderline'))return'borderline';if(s.includes('acceptable'))return'acceptable';return'acceptable';}
 
 async function calcAndSave(){
