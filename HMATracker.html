@@ -2118,7 +2118,7 @@ function _renderMixSection(mix,jobMixes){
       const tc=isAct?'#fff':'#1f3864';const muted=isAct?'rgba(255,255,255,.65)':'#666';
       const avCol=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):null;
       const compCol=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):null;
-      return`<td style="vertical-align:top;padding:4px 5px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixNo}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
+      return`<td style="vertical-align:top;padding:4px 5px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixKey}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
         ${hasData?`
           ${avgThk!==null?`<div style="font-size:10px;color:${muted}">Thk: <span style="font-weight:700;color:${tc}">${avgThk} mm</span></div>`:''}
           ${gmbC!==null?`<div style="font-size:10px;color:${muted}">Gmb: <span style="font-weight:700;color:${tc}">${roundUp(gmbC,3)}</span></div>`:''}
