@@ -635,6 +635,7 @@ function renderView(){
   else if(currentView==='jmf')el.innerHTML=renderJMF();
   else if(currentView==='jobreg')el.innerHTML=renderJobRegistry();
   else if(currentView==='prodnotes')el.innerHTML=renderProdNotes();
+  else if(currentView==='cores'){el.innerHTML=renderCores();setTimeout(()=>{if(coreActiveLot&&coreActiveSub)recalcCoreCell();},0);}
   else if(currentView==='acreport'){el.innerHTML=renderACReport();setTimeout(()=>{drawACChart();_updateACMixTotals();},50);}
 }
 
