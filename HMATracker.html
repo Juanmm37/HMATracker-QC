@@ -1565,7 +1565,6 @@ function printRecord(id){
   const jmfAC=parseFloat(r.jmfAC)||0;const acPct=parseFloat(r.acContent)||0;
   const acStatusColor=r.acStatus==='acceptable'?'#375623':r.acStatus==='borderline'?'#7d5a00':'#9c0006';
   const avColor=r.avStatus==='acceptable'?'#375623':r.avStatus==='borderline'?'#7d5a00':'#9c0006';
-  const vmaColor=r.vmaStatus==='acceptable'?'#375623':r.vmaStatus==='borderline'?'#7d5a00':'#9c0006';
   const _MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const fmtPrintDate=d=>{if(!d)return'—';const p=d.split('-');return _MONTHS[parseInt(p[1],10)-1]+' '+parseInt(p[2],10)+', '+p[0];};
   const stBadge=s=>s?` <b style="font-size:8px;letter-spacing:.02em">(${s.toUpperCase()})</b>`:'';
