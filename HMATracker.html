@@ -1357,6 +1357,19 @@ function saveVol3(){
     }
   }
   d.isNmax=!!entryData.isNmax;
+  if(entryData.showCore){
+    d.coreData={
+      t1:document.getElementById('core-t1')?.value||'',
+      t2:document.getElementById('core-t2')?.value||'',
+      t3:document.getElementById('core-t3')?.value||'',
+      t4:document.getElementById('core-t4')?.value||'',
+      a:document.getElementById('core-a')?.value||'',
+      b:document.getElementById('core-b')?.value||'',
+      c:document.getElementById('core-c')?.value||'',
+    };
+  } else if(entryData.vol3Data?.coreData){
+    d.coreData=entryData.vol3Data.coreData;
+  }
   entryData.vol3Data=d;
   entryData.notes=document.getElementById('e-notes')?.value||'';
 }
