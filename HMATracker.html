@@ -1469,8 +1469,9 @@ async function calcAndSave(){
   if(isSGC&&gmmAvg>0){const validB=briquettes.filter(b=>b.hini>0&&b.hdes>0&&b.gmb>0);if(validB.length){const avgHi=validB.reduce((s,b)=>s+b.hini,0)/validB.length,avgHd=validB.reduce((s,b)=>s+b.hdes,0)/validB.length;niniPct=gmbAvg/gmmAvg*(avgHd/avgHi)*100;ndesPct=gmbAvg/gmmAvg*100;niniStatus=niniPct<=(niniLimit||89.0)?'acceptable':niniPct<=NINOTE5?'note5':'rejectable';}
     if(entryData.isNmax){const validN=briquettes.filter(b=>b.hnmax>0&&b.hdes>0&&b.gmb>0);if(validN.length){const avgHn=validN.reduce((s,b)=>s+b.hnmax,0)/validN.length,avgHd=validN.reduce((s,b)=>s+b.hdes,0)/validN.length;nmaxPct=gmbAvg*(avgHd/avgHn)/gmmAvg*100;}}
   }
-  const jmfAC=parseFloat(entryData.jmfAC)||0;const acDiff=Math.abs(acPct-jmfAC);const acStatus=jmfAC>0?(acDiff<0.30?'acceptable':acDiff<=0.50?'borderline':'rejectable'):'acceptable';
-  const isDFC=(entryData.mixType||'').toUpperCase().includes('DFC');const avStatus=evalAV(airVoids,isDFC);
+  const _saveSpec=getJobSpec(entryData.contractNo);const _acSpec=_saveSpec?.ac||OPSS310_SPEC.ac;
+  const jmfAC=parseFloat(entryData.jmfAC)||0;const acDiff=Math.abs(acPct-jmfAC);const acStatus=jmfAC>0?(acDiff<_acSpec.accept?'acceptable':acDiff<=_acSpec.reject?'borderline':'rejectable'):'acceptable';
+  const isDFC=(entryData.mixType||'').toUpperCase().includes('DFC');const avStatus=evalAV(airVoids,isDFC,_saveSpec);
   const jmfVMA=jmf?parseFloat(jmf.vmaTarget)||0:0;const vmaStatus='';
   const gradWorst=worstSt(Object.values(entryData.gradStatus||{}));
   const overall=worstSt([acStatus,avStatus,gradWorst]);
