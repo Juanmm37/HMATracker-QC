@@ -563,7 +563,10 @@ async function loadFromSupabase(){
   const allNotes=pns.data||[];
   const flaskRow=allNotes.find(n=>n.category==='__flask_tares__');
   const jrEditsRow=allNotes.find(n=>n.category==='__job_registry_edits__');
-  db.productionNotes=allNotes.filter(n=>n.category!=='__flask_tares__'&&n.category!=='__job_registry_edits__');
+  db.productionNotes=allNotes.filter(n=>n.category!=='__flask_tares__'&&n.category!=='__job_registry_edits__'&&n.category!=='__core_records__');
+  const coreRow=allNotes.find(n=>n.category==='__core_records__');
+  db.coreNoteId=coreRow?coreRow.id:null;
+  try{db.coreRecords=coreRow?.note?JSON.parse(coreRow.note):{};}catch(e){db.coreRecords={};}
   db.flaskTareNoteId=flaskRow?flaskRow.id:null;
   db.jobRegNoteId=jrEditsRow?jrEditsRow.id:null;
   try{db.jobRegistryEdits=jrEditsRow?.note?JSON.parse(jrEditsRow.note):{};}catch(e){db.jobRegistryEdits={};}
