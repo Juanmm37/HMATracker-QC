@@ -939,6 +939,27 @@ function setEntryFamily(fam){
   entryData.testFamily=fam;entryData.mixType='';entryData.jmfId=null;entryData.jmf=null;
   renderView();
 }
+function checkSampleIdDuplicate(){
+  const val=(document.getElementById('e-sampleid')?.value||'').trim();
+  const warn=document.getElementById('sampleid-warning');
+  const inp=document.getElementById('e-sampleid');
+  if(!val||!warn||!inp)return;
+  const match=db.records.find(r=>r.sampleId&&String(r.sampleId).trim()===val&&r.id!==editingRecordId);
+  if(match){
+    warn.textContent=`⛔ Lab sample # ${val} already exists — ${match.mixNo||''} ${match.mixType||''}, ${match.date||''}.  Check Test Records before continuing.`;
+    warn.style.display='block';
+    inp.style.borderColor='#ef4444';
+  }else{
+    warn.style.display='none';
+    inp.style.borderColor='';
+  }
+}
+function hideSampleIdWarning(){
+  const warn=document.getElementById('sampleid-warning');
+  const inp=document.getElementById('e-sampleid');
+  if(warn)warn.style.display='none';
+  if(inp)inp.style.borderColor='';
+}
 function autoFillMixType(){
   const jmfId=document.getElementById('e-jmf')?.value;
   const jmf=db.jmfs.find(j=>j.id===jmfId);
