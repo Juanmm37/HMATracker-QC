@@ -614,7 +614,7 @@ function saveDB(){} // no-op — data lives in Supabase
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showView(v){
   currentView=v;
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','records','jmf','prodnotes','acreport'][i]===v);});
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','cores','records','jmf','prodnotes','acreport'][i]===v);});
   if(v!=='entry'){entryStep=1;entryData={};editingRecordId=null;}
   renderView();
 }
