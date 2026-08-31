@@ -1437,7 +1437,7 @@ function recalcCore(){
   if(gmbCore>0&&gmm>0){
     const av=(1-gmbCore/gmm)*100;
     const isDFC=(entryData.mixType||'').toUpperCase().includes('DFC');
-    const avCol=evalAV(av,isDFC)==='acceptable'?'#c6efce':evalAV(av,isDFC)==='borderline'?'#ffeb9c':'#ffc7ce';
+    const _avSpec=getJobSpec(entryData.contractNo);const avCol=evalAV(av,isDFC,_avSpec)==='acceptable'?'#c6efce':evalAV(av,isDFC,_avSpec)==='borderline'?'#ffeb9c':'#ffc7ce';
     setHTML('core-av',`<span style="background:${avCol};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);
   } else {setText('core-av','—');}
 }
