@@ -2001,7 +2001,9 @@ function recalcCoreCell(){
 function saveCoreCell(){
   if(!coreJobNo||!coreActiveMix||!coreActiveLot||!coreActiveSub)return;
   const g=id=>document.getElementById(id)?.value||'';
+  const autoGmm=getCoreGmm(coreActiveLot,coreActiveSub);
   const cell={avgThk:g('cv-avgthk'),a:g('cv-a'),b:g('cv-b'),c:g('cv-c'),date:g('cv-date')};
+  if(!autoGmm){const mv=g('cv-gmm');if(mv)cell.gmmManual=mv;}
   _ensureCoreJob();
   if(!db.coreRecords[coreJobNo].mixes[coreActiveMix])db.coreRecords[coreJobNo].mixes[coreActiveMix]={lots:{}};
   if(!db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot])db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot]={};
