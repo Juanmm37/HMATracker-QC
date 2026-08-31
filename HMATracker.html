@@ -2131,17 +2131,20 @@ function _renderMixSection(mix,jobMixes){
       }
       const hasData=!!(avgThk||gmbC);
       const bg=isAct?'#1f3864':hasData?'#eef3fb':'#fafbfc';
-      const tc=isAct?'#fff':'#1f3864';const muted=isAct?'rgba(255,255,255,.65)':'#666';
+      const tc=isAct?'#fff':'#1f3864';const muted=isAct?'rgba(255,255,255,.65)':'#888';
       const avCol=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):null;
       const compCol=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):null;
-      return`<td style="vertical-align:top;padding:4px 5px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixKey}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
+      let dateShort='';
+      if(cell?.date){try{const[y,m,d]=cell.date.split('-').map(Number);dateShort=new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch(e){}}
+      return`<td style="text-align:center;vertical-align:top;padding:5px 4px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixKey}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
         ${hasData?`
-          ${avgThk!==null?`<div style="font-size:10px;color:${muted}">Thk: <span style="font-weight:700;color:${tc}">${avgThk} mm</span></div>`:''}
-          ${gmbC!==null?`<div style="font-size:10px;color:${muted}">Gmb: <span style="font-weight:700;color:${tc}">${roundUp(gmbC,3)}</span></div>`:''}
-          ${gmm?`<div style="font-size:10px;color:${muted}">Gmm: <span style="color:${tc}">${gmm.toFixed(3)}</span></div>`:''}
-          ${av!==null?`<div style="font-size:10px;color:${muted}">AV: <span style="font-weight:700;color:${avCol}">${roundUp(av,1)}%</span></div>`:''}
-          ${comp!==null?`<div style="font-size:10px;color:${muted}">Cmp: <span style="font-weight:700;color:${compCol}">${roundUp(comp,1)}%</span></div>`:''}
-        `:`<span style="color:#ccc;font-size:18px;display:block;text-align:center;padding:4px 0">·</span>`}
+          ${dateShort?`<div style="font-size:9px;color:${muted};margin-bottom:3px;font-style:italic">${dateShort}</div>`:''}
+          ${avgThk!==null?`<div style="font-size:10px;font-weight:700;color:${tc};margin-bottom:1px">${avgThk} mm</div>`:''}
+          ${gmbC!==null?`<div style="font-size:10px;color:${muted}">Gmb <span style="font-weight:700;color:${tc}">${roundUp(gmbC,3)}</span></div>`:''}
+          ${gmm?`<div style="font-size:10px;color:${muted}">Gmm <span style="color:${tc}">${gmm.toFixed(3)}</span></div>`:''}
+          ${av!==null?`<div style="font-size:10px">AV <span style="font-weight:700;color:${avCol}">${roundUp(av,1)}%</span></div>`:''}
+          ${comp!==null?`<div style="font-size:10px">Cmp <span style="font-weight:700;color:${compCol}">${roundUp(comp,1)}%</span></div>`:''}
+        `:`<span style="color:#ccc;font-size:18px;display:block;padding:6px 0">·</span>`}
       </td>`;
     }).join('');
     const reportBtn=`<button onclick="coreLotReport={mixNo:'${mixKey}',lot:'${lot}'};coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;renderView()" style="font-size:10px;padding:2px 7px;border:1px solid #b8cef0;border-radius:4px;background:#f0f5ff;color:#1f3864;cursor:pointer;white-space:nowrap;display:block;margin-bottom:3px">Create Report</button>`;
