@@ -2179,7 +2179,7 @@ function _renderMixSection(mix,jobMixes){
       if(!cell||(!cell.avgThk&&!cell.a))return`<tr><td style="text-align:center;color:#999">${sub}</td>${Array(6).fill('<td style="text-align:center;color:#ccc">—</td>').join('')}</tr>`;
       const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
       const vol=cb>cc?cb-cc:0;const gmbC=ca>0&&vol>0?ca/vol:0;
-      const gmm=getCoreGmm(lot,sub);
+      const gmm=getCoreGmm(lot,sub)||parseFloat(cell.gmmManual)||0;
       const av=gmbC>0&&gmm>0?(1-gmbC/gmm)*100:null;
       const comp=gmbC>0&&gmm>0?(gmbC/gmm)*100:null;
       const avC=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):'#333';
