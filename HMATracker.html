@@ -2552,6 +2552,7 @@ async function jrSaveJob(){
   const year=ed.year||jobRegYear;
   if(!jobNo){alert('Job No. is required.');return;}
   const job={jobNo,jobName,mixes:ed.mixes||[]};
+  if(ed.opssSpec?.type==='custom')job.opssSpec=ed.opssSpec;
   if(!db.jobRegistryEdits)db.jobRegistryEdits={};
   if(!db.jobRegistryEdits[year])db.jobRegistryEdits[year]=[];
   const idx=db.jobRegistryEdits[year].findIndex(j=>j.jobNo===(ed.isNew?jobNo:ed.origJobNo));
