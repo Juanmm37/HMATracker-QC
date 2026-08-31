@@ -195,7 +195,7 @@ const SUPA_KEY='sb_publishable_RXJ3Z7RWaCRHkmeJbq6uqQ_67TN_JHq'; // anon/publish
 const _db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let db={jmfs:[],records:[],contracts:[],productionNotes:[],contractMixDesigns:[],flaskTareNoteId:null,flaskTares:null,jobRegistryEdits:{},jobRegNoteId:null};
+let db={jmfs:[],records:[],contracts:[],productionNotes:[],contractMixDesigns:[],flaskTareNoteId:null,flaskTares:null,jobRegistryEdits:{},jobRegNoteId:null,coreRecords:{},coreNoteId:null};
 let jobRegEditing=null;
 let currentUser=null; // {id, name, role} from users table
 let currentView='jobreg';
