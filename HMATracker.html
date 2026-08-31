@@ -2030,6 +2030,32 @@ function jrSnapshotForm(){
     submitted:document.getElementById('jr-mix-sb-'+i)?.value||'',
     mixDesignNo:document.getElementById('jr-mix-md-'+i)?.value||'',
   }));
+  // Snapshot custom spec inputs if present
+  if(jobRegEditing.opssSpec?.type==='custom'){
+    const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+    jobRegEditing.opssSpec={type:'custom',
+      ac:{accept:g('jr-spec-ac-accept')||0.30,reject:g('jr-spec-ac-reject')||0.50},
+      avDFC:{lo:g('jr-spec-av-dfc-lo')||2.5,hi:g('jr-spec-av-dfc-hi')||4.5,borderLo:g('jr-spec-av-dfc-blo')||2.0,borderHi:g('jr-spec-av-dfc-bhi')||5.0},
+      avOther:{lo:g('jr-spec-av-ot-lo')||3.0,hi:g('jr-spec-av-ot-hi')||5.0,borderLo:g('jr-spec-av-ot-blo')||2.0,borderHi:g('jr-spec-av-ot-bhi')||6.0},
+      gradSurface:{dls:{accept:g('jr-spec-gs-dls-a')||5.0,reject:g('jr-spec-gs-dls-r')||7.5},mid:{accept:g('jr-spec-gs-mid-a')||3.5,reject:g('jr-spec-gs-mid-r')||5.0},fine:{accept:g('jr-spec-gs-fin-a')||2.0,reject:g('jr-spec-gs-fin-r')||3.0}},
+      gradBinder:{dls:{accept:g('jr-spec-gb-dls-a')||7.0,reject:g('jr-spec-gb-dls-r')||10.0},mid:{accept:g('jr-spec-gb-mid-a')||4.5,reject:g('jr-spec-gb-mid-r')||6.0},fine:{accept:g('jr-spec-gb-fin-a')||2.0,reject:g('jr-spec-gb-fin-r')||3.0}}
+    };
+  }
+}
+function jrSetSpecType(type){
+  jrSnapshotForm();
+  if(type==='opss310'){jobRegEditing.opssSpec={type:'opss310'};}
+  else{
+    const s=jobRegEditing.opssSpec?.type==='custom'?jobRegEditing.opssSpec:null;
+    jobRegEditing.opssSpec={type:'custom',
+      ac:{accept:s?.ac?.accept??0.30,reject:s?.ac?.reject??0.50},
+      avDFC:{lo:s?.avDFC?.lo??2.5,hi:s?.avDFC?.hi??4.5,borderLo:s?.avDFC?.borderLo??2.0,borderHi:s?.avDFC?.borderHi??5.0},
+      avOther:{lo:s?.avOther?.lo??3.0,hi:s?.avOther?.hi??5.0,borderLo:s?.avOther?.borderLo??2.0,borderHi:s?.avOther?.borderHi??6.0},
+      gradSurface:{dls:{accept:s?.gradSurface?.dls?.accept??5.0,reject:s?.gradSurface?.dls?.reject??7.5},mid:{accept:s?.gradSurface?.mid?.accept??3.5,reject:s?.gradSurface?.mid?.reject??5.0},fine:{accept:s?.gradSurface?.fine?.accept??2.0,reject:s?.gradSurface?.fine?.reject??3.0}},
+      gradBinder:{dls:{accept:s?.gradBinder?.dls?.accept??7.0,reject:s?.gradBinder?.dls?.reject??10.0},mid:{accept:s?.gradBinder?.mid?.accept??4.5,reject:s?.gradBinder?.mid?.reject??6.0},fine:{accept:s?.gradBinder?.fine?.accept??2.0,reject:s?.gradBinder?.fine?.reject??3.0}}
+    };
+  }
+  renderView();
 }
 function jrNewJob(){jobRegEditing={jobNo:'',jobName:'',year:jobRegYear,mixes:[],isNew:true};renderView();}
 async function jrDeleteJob(year,jobNo){
