@@ -1240,8 +1240,9 @@ function renderStep3(){
   <div class="section-title">Volumetrics &nbsp;<span class="badge badge-${fam==='Marshall'?'ms':fam==='SMA'?'sma':'sp'}">${fam}</span></div>
   ${gyrationBox}
   <div class="info-note" style="margin-bottom:12px"><span class="entry-col">Enter highlighted values from your lab worksheets.</span> Air voids, VMA, VFA, and density averages are calculated automatically.</div>
-  <div style="overflow-x:auto"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${brdRows}${sgcRows}${marshalRows}</tbody></table></div>
+  <div style="overflow-x:auto"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${brdRows}${sgcRows}</tbody></table></div>
   <div style="overflow-x:auto;margin-top:14px"><table class="lab-table" style="width:100%"><tbody>${mrdRows}</tbody></table></div>
+  ${marshalRows?`<div style="overflow-x:auto;margin-top:14px"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${marshalRows}</tbody></table></div>`:''}
   <div style="margin-top:14px"><table class="lab-table" style="max-width:360px"><tbody>${sumRows}</tbody></table></div>
   <div style="margin-top:14px">
     <button onclick="toggleCore()" style="font-size:12px;padding:5px 16px;border:1px solid ${entryData.showCore?'#1f3864':'#b8cef0'};border-radius:6px;background:${entryData.showCore?'#1f3864':'#fff'};color:${entryData.showCore?'#fff':'#1f3864'};cursor:pointer;font-weight:600">
