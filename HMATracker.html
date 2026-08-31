@@ -2112,7 +2112,7 @@ function _renderMixSection(mix,jobMixes){
         avgThk=cell.avgThk?parseFloat(cell.avgThk):null;
         const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
         const vol=cb>cc?cb-cc:0;if(ca>0&&vol>0)gmbC=ca/vol;
-        gmm=getCoreGmm(lot,sub)||null;
+        gmm=getCoreGmm(lot,sub)||parseFloat(cell.gmmManual)||null;
         if(gmbC&&gmm){av=(1-gmbC/gmm)*100;comp=(gmbC/gmm)*100;}
       }
       const hasData=!!(avgThk||gmbC);
