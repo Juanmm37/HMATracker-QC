@@ -753,7 +753,7 @@ function renderRecordsTable(recs,mini=false,showCheck=false){
         <td style="text-align:center">${r.lot||'—'}</td>
         <td style="text-align:center">${r.subLot?parseInt(r.subLot,10)||r.subLot:'—'}</td>
         <td style="text-align:center;font-weight:600;color:${avColor}">${r.airVoids?r.airVoids+'%':'—'}</td>
-        <td style="text-align:center;font-weight:600;color:${vmaColor}">${r.vma?r.vma+'%':'—'}</td>
+        <td style="text-align:center;font-weight:600">${r.vma?r.vma+'%':'—'}</td>
         <td style="text-align:center;font-weight:600;color:${acColor}">${resultAC>0?resultAC.toFixed(2)+'%':'—'}${dev!==null?` <span style="font-size:10px;font-weight:700;color:${devColor}">(${dev>=0?'+':''}${dev.toFixed(2)}%)</span>`:''}</td>
         <td style="text-align:right;white-space:nowrap">
           <button class="btn btn-sm" onclick="editRecord('${r.id}')" title="Edit">&#9998;</button>
