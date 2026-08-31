@@ -1834,7 +1834,26 @@ function renderJMFForm(){
     </div>
   </div>
   <div id="pdf-status" style="display:none"></div>
-  ` : '';
+  ` : jmf.pdfUrl
+    ? `<div class="pdf-upload-card" style="margin-bottom:14px">
+        <div class="pdf-upload-icon">📄</div>
+        <div class="pdf-upload-text">
+          <strong>Cover page PDF attached</strong>
+          <span><a href="${jmf.pdfUrl}" target="_blank" style="color:#1b5e20;text-decoration:underline">View PDF ↗</a></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="pdf-upload-btn" onclick="uploadJmfPdf('${jmf.id}')" style="background:#fff8e0;color:#7d5a00;border:1px solid #e0c040">Replace</button>
+          <button class="pdf-upload-btn" onclick="deleteJmfPdf('${jmf.id}')" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5">Delete</button>
+        </div>
+      </div>`
+    : `<div class="pdf-upload-card" style="margin-bottom:14px">
+        <div class="pdf-upload-icon">📎</div>
+        <div class="pdf-upload-text">
+          <strong>No cover page PDF attached</strong>
+          <span>Upload the mix design cover page for reference</span>
+        </div>
+        <button class="pdf-upload-btn" onclick="uploadJmfPdf('${jmf.id}')">Upload PDF</button>
+      </div>`;
   if(isNew&&!famSelected)return`<div class="card"><div class="section-title">Add new Mix Design</div>
   <div class="section-title" style="font-size:12px;color:#666;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">Mix Design Type</div>
   <div class="type-selector" style="margin-bottom:14px">
