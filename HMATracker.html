@@ -1847,7 +1847,7 @@ function renderJMFForm(){
   const mixOpts=(MIX_TYPES[fam]||[]).map(m=>`<option value="${m}" ${jmf.mixType===m?'selected':''}>${m}</option>`).join('');
   const gradRows=sieves.map(s=>`<div class="jmf-row"><span>${SL[s]||s}</span>
     <input type="number" step="0.1" min="0" max="100" id="jg-${s}" value="${jmf.gradation&&jmf.gradation[s]||''}" placeholder="JMF %" style="text-align:center">
-    <span class="jmf-tol">${getGradTol(s,true,getDLS(jmf.mixType))?'±'+getGradTol(s,true,getDLS(jmf.mixType))+'%':''}</span>
+    <span class="jmf-tol">${(t=>t?'±'+t.accept+'%':'')(getGradTol(s,true,getDLS(jmf.mixType)))}</span>
   </div>`).join('');
   let gyrationSection='';
   if(fam==='Superpave'){gyrationSection=`<div class="form-grid"><div class="form-group"><label>Traffic category</label><select id="jf-trafficcat" onchange="updateGyrations()">${['A','B','C','D','E'].map(c=>`<option value="${c}" ${cat===c?'selected':''}>${c}</option>`).join('')}</select></div><div class="form-group"><label>Nini (auto)</label><input type="number" id="jf-nini" value="${g.nini}" readonly></div><div class="form-group"><label>Ndes (auto)</label><input type="number" id="jf-ndes" value="${g.ndes}" readonly></div><div class="form-group"><label>Nmax (auto)</label><input type="number" id="jf-nmax" value="${g.nmax}" readonly></div><div class="form-group"><label>Nini %Gmm limit</label><input type="text" id="jf-nini-limit" value="≤${NILIM[cat]||89.0}%" readonly></div></div>`;}
