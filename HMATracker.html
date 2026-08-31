@@ -855,7 +855,7 @@ function renderEntry(){
   if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No Mix Designs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add Mix Designs first</button></div></div>`;
   if(entryStep===1)return renderStep1();
   if(entryStep===2)return renderStep2();
-  if(entryStep===3){const html=renderStep3();setTimeout(recalcVol,0);return html;}
+  if(entryStep===3){const html=renderStep3();setTimeout(()=>{recalcVol();if(entryData.showCore)recalcCore();},0);return html;}
   return'';
 }
 
