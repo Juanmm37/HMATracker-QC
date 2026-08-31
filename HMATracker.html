@@ -1257,12 +1257,6 @@ function renderStep3(){
   <div style="overflow-x:auto;margin-top:14px"><table class="lab-table" style="width:100%"><tbody>${mrdRows}</tbody></table></div>
   ${marshalRows?`<div style="overflow-x:auto;margin-top:14px"><table class="lab-table" style="max-width:480px"><thead><tr><th class="prop" style="width:200px">Property</th><th style="text-align:center">Value</th></tr></thead><tbody>${marshalRows}</tbody></table></div>`:''}
   <div style="margin-top:14px"><table class="lab-table" style="max-width:360px"><tbody>${sumRows}</tbody></table></div>
-  <div style="margin-top:14px">
-    <button onclick="toggleCore()" style="font-size:12px;padding:5px 16px;border:1px solid ${entryData.showCore?'#1f3864':'#b8cef0'};border-radius:6px;background:${entryData.showCore?'#1f3864':'#fff'};color:${entryData.showCore?'#fff':'#1f3864'};cursor:pointer;font-weight:600">
-      ${entryData.showCore?'▾ Core data':'⬡ Add core data'}
-    </button>
-  </div>
-  ${coreSection}
   <div class="form-group" style="margin-top:16px"><label style="display:block;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Notes / comments</label><textarea id="e-notes" rows="3" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Field adjustments, observations, or anything worth noting…">${entryData.notes||''}</textarea></div>
   <div class="row" style="margin-top:14px">
     <button class="btn" onclick="saveVol3();entryStep=2;renderView()">← Back</button>
