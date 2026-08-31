@@ -2044,7 +2044,7 @@ function printCoreLotReport(mixKey,mixLabel,lot){
     if(!cell||(!cell.avgThk&&!cell.a))return{sub,empty:true};
     const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
     const vol=cb>cc?cb-cc:0;const gmbC=ca>0&&vol>0?ca/vol:0;
-    const gmm=getCoreGmm(lot,sub);
+    const gmm=getCoreGmm(lot,sub)||parseFloat(cell.gmmManual)||0;
     const av=gmbC>0&&gmm>0?(1-gmbC/gmm)*100:null;
     const comp=gmbC>0&&gmm>0?(gmbC/gmm)*100:null;
     return{sub,avgThk:parseFloat(cell.avgThk)||null,gmbC:gmbC||null,gmm:gmm||null,av,comp,date:cell.date||''};
