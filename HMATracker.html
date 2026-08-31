@@ -2204,9 +2204,9 @@ function _renderMixSection(mix,jobMixes){
     const cmpColor=c=>c>=92?'#1a7a1a':c>=90?'#8a6a00':'#c00000';
     reportPanel=`<div style="margin-top:14px;padding:16px;border:2px solid #2a5298;border-radius:8px;background:#f8faff">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <div style="font-weight:700;color:#1f3864;font-size:14px">📋 Core Report — ${mixNo} / Lot ${lot}</div>
+        <div style="font-weight:700;color:#1f3864;font-size:14px">Core Report — ${mixLabel} / Lot ${lot}</div>
         <div style="display:flex;gap:8px">
-          <button onclick="printCoreLotReport('${mixNo}','${lot}')" style="font-size:11px;padding:4px 12px;border:none;border-radius:5px;background:#1f3864;color:#fff;cursor:pointer;font-weight:700">Print / Export</button>
+          <button onclick="printCoreLotReport('${mixKey}','${mixLabel}','${lot}')" style="font-size:11px;padding:4px 12px;border:none;border-radius:5px;background:#1f3864;color:#fff;cursor:pointer;font-weight:700">Print / Export</button>
           <button onclick="coreLotReport=null;renderView()" style="font-size:11px;padding:4px 10px;border:1px solid #ccc;border-radius:5px;background:#fff;color:#555;cursor:pointer">Close</button>
         </div>
       </div>
