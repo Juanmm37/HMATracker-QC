@@ -1961,23 +1961,27 @@ async function jrDeleteJob(year,jobNo){
 // ── CORES ─────────────────────────────────────────────────────────────────────
 function getCoreJobYear(){if(!coreJobNo)return null;const p=coreJobNo.split('-')[0];return p.length===2?'20'+p:p;}
 function getCoreGmm(lot,sub){
-  // Search all records (all years) for matching contract/lot/sublot
   const m=db.records.find(r=>r.contractNo===coreJobNo&&String(r.lot).trim()===String(lot)&&String(parseInt(r.subLot,10)||'')===String(sub));
   return m?parseFloat(m.gmm)||0:0;
 }
-function addCoreLot(){
-  if(!coreJobNo)return;
-  if(!db.coreRecords[coreJobNo]){const yr=getCoreJobYear();const job=yr?getJobRegistry(yr).find(j=>j.jobNo===coreJobNo):null;db.coreRecords[coreJobNo]={jobName:job?.jobName||'',year:yr,lots:{}};}
-  const inp=document.getElementById('new-lot-num');
+function _ensureCoreJob(){
+  if(!db.coreRecords[coreJobNo]){
+    const yr=getCoreJobYear();const job=yr?getJobRegistry(yr).find(j=>j.jobNo===coreJobNo):null;
+    db.coreRecords[coreJobNo]={jobName:job?.jobName||'',year:yr,mixes:{}};
+  }
+  if(!db.coreRecords[coreJobNo].mixes)db.coreRecords[coreJobNo].mixes={};
+}
+function addCoreLot(mixNo){
+  if(!coreJobNo||!mixNo)return;
+  _ensureCoreJob();
+  if(!db.coreRecords[coreJobNo].mixes[mixNo])db.coreRecords[coreJobNo].mixes[mixNo]={lots:{}};
+  const sid=mixNo.replace(/\W/g,'_');
+  const inp=document.getElementById('new-lot-'+sid);
   const raw=inp?inp.value.trim():'';
   let lotKey;
-  if(raw&&!isNaN(raw)&&parseInt(raw)>0){
-    lotKey=String(parseInt(raw));
-  }else{
-    const existing=Object.keys(db.coreRecords[coreJobNo].lots).map(Number).filter(n=>!isNaN(n));
-    lotKey=String(existing.length?Math.max(...existing)+1:1);
-  }
-  if(!db.coreRecords[coreJobNo].lots[lotKey])db.coreRecords[coreJobNo].lots[lotKey]={};
+  if(raw&&!isNaN(raw)&&parseInt(raw)>0){lotKey=String(parseInt(raw));}
+  else{const ex=Object.keys(db.coreRecords[coreJobNo].mixes[mixNo].lots).map(Number).filter(n=>!isNaN(n));lotKey=String(ex.length?Math.max(...ex)+1:1);}
+  if(!db.coreRecords[coreJobNo].mixes[mixNo].lots[lotKey])db.coreRecords[coreJobNo].mixes[mixNo].lots[lotKey]={};
   renderView();
 }
 function recalcCoreCell(){
@@ -1989,26 +1993,32 @@ function recalcCoreCell(){
   const gmm=parseFloat(document.getElementById('cv-gmm')?.textContent)||0;
   if(gmbC>0&&gmm>0){
     const av=(1-gmbC/gmm)*100;
-    const avCol=av>=3&&av<=5?'#c6efce':av>=2&&av<=6?'#ffeb9c':'#ffc7ce';
-    setHTML('cv-av',`<span style="background:${avCol};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);
+    setHTML('cv-av',`<span style="background:${av>=3&&av<=5?'#c6efce':av>=2&&av<=6?'#ffeb9c':'#ffc7ce'};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);
     const comp=(gmbC/gmm)*100;
-    const compCol=comp>=92?'#c6efce':comp>=90?'#ffeb9c':'#ffc7ce';
-    setHTML('cv-comp',`<span style="background:${compCol};padding:2px 6px;border-radius:4px;color:#333">${roundUp(comp,1)}%</span>`);
+    setHTML('cv-comp',`<span style="background:${comp>=92?'#c6efce':comp>=90?'#ffeb9c':'#ffc7ce'};padding:2px 6px;border-radius:4px;color:#333">${roundUp(comp,1)}%</span>`);
   }else{setText('cv-av','—');setText('cv-comp','—');}
 }
 function saveCoreCell(){
-  if(!coreJobNo||!coreActiveLot||!coreActiveSub)return;
+  if(!coreJobNo||!coreActiveMix||!coreActiveLot||!coreActiveSub)return;
   const g=id=>document.getElementById(id)?.value||'';
   const cell={avgThk:g('cv-avgthk'),a:g('cv-a'),b:g('cv-b'),c:g('cv-c'),date:g('cv-date')};
+  _ensureCoreJob();
+  if(!db.coreRecords[coreJobNo].mixes[coreActiveMix])db.coreRecords[coreJobNo].mixes[coreActiveMix]={lots:{}};
+  if(!db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot])db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot]={};
   if(!cell.avgThk&&!cell.a){
-    if(db.coreRecords[coreJobNo]?.lots?.[coreActiveLot])delete db.coreRecords[coreJobNo].lots[coreActiveLot][coreActiveSub];
+    delete db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot][coreActiveSub];
   }else{
-    if(!db.coreRecords[coreJobNo]){const yr=getCoreJobYear();const job=yr?getJobRegistry(yr).find(j=>j.jobNo===coreJobNo):null;db.coreRecords[coreJobNo]={jobName:job?.jobName||'',year:yr,lots:{}};}
-    if(!db.coreRecords[coreJobNo].lots[coreActiveLot])db.coreRecords[coreJobNo].lots[coreActiveLot]={};
-    if(coreMixNo)cell.mixNo=coreMixNo;
-    db.coreRecords[coreJobNo].lots[coreActiveLot][coreActiveSub]=cell;
+    db.coreRecords[coreJobNo].mixes[coreActiveMix].lots[coreActiveLot][coreActiveSub]=cell;
   }
-  coreActiveLot=null;coreActiveSub=null;
+  coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;
+  saveCoreRecords();renderView();
+}
+function deleteCoreSub(){
+  if(!coreJobNo||!coreActiveMix||!coreActiveLot||!coreActiveSub)return;
+  if(!confirm(`Delete Sub-lot ${coreActiveSub} data from Lot ${coreActiveLot}?`))return;
+  const lots=db.coreRecords[coreJobNo]?.mixes?.[coreActiveMix]?.lots;
+  if(lots?.[coreActiveLot])delete lots[coreActiveLot][coreActiveSub];
+  coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;
   saveCoreRecords();renderView();
 }
 async function saveCoreRecords(){
@@ -2022,114 +2032,253 @@ async function saveCoreRecords(){
     if(error)console.error('core insert:',error);
   }
 }
+function printCoreLotReport(mixNo,lot){
+  const jobRec=db.coreRecords[coreJobNo];
+  const jobName=jobRec?.jobName||coreJobNo;
+  const lotData=jobRec?.mixes?.[mixNo]?.lots?.[lot]||{};
+  const NSUB=9;
+  const rows=Array.from({length:NSUB},(_,i)=>{
+    const sub=String(i+1);const cell=lotData[sub];
+    if(!cell||(!cell.avgThk&&!cell.a))return{sub,empty:true};
+    const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
+    const vol=cb>cc?cb-cc:0;const gmbC=ca>0&&vol>0?ca/vol:0;
+    const gmm=getCoreGmm(lot,sub);
+    const av=gmbC>0&&gmm>0?(1-gmbC/gmm)*100:null;
+    const comp=gmbC>0&&gmm>0?(gmbC/gmm)*100:null;
+    return{sub,avgThk:parseFloat(cell.avgThk)||null,gmbC:gmbC||null,gmm:gmm||null,av,comp,date:cell.date||''};
+  });
+  const thkVals=rows.filter(r=>!r.empty&&r.avgThk).map(r=>r.avgThk);
+  const compVals=rows.filter(r=>!r.empty&&r.comp!==null).map(r=>r.comp);
+  const avgThk=thkVals.length?(thkVals.reduce((a,b)=>a+b,0)/thkVals.length).toFixed(1):null;
+  const avgComp=compVals.length?compVals.reduce((a,b)=>a+b,0)/compVals.length:null;
+  const compColor=c=>c>=92?'#1a7a1a':c>=90?'#8a6a00':'#c00000';
+  const avColor=v=>v>=3&&v<=5?'#1a7a1a':v>=2&&v<=6?'#8a6a00':'#c00000';
+  const tableRows=rows.map(r=>{
+    if(r.empty)return`<tr><td style="text-align:center;font-weight:700;color:#999">${r.sub}</td><td colspan="6" style="text-align:center;color:#ccc">—</td></tr>`;
+    return`<tr>
+      <td style="text-align:center;font-weight:700">${r.sub}</td>
+      <td style="text-align:center">${r.date||'—'}</td>
+      <td style="text-align:center">${r.avgThk!==null?r.avgThk+' mm':'—'}</td>
+      <td style="text-align:center">${r.gmbC?roundUp(r.gmbC,3):'—'}</td>
+      <td style="text-align:center">${r.gmm?r.gmm.toFixed(3):'—'}</td>
+      <td style="text-align:center;font-weight:700;color:${r.av!==null?avColor(r.av):'#333'}">${r.av!==null?roundUp(r.av,1)+'%':'—'}</td>
+      <td style="text-align:center;font-weight:700;color:${r.comp!==null?compColor(r.comp):'#333'}">${r.comp!==null?roundUp(r.comp,1)+'%':'—'}</td>
+    </tr>`;
+  }).join('');
+  const avgRow=`<tr style="background:#e8eef7;font-weight:700;border-top:2px solid #1f3864">
+    <td colspan="2" style="text-align:right;padding:8px 10px;color:#1f3864">AVERAGE</td>
+    <td style="text-align:center">${avgThk!==null?avgThk+' mm':'—'}</td>
+    <td colspan="2" style="text-align:center">—</td>
+    <td style="text-align:center">—</td>
+    <td style="text-align:center;color:${avgComp!==null?compColor(avgComp):'#333'}">${avgComp!==null?roundUp(avgComp,1)+'%':'—'}</td>
+  </tr>`;
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w)return alert('Please allow popups to print the report.');
+  w.document.write(`<!doctype html><html><head><title>Core Report — Lot ${lot} / ${mixNo}</title>
+  <style>body{font-family:Arial,sans-serif;font-size:12px;color:#222;margin:20px}h2{color:#1f3864;margin-bottom:4px}
+  table{border-collapse:collapse;width:100%}th,td{border:1px solid #c8d4e8;padding:6px 10px}th{background:#1f3864;color:#fff;text-align:center}
+  .sub{color:#777;font-size:11px}@media print{button{display:none}}</style></head>
+  <body><button onclick="window.print()" style="float:right;padding:5px 16px;background:#1f3864;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">Print</button>
+  <h2>Compaction Core Report</h2>
+  <p style="margin:2px 0"><strong>${jobName}</strong> — Contract ${coreJobNo} &nbsp;|&nbsp; Mix: <strong>${mixNo}</strong> &nbsp;|&nbsp; <strong>Lot ${lot}</strong></p>
+  <p style="margin:2px 0;font-size:11px;color:#777">Generated ${new Date().toLocaleDateString('en-CA')}</p>
+  <br>
+  <table><thead><tr><th>Sub-lot</th><th>Date Cored</th><th>Avg Thickness (mm)</th><th>Gmb</th><th>Gmm ★</th><th>Air Voids (%)</th><th>% Compaction</th></tr></thead>
+  <tbody>${tableRows}</tbody><tfoot>${avgRow}</tfoot></table>
+  <p style="margin-top:12px;font-size:10px;color:#999">★ Gmm auto-linked from loose mix test record. Compaction acceptance: ≥ 92% (green), 90–92% (borderline), &lt; 90% (fail).</p>
+  </body></html>`);
+  w.document.close();
+}
+function _renderMixSection(mix,jobMixes){
+  const mixNo=mix.mixNo;const sid=mixNo.replace(/\W/g,'_');
+  const mixData=db.coreRecords[coreJobNo]?.mixes?.[mixNo]||{lots:{}};
+  const lots=Object.keys(mixData.lots).sort((a,b)=>Number(a)-Number(b));
+  const NSUB=9;
+  const isEditingHere=coreActiveMix===mixNo;
+  const isReportHere=coreLotReport?.mixNo===mixNo;
+  const subH=Array.from({length:NSUB},(_,i)=>`<th style="text-align:center;min-width:100px;font-size:11px;padding:4px 2px;color:#555;font-weight:700">Sub-${i+1}</th>`).join('');
+  const lotRows=lots.map(lot=>{
+    const lotData=mixData.lots[lot]||{};
+    const cells=Array.from({length:NSUB},(_,i)=>{
+      const sub=String(i+1);const cell=lotData[sub];
+      const isAct=isEditingHere&&coreActiveLot===lot&&coreActiveSub===sub;
+      let avgThk=null,gmbC=null,gmm=null,av=null,comp=null;
+      if(cell){
+        avgThk=cell.avgThk?parseFloat(cell.avgThk):null;
+        const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
+        const vol=cb>cc?cb-cc:0;if(ca>0&&vol>0)gmbC=ca/vol;
+        gmm=getCoreGmm(lot,sub)||null;
+        if(gmbC&&gmm){av=(1-gmbC/gmm)*100;comp=(gmbC/gmm)*100;}
+      }
+      const hasData=!!(avgThk||gmbC);
+      const bg=isAct?'#1f3864':hasData?'#eef3fb':'#fafbfc';
+      const tc=isAct?'#fff':'#1f3864';const muted=isAct?'rgba(255,255,255,.65)':'#666';
+      const avCol=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):null;
+      const compCol=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):null;
+      return`<td style="vertical-align:top;padding:4px 5px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;min-width:100px" onclick="coreActiveMix='${mixNo}';coreActiveLot='${lot}';coreActiveSub='${sub}';coreLotReport=null;renderView()">
+        ${hasData?`
+          ${avgThk!==null?`<div style="font-size:10px;color:${muted}">Thk: <span style="font-weight:700;color:${tc}">${avgThk} mm</span></div>`:''}
+          ${gmbC!==null?`<div style="font-size:10px;color:${muted}">Gmb: <span style="font-weight:700;color:${tc}">${roundUp(gmbC,3)}</span></div>`:''}
+          ${gmm?`<div style="font-size:10px;color:${muted}">Gmm: <span style="color:${tc}">${gmm.toFixed(3)}</span></div>`:''}
+          ${av!==null?`<div style="font-size:10px;color:${muted}">AV: <span style="font-weight:700;color:${avCol}">${roundUp(av,1)}%</span></div>`:''}
+          ${comp!==null?`<div style="font-size:10px;color:${muted}">Cmp: <span style="font-weight:700;color:${compCol}">${roundUp(comp,1)}%</span></div>`:''}
+        `:`<span style="color:#ccc;font-size:18px;display:block;text-align:center;padding:4px 0">·</span>`}
+      </td>`;
+    }).join('');
+    const reportBtn=`<button onclick="coreLotReport={mixNo:'${mixNo}',lot:'${lot}'};coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;renderView()" style="font-size:10px;padding:2px 7px;border:1px solid #b8cef0;border-radius:4px;background:#f0f5ff;color:#1f3864;cursor:pointer;white-space:nowrap;display:block;margin-bottom:3px" title="Print lot report">📋</button>`;
+    return`<tr><td style="vertical-align:top;padding:5px 10px 5px 4px;white-space:nowrap">
+      <div style="font-weight:700;color:#1f3864;font-size:13px">Lot ${lot}</div>${reportBtn}
+    </td>${cells}</tr>`;
+  }).join('');
+  let editPanel='';
+  if(isEditingHere&&coreActiveLot&&coreActiveSub){
+    const lot=coreActiveLot,sub=coreActiveSub;
+    const cell=(mixData.lots?.[lot]?.[sub])||{};
+    const gmm=getCoreGmm(lot,sub);
+    editPanel=`<div style="margin-top:12px;padding:16px;border:2px solid #1f3864;border-radius:8px;background:#f5f8ff">
+      <div style="font-weight:700;color:#1f3864;font-size:13px;margin-bottom:14px">⬡ ${mixNo} — Lot ${lot} / Sub-lot ${sub}</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Avg Thickness (mm)</div>
+          <input type="number" step="0.1" id="cv-avgthk" value="${cell.avgThk||''}" placeholder="e.g. 45.2" oninput="recalcCoreCell()" style="width:110px;text-align:center;padding:5px 8px;border:1px solid #ccc;border-radius:5px;font-size:13px;font-weight:700">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Date Cored</div>
+          <input type="date" id="cv-date" value="${cell.date||''}" style="padding:5px 8px;border:1px solid #ccc;border-radius:5px;font-size:12px">
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="lab-table" style="max-width:460px"><tbody>
+        <tr><td class="prop" style="font-weight:700;color:#1f3864">Dry mass in air — A (g)</td><td><input type="number" step="0.1" id="cv-a" value="${cell.a||''}" placeholder="e.g. 2145.3" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+        <tr><td class="prop" style="font-weight:700;color:#1f3864">SSD mass — B (g)</td><td><input type="number" step="0.1" id="cv-b" value="${cell.b||''}" placeholder="e.g. 2147.1" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+        <tr><td class="prop" style="font-weight:700;color:#1f3864">Mass in water — C (g)</td><td><input type="number" step="0.1" id="cv-c" value="${cell.c||''}" placeholder="e.g. 1264.8" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+        <tr style="background:#f0f4f8"><td class="prop" style="color:#555">Volume — B−C (cm³)</td><td class="calc" id="cv-vol">—</td></tr>
+        <tr><td class="prop" style="font-weight:700">Gmb (core)</td><td class="calc" id="cv-gmb" style="font-weight:700;font-size:13px">—</td></tr>
+        <tr style="background:#f0f4f8"><td class="prop" style="color:#666;font-style:italic">Gmm — from loose mix ${gmm>0?'<span style="font-size:10px;color:#1a6b1a;font-style:normal;font-weight:700">★ auto-linked</span>':''}</td><td id="cv-gmm" style="text-align:center;font-size:12px;font-weight:700">${gmm>0?gmm.toFixed(3):'<span style="color:#aaa;font-size:11px;font-weight:400">No matching test record</span>'}</td></tr>
+        <tr><td class="prop" style="font-weight:700">Air voids — core (%)</td><td class="calc" id="cv-av" style="font-weight:700">—</td></tr>
+        <tr style="background:#f0f4f8"><td class="prop" style="font-weight:700;color:#1f3864">% Compaction</td><td class="calc" id="cv-comp" style="font-weight:700">—</td></tr>
+      </tbody></table></div>
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button onclick="saveCoreCell()" style="font-size:12px;padding:5px 20px;border:none;border-radius:6px;background:#1f3864;color:#fff;cursor:pointer;font-weight:700">Save</button>
+        <button onclick="coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;renderView()" style="font-size:12px;padding:5px 14px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#555;cursor:pointer">Cancel</button>
+        <button onclick="deleteCoreSub()" style="font-size:12px;padding:5px 14px;border:1px solid #e87070;border-radius:6px;background:#fff8f8;color:#c00;cursor:pointer;margin-left:auto">Delete sublot</button>
+      </div>
+    </div>`;
+  }
+  let reportPanel='';
+  if(isReportHere){
+    const lot=coreLotReport.lot;
+    const lotData=mixData.lots[lot]||{};
+    const NSUB2=9;
+    const rrows=Array.from({length:NSUB2},(_,i)=>{
+      const sub=String(i+1);const cell=lotData[sub];
+      if(!cell||(!cell.avgThk&&!cell.a))return`<tr><td style="text-align:center;color:#999">${sub}</td>${Array(6).fill('<td style="text-align:center;color:#ccc">—</td>').join('')}</tr>`;
+      const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
+      const vol=cb>cc?cb-cc:0;const gmbC=ca>0&&vol>0?ca/vol:0;
+      const gmm=getCoreGmm(lot,sub);
+      const av=gmbC>0&&gmm>0?(1-gmbC/gmm)*100:null;
+      const comp=gmbC>0&&gmm>0?(gmbC/gmm)*100:null;
+      const avC=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):'#333';
+      const cC=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):'#333';
+      return`<tr>
+        <td style="text-align:center;font-weight:700">${sub}</td>
+        <td style="text-align:center">${cell.date||'—'}</td>
+        <td style="text-align:center">${parseFloat(cell.avgThk)||0?cell.avgThk+' mm':'—'}</td>
+        <td style="text-align:center">${gmbC?roundUp(gmbC,3):'—'}</td>
+        <td style="text-align:center">${gmm?gmm.toFixed(3):'—'}</td>
+        <td style="text-align:center;font-weight:700;color:${avC}">${av!==null?roundUp(av,1)+'%':'—'}</td>
+        <td style="text-align:center;font-weight:700;color:${cC}">${comp!==null?roundUp(comp,1)+'%':'—'}</td>
+      </tr>`;
+    }).join('');
+    const thkV=Array.from({length:NSUB2},(_,i)=>{const c=lotData[String(i+1)];return c&&c.avgThk?parseFloat(c.avgThk):null;}).filter(v=>v!==null);
+    const cmpV=Array.from({length:NSUB2},(_,i)=>{
+      const c=lotData[String(i+1)];if(!c||(!c.a&&!c.b))return null;
+      const ca=parseFloat(c.a)||0,cb=parseFloat(c.b)||0,cc=parseFloat(c.c)||0;
+      const vol=cb>cc?cb-cc:0;const g=ca>0&&vol>0?ca/vol:0;
+      const gmm=getCoreGmm(lot,String(i+1));return g>0&&gmm>0?(g/gmm)*100:null;
+    }).filter(v=>v!==null);
+    const avgThkR=thkV.length?(thkV.reduce((a,b)=>a+b,0)/thkV.length).toFixed(1):null;
+    const avgCmpR=cmpV.length?cmpV.reduce((a,b)=>a+b,0)/cmpV.length:null;
+    const cmpColor=c=>c>=92?'#1a7a1a':c>=90?'#8a6a00':'#c00000';
+    reportPanel=`<div style="margin-top:14px;padding:16px;border:2px solid #2a5298;border-radius:8px;background:#f8faff">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;color:#1f3864;font-size:14px">📋 Core Report — ${mixNo} / Lot ${lot}</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="printCoreLotReport('${mixNo}','${lot}')" style="font-size:11px;padding:4px 12px;border:none;border-radius:5px;background:#1f3864;color:#fff;cursor:pointer;font-weight:700">Print / Export</button>
+          <button onclick="coreLotReport=null;renderView()" style="font-size:11px;padding:4px 10px;border:1px solid #ccc;border-radius:5px;background:#fff;color:#555;cursor:pointer">Close</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="lab-table" style="width:100%;min-width:600px">
+        <thead><tr>
+          <th style="text-align:center;width:70px">Sub-lot</th>
+          <th style="text-align:center">Date Cored</th>
+          <th style="text-align:center">Avg Thickness (mm)</th>
+          <th style="text-align:center">Gmb</th>
+          <th style="text-align:center">Gmm ★</th>
+          <th style="text-align:center">Air Voids (%)</th>
+          <th style="text-align:center">% Compaction</th>
+        </tr></thead>
+        <tbody>${rrows}</tbody>
+        <tfoot><tr style="background:#e8eef7;font-weight:700">
+          <td colspan="2" style="text-align:right;padding:7px 10px;color:#1f3864">AVERAGE</td>
+          <td style="text-align:center">${avgThkR!==null?avgThkR+' mm':'—'}</td>
+          <td colspan="2" style="text-align:center">—</td>
+          <td style="text-align:center">—</td>
+          <td style="text-align:center;color:${avgCmpR!==null?cmpColor(avgCmpR):'#333'}">${avgCmpR!==null?roundUp(avgCmpR,1)+'%':'—'}</td>
+        </tr></tfoot>
+      </table></div>
+    </div>`;
+  }
+  return`<div style="margin-bottom:18px;border:1px solid #c8d4e8;border-radius:8px;overflow:hidden">
+    <div style="background:#1f3864;color:#fff;padding:8px 14px;font-weight:700;font-size:13px">${mixNo}${mix.ticketDesc?' — '+mix.ticketDesc:''}</div>
+    <div style="padding:12px 14px">
+      <div style="overflow-x:auto;margin-bottom:10px">
+        <table style="border-collapse:separate;border-spacing:3px 4px;width:100%">
+          <thead><tr><th style="min-width:80px"></th>${subH}</tr></thead>
+          <tbody>${lotRows||`<tr><td colspan="10" style="color:#aaa;font-style:italic;padding:12px;font-size:12px">No lots yet — add one below</td></tr>`}</tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="font-size:12px;color:#555;font-weight:600">Add Lot #</label>
+        <input type="number" id="new-lot-${sid}" placeholder="e.g. 6" min="1" style="width:68px;padding:3px 7px;border:1px solid #b8cef0;border-radius:5px;font-size:12px;text-align:center">
+        <button onclick="addCoreLot('${mixNo}')" style="font-size:12px;padding:3px 12px;border:1px dashed #b8cef0;border-radius:6px;background:#fff;color:#1f3864;cursor:pointer;font-weight:600">+ Add Lot</button>
+        <span style="font-size:11px;color:#aaa">(blank = auto-number)</span>
+      </div>
+      ${editPanel}${reportPanel}
+    </div>
+  </div>`;
+}
 function renderCores(){
   const allJobsList=[];const seen=new Set();
   Object.keys(JOB_REGISTRY_DATA).sort((a,b)=>b-a).forEach(yr=>{
     getJobRegistry(yr).forEach(j=>{if(!seen.has(j.jobNo)){seen.add(j.jobNo);allJobsList.push({jobNo:j.jobNo,jobName:j.jobName,year:yr,mixes:j.mixes});}});
   });
   const jobOpts=allJobsList.map(j=>`<option value="${j.jobNo}" ${j.jobNo===coreJobNo?'selected':''}>${j.jobNo} — ${j.jobName}</option>`).join('');
-  let jobInfo='',grid='',editPanel='';
+  let body='';
   if(coreJobNo){
     const yr=getCoreJobYear();
     const job=yr?getJobRegistry(yr).find(j=>j.jobNo===coreJobNo):null;
     const jobMixes=(job?.mixes||[]).filter(m=>m.submitted);
-    const mixOpts=jobMixes.map(m=>`<option value="${m.mixNo}" ${m.mixNo===coreMixNo?'selected':''}>${m.mixNo} — ${m.ticketDesc||m.mixNo}</option>`).join('');
-    jobInfo=`<div style="margin-bottom:14px;padding:10px 14px;background:#f0f4f8;border-radius:8px;font-size:13px;display:flex;align-items:center;flex-wrap:wrap;gap:14px">
-      <div><strong>${job?.jobName||coreJobNo}</strong>&nbsp;&nbsp;<span style="color:#777">Contract ${coreJobNo}</span></div>
-      ${jobMixes.length>1?`<label style="font-size:12px;color:#444;display:flex;align-items:center;gap:5px">Mix: <select onchange="coreMixNo=this.value;renderView()" style="font-size:12px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;color:#1f3864;font-weight:600"><option value="">All</option>${mixOpts}</select></label>`:jobMixes.length===1?`<span style="color:#1f3864;font-weight:600;font-size:12px">${jobMixes[0].mixNo} — ${jobMixes[0].ticketDesc}</span>`:''}
+    const jobInfo=`<div style="margin-bottom:14px;padding:10px 14px;background:#f0f4f8;border-radius:8px;font-size:13px">
+      <strong>${job?.jobName||coreJobNo}</strong>&nbsp;&nbsp;<span style="color:#777">Contract ${coreJobNo}</span>
+      ${jobMixes.length?`<span style="font-size:11px;color:#555;margin-left:10px">${jobMixes.length} submitted mix${jobMixes.length>1?'es':''}</span>`:''}
     </div>`;
-    const coreJob=db.coreRecords[coreJobNo];
-    const lots=coreJob?Object.keys(coreJob.lots).sort((a,b)=>Number(a)-Number(b)):[];
-    const NSUB=9;
-    const subH=Array.from({length:NSUB},(_,i)=>`<th style="text-align:center;min-width:100px;font-size:11px;padding:5px 3px;color:#555;font-weight:700">Sub-${i+1}</th>`).join('');
-    const lotRows=lots.map(lot=>{
-      const lotData=coreJob.lots[lot]||{};
-      const cells=Array.from({length:NSUB},(_,i)=>{
-        const sub=String(i+1);const cell=lotData[sub];
-        const isAct=coreActiveLot===lot&&coreActiveSub===sub;
-        // Compute derived values for display
-        let avgThk=null,gmbC=null,gmm=null,av=null,comp=null;
-        if(cell){
-          avgThk=cell.avgThk?parseFloat(cell.avgThk):null;
-          const ca=parseFloat(cell.a)||0,cb=parseFloat(cell.b)||0,cc=parseFloat(cell.c)||0;
-          const vol=cb>cc?cb-cc:0;
-          if(ca>0&&vol>0)gmbC=ca/vol;
-          gmm=getCoreGmm(lot,sub)||null;
-          if(gmbC&&gmm){av=(1-gmbC/gmm)*100;comp=(gmbC/gmm)*100;}
-        }
-        const hasData=!!(avgThk||gmbC);
-        const bg=isAct?'#1f3864':hasData?'#eef3fb':'#fafbfc';
-        const tc=isAct?'#fff':'#1f3864';
-        const muted=isAct?'rgba(255,255,255,.65)':'#666';
-        const avCol=av!==null?(av>=3&&av<=5?'#1a7a1a':av>=2&&av<=6?'#8a6a00':'#c00000'):null;
-        const compCol=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):null;
-        return`<td style="vertical-align:top;text-align:left;padding:5px 6px;border:1px solid ${isAct?'#1f3864':'#dde5f0'};cursor:pointer;background:${bg};border-radius:4px;transition:background .1s;min-width:100px" onclick="coreActiveLot='${lot}';coreActiveSub='${sub}';renderView()">
-          ${hasData?`
-            ${avgThk!==null?`<div style="font-size:10px;color:${muted}">Thk: <span style="font-weight:700;color:${tc}">${avgThk} mm</span></div>`:''}
-            ${gmbC!==null?`<div style="font-size:10px;color:${muted}">Gmb: <span style="font-weight:700;color:${tc}">${roundUp(gmbC,3)}</span></div>`:''}
-            ${gmm?`<div style="font-size:10px;color:${muted}">Gmm: <span style="color:${tc}">${gmm.toFixed(3)}</span></div>`:''}
-            ${av!==null?`<div style="font-size:10px;color:${muted}">AV: <span style="font-weight:700;color:${avCol}">${roundUp(av,1)}%</span></div>`:''}
-            ${comp!==null?`<div style="font-size:10px;color:${muted}">Cmp: <span style="font-weight:700;color:${compCol}">${roundUp(comp,1)}%</span></div>`:''}
-          `:`<span style="color:#ccc;font-size:18px;display:block;text-align:center;padding:6px 0">·</span>`}
-        </td>`;
-      }).join('');
-      return`<tr><td style="font-weight:700;color:#1f3864;padding:6px 12px 6px 4px;white-space:nowrap;font-size:13px;vertical-align:top;padding-top:8px">Lot ${lot}</td>${cells}</tr>`;
-    }).join('');
-    grid=`<div style="overflow-x:auto;margin-bottom:12px">
-      <table style="border-collapse:separate;border-spacing:3px 4px;width:100%">
-        <thead><tr><th style="min-width:60px"></th>${subH}</tr></thead>
-        <tbody>${lotRows||`<tr><td colspan="10" style="color:#aaa;font-style:italic;padding:16px;font-size:13px">No lots added yet — add one below</td></tr>`}</tbody>
-      </table>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <label style="font-size:12px;color:#555;font-weight:600">Add Lot #</label>
-      <input type="number" id="new-lot-num" placeholder="e.g. 6" min="1" style="width:70px;padding:4px 8px;border:1px solid #b8cef0;border-radius:5px;font-size:12px;text-align:center">
-      <button onclick="addCoreLot()" style="font-size:12px;padding:4px 14px;border:1px dashed #b8cef0;border-radius:6px;background:#fff;color:#1f3864;cursor:pointer;font-weight:600">+ Add Lot</button>
-      <span style="font-size:11px;color:#aaa">(leave blank to auto-number)</span>
-    </div>
-    <div style="margin-top:6px;font-size:11px;color:#999">Click any sublot cell to enter or edit data. ★ = Gmm auto-linked from loose mix test.</div>`;
-    if(coreActiveLot&&coreActiveSub){
-      const lot=coreActiveLot,sub=coreActiveSub;
-      const cell=(db.coreRecords[coreJobNo]?.lots?.[lot]?.[sub])||{};
-      const gmm=getCoreGmm(lot,sub);
-      editPanel=`<div style="margin-top:16px;padding:16px;border:2px solid #1f3864;border-radius:8px;background:#f5f8ff">
-        <div style="font-weight:700;color:#1f3864;font-size:13px;margin-bottom:14px">⬡ Lot ${lot} / Sub-lot ${sub}</div>
-        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Avg Thickness (mm)</div>
-            <input type="number" step="0.1" id="cv-avgthk" value="${cell.avgThk||''}" placeholder="e.g. 45.2" oninput="recalcCoreCell()" style="width:110px;text-align:center;padding:5px 8px;border:1px solid #ccc;border-radius:5px;font-size:13px;font-weight:700">
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Date Cored</div>
-            <input type="date" id="cv-date" value="${cell.date||''}" style="padding:5px 8px;border:1px solid #ccc;border-radius:5px;font-size:12px">
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table class="lab-table" style="max-width:460px"><tbody>
-          <tr><td class="prop" style="font-weight:700;color:#1f3864">Dry mass in air — A (g)</td><td><input type="number" step="0.1" id="cv-a" value="${cell.a||''}" placeholder="e.g. 2145.3" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
-          <tr><td class="prop" style="font-weight:700;color:#1f3864">SSD mass — B (g)</td><td><input type="number" step="0.1" id="cv-b" value="${cell.b||''}" placeholder="e.g. 2147.1" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
-          <tr><td class="prop" style="font-weight:700;color:#1f3864">Mass in water — C (g)</td><td><input type="number" step="0.1" id="cv-c" value="${cell.c||''}" placeholder="e.g. 1264.8" oninput="recalcCoreCell()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
-          <tr style="background:#f0f4f8"><td class="prop" style="color:#555">Volume — B−C (cm³)</td><td class="calc" id="cv-vol">—</td></tr>
-          <tr><td class="prop" style="font-weight:700">Gmb (core)</td><td class="calc" id="cv-gmb" style="font-weight:700;font-size:13px">—</td></tr>
-          <tr style="background:#f0f4f8"><td class="prop" style="color:#666;font-style:italic">Gmm — from loose mix ${gmm>0?'<span style="font-size:10px;color:#1a6b1a;font-style:normal;font-weight:700">★ auto-linked</span>':''}</td><td id="cv-gmm" style="text-align:center;font-size:12px;font-weight:700">${gmm>0?gmm.toFixed(3):'<span style="color:#aaa;font-size:11px;font-weight:400">No matching test record</span>'}</td></tr>
-          <tr><td class="prop" style="font-weight:700">Air voids — core (%)</td><td class="calc" id="cv-av" style="font-weight:700">—</td></tr>
-          <tr style="background:#f0f4f8"><td class="prop" style="font-weight:700;color:#1f3864">% Compaction</td><td class="calc" id="cv-comp" style="font-weight:700">—</td></tr>
-        </tbody></table></div>
-        <div style="margin-top:12px;display:flex;gap:10px">
-          <button onclick="saveCoreCell()" style="font-size:12px;padding:5px 20px;border:none;border-radius:6px;background:#1f3864;color:#fff;cursor:pointer;font-weight:700">Save</button>
-          <button onclick="coreActiveLot=null;coreActiveSub=null;renderView()" style="font-size:12px;padding:5px 14px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#555;cursor:pointer">Cancel</button>
-        </div>
-      </div>`;
+    if(!jobMixes.length){
+      body=jobInfo+`<div style="color:#888;font-style:italic;font-size:13px;padding:12px 0">No submitted mixes found for this job.</div>`;
+    }else{
+      const mixSections=jobMixes.map(m=>_renderMixSection(m,jobMixes)).join('');
+      body=jobInfo+mixSections;
     }
   }
   return`<div class="card">
     <div class="section-title">Compaction Cores</div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
       <label style="font-size:13px;font-weight:600;color:#444">Contract / Job:</label>
-      <select onchange="coreJobNo=this.value;coreActiveLot=null;coreActiveSub=null;coreMixNo=null;renderView()" style="padding:6px 12px;border:1px solid #c8d4e8;border-radius:6px;font-size:13px;color:#1f3864;min-width:280px">
+      <select onchange="coreJobNo=this.value;coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;coreLotReport=null;renderView()" style="padding:6px 12px;border:1px solid #c8d4e8;border-radius:6px;font-size:13px;color:#1f3864;min-width:280px">
         <option value="">— select a job —</option>${jobOpts}
       </select>
     </div>
-    ${jobInfo}${grid}${editPanel}
+    ${body}
+    ${coreJobNo?'<div style="margin-top:6px;font-size:11px;color:#999">Click any sublot cell to enter or edit data. 📋 = lot report. ★ = Gmm auto-linked from loose mix test.</div>':''}
   </div>`;
 }
 // ── END CORES ──────────────────────────────────────────────────────────────────
