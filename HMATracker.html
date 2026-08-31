@@ -1517,7 +1517,7 @@ function renderSavedResult(r){
     ${r.acContent?`<div class="metric-card"><div class="metric-label">AC content</div><div class="metric-value" style="color:${acColor}">${r.acContent}%</div></div>`:''}
     ${r.jmfAC?`<div class="metric-card"><div class="metric-label">Mix Design AC</div><div class="metric-value">${r.jmfAC}%</div></div>`:''}
     ${r.airVoids?`<div class="metric-card"><div class="metric-label">Air voids</div><div class="metric-value" style="color:${r.avStatus==='acceptable'?'#1a6b1a':r.avStatus==='borderline'?'#8a6000':'#c0392b'}">${r.airVoids}%</div></div>`:''}
-    ${r.vma?`<div class="metric-card"><div class="metric-label">VMA</div><div class="metric-value" style="color:${r.vmaStatus==='acceptable'?'#1a6b1a':r.vmaStatus==='borderline'?'#8a6000':'#c0392b'}">${r.vma}%</div></div>`:''}
+    ${r.vma?`<div class="metric-card"><div class="metric-label">VMA</div><div class="metric-value">${r.vma}%</div></div>`:''}
     ${r.jmfVMA?`<div class="metric-card"><div class="metric-label">Mix Design VMA</div><div class="metric-value">${r.jmfVMA}%</div></div>`:''}
     ${r.vfa?`<div class="metric-card"><div class="metric-label">VFA</div><div class="metric-value">${r.vfa}%</div></div>`:''}
     ${r.gmb?`<div class="metric-card"><div class="metric-label">Gmb</div><div class="metric-value">${r.gmb}</div></div>`:''}
