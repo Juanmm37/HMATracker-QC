@@ -1441,7 +1441,7 @@ async function calcAndSave(){
   }
   const jmfAC=parseFloat(entryData.jmfAC)||0;const acDiff=Math.abs(acPct-jmfAC);const acStatus=jmfAC>0?(acDiff<0.30?'acceptable':acDiff<=0.50?'borderline':'rejectable'):'acceptable';
   const isDFC=(entryData.mixType||'').toUpperCase().includes('DFC');const avStatus=evalAV(airVoids,isDFC);
-  const jmfVMA=jmf?parseFloat(jmf.vmaTarget)||0:0;const vmaStatus=jmfVMA>0?(Math.abs(vma-jmfVMA)<1.0?'acceptable':Math.abs(vma-jmfVMA)<2.0?'borderline':'rejectable'):'acceptable';
+  const jmfVMA=jmf?parseFloat(jmf.vmaTarget)||0:0;const vmaStatus='';
   const gradWorst=worstSt(Object.values(entryData.gradStatus||{}));
   const overall=worstSt([acStatus,avStatus,gradWorst]);
   const record={
