@@ -2717,6 +2717,88 @@ function renderJobRegistryForm(){
   </table>
   </div>
   <button onclick="jrAddMix()" style="background:#e8edf8;border:1px solid #b0bec5;color:#1f3864;border-radius:5px;padding:5px 14px;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:20px">+ Add mix line</button>
+  ${(()=>{
+    const st=ed.opssSpec?.type||'opss310';
+    const sp=st==='custom'?ed.opssSpec:null;
+    const si=(id,val)=>`<input type="number" step="0.01" id="${id}" value="${val}" style="width:64px;text-align:center;padding:3px 4px;font-size:12px;border:1px solid #c8d4e8;border-radius:3px;font-family:inherit">`;
+    const customTables=st!=='custom'?'':`<div style="margin-top:16px;display:grid;gap:14px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">AC Content Tolerance</div>
+        <table style="border-collapse:collapse;font-size:12px"><thead><tr style="background:#f0f4f8">
+          <th style="padding:4px 10px;font-weight:700;color:#555;text-align:left">Criterion</th>
+          <th style="padding:4px 10px;font-weight:700;color:#2d7a47;text-align:center">Acceptable<br>(diff &lt; this)</th>
+          <th style="padding:4px 10px;font-weight:700;color:#b45309;text-align:center">Borderline upper<br>(diff ≤ this)</th>
+        </tr></thead><tbody>
+          <tr><td style="padding:5px 10px;border-bottom:1px solid #e8edf5">AC% deviation from JMF</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-ac-accept',sp?.ac?.accept??0.30)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-ac-reject',sp?.ac?.reject??0.50)}</td>
+          </tr></tbody></table>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Air Voids Criteria (%)</div>
+        <table style="border-collapse:collapse;font-size:12px"><thead><tr style="background:#f0f4f8">
+          <th style="padding:4px 10px;font-weight:700;color:#555;text-align:left">Mix Type</th>
+          <th style="padding:4px 10px;font-weight:700;color:#2d7a47;text-align:center">Accept Low</th>
+          <th style="padding:4px 10px;font-weight:700;color:#2d7a47;text-align:center">Accept High</th>
+          <th style="padding:4px 10px;font-weight:700;color:#b45309;text-align:center">Border Low</th>
+          <th style="padding:4px 10px;font-weight:700;color:#b45309;text-align:center">Border High</th>
+        </tr></thead><tbody>
+          <tr><td style="padding:5px 10px;border-bottom:1px solid #e8edf5">DFC</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-av-dfc-lo',sp?.avDFC?.lo??2.5)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-av-dfc-hi',sp?.avDFC?.hi??4.5)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-av-dfc-blo',sp?.avDFC?.borderLo??2.0)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-av-dfc-bhi',sp?.avDFC?.borderHi??5.0)}</td>
+          </tr>
+          <tr><td style="padding:5px 10px">All others</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-av-ot-lo',sp?.avOther?.lo??3.0)}</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-av-ot-hi',sp?.avOther?.hi??5.0)}</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-av-ot-blo',sp?.avOther?.borderLo??2.0)}</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-av-ot-bhi',sp?.avOther?.borderHi??6.0)}</td>
+          </tr></tbody></table>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Gradation Tolerances (%)</div>
+        <table style="border-collapse:collapse;font-size:12px"><thead><tr style="background:#f0f4f8">
+          <th style="padding:4px 10px;font-weight:700;color:#555;text-align:left">Sieve group</th>
+          <th colspan="2" style="padding:4px 10px;font-weight:700;color:#1f3864;text-align:center;border-left:2px solid #d0d8ea">Surface course</th>
+          <th colspan="2" style="padding:4px 10px;font-weight:700;color:#1f3864;text-align:center;border-left:2px solid #d0d8ea">Binder / levelling</th>
+        </tr><tr style="background:#f8fafd">
+          <th></th>
+          <th style="padding:3px 10px;font-weight:600;color:#2d7a47;text-align:center;font-size:11px;border-left:2px solid #d0d8ea">Accept</th>
+          <th style="padding:3px 10px;font-weight:600;color:#b45309;text-align:center;font-size:11px">Reject</th>
+          <th style="padding:3px 10px;font-weight:600;color:#2d7a47;text-align:center;font-size:11px;border-left:2px solid #d0d8ea">Accept</th>
+          <th style="padding:3px 10px;font-weight:600;color:#b45309;text-align:center;font-size:11px">Reject</th>
+        </tr></thead><tbody>
+          <tr><td style="padding:5px 10px;border-bottom:1px solid #e8edf5">DLS &amp; ≥4.75 mm</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5;border-left:2px solid #d0d8ea">${si('jr-spec-gs-dls-a',sp?.gradSurface?.dls?.accept??5.0)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-gs-dls-r',sp?.gradSurface?.dls?.reject??7.5)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5;border-left:2px solid #d0d8ea">${si('jr-spec-gb-dls-a',sp?.gradBinder?.dls?.accept??7.0)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-gb-dls-r',sp?.gradBinder?.dls?.reject??10.0)}</td>
+          </tr>
+          <tr><td style="padding:5px 10px;border-bottom:1px solid #e8edf5">600 µm</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5;border-left:2px solid #d0d8ea">${si('jr-spec-gs-mid-a',sp?.gradSurface?.mid?.accept??3.5)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-gs-mid-r',sp?.gradSurface?.mid?.reject??5.0)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5;border-left:2px solid #d0d8ea">${si('jr-spec-gb-mid-a',sp?.gradBinder?.mid?.accept??4.5)}</td>
+          <td style="text-align:center;padding:5px 10px;border-bottom:1px solid #e8edf5">${si('jr-spec-gb-mid-r',sp?.gradBinder?.mid?.reject??6.0)}</td>
+          </tr>
+          <tr><td style="padding:5px 10px">75 µm</td>
+          <td style="text-align:center;padding:5px 10px;border-left:2px solid #d0d8ea">${si('jr-spec-gs-fin-a',sp?.gradSurface?.fine?.accept??2.0)}</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-gs-fin-r',sp?.gradSurface?.fine?.reject??3.0)}</td>
+          <td style="text-align:center;padding:5px 10px;border-left:2px solid #d0d8ea">${si('jr-spec-gb-fin-a',sp?.gradBinder?.fine?.accept??2.0)}</td>
+          <td style="text-align:center;padding:5px 10px">${si('jr-spec-gb-fin-r',sp?.gradBinder?.fine?.reject??3.0)}</td>
+          </tr></tbody></table>
+      </div>
+    </div>`;
+    return`<div style="border-top:1px solid #e8edf5;padding-top:16px;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Passing Criteria</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:${st==='custom'?'14px':'0'}">
+        <button onclick="jrSetSpecType('opss310')" style="padding:5px 14px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid ${st==='opss310'?'#1f3864':'#c8d4e8'};background:${st==='opss310'?'#1f3864':'#fff'};color:${st==='opss310'?'#fff':'#555'}">OPSS 310 (Default)</button>
+        <button onclick="jrSetSpecType('custom')" style="padding:5px 14px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid ${st==='custom'?'#7c3aed':'#c8d4e8'};background:${st==='custom'?'#7c3aed':'#fff'};color:${st==='custom'?'#fff':'#555'}">Custom</button>
+        ${st==='custom'?`<span style="font-size:11px;color:#7c3aed;margin-left:4px">Edit the values below — tests for this job will be cross-referenced against these criteria</span>`:`<span style="font-size:11px;color:#666;margin-left:4px">Tests will use standard OPSS.MUNI 310 criteria</span>`}
+      </div>
+      ${customTables}
+    </div>`;
+  })()}
   <div class="row">
     <button class="btn" onclick="jobRegEditing=null;renderView()">Cancel</button>
     <button class="btn btn-primary" onclick="jrSaveJob()">Save job</button>
