@@ -1365,6 +1365,7 @@ function saveVol3(){
       if(vol>0)d['gmm'+k]=String(roundUp(mmix/vol,3));
     }
   }
+  d.gsbOverride=document.getElementById('e-gsb')?.value||'';
   d.isNmax=!!entryData.isNmax;
   if(entryData.showCore){
     d.coreData={
