@@ -2032,10 +2032,10 @@ async function saveCoreRecords(){
     if(error)console.error('core insert:',error);
   }
 }
-function printCoreLotReport(mixNo,lot){
+function printCoreLotReport(mixKey,mixLabel,lot){
   const jobRec=db.coreRecords[coreJobNo];
   const jobName=jobRec?.jobName||coreJobNo;
-  const lotData=jobRec?.mixes?.[mixNo]?.lots?.[lot]||{};
+  const lotData=jobRec?.mixes?.[mixKey]?.lots?.[lot]||{};
   const NSUB=9;
   const rows=Array.from({length:NSUB},(_,i)=>{
     const sub=String(i+1);const cell=lotData[sub];
