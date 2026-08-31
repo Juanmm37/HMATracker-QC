@@ -2620,7 +2620,7 @@ function renderJobRegistry(){
           ?`<span title="No JMF found for ${m.mixNo||'?'}" style="font-weight:700;color:#b91c1c;background:#fde8e8;border:1px solid #fca5a5;padding:2px 8px;border-radius:4px;cursor:help;white-space:nowrap">${m.mixNo||'?'}</span>`
           :`<button onclick="startEntryFromJobReg('${jn}','${m.mixNo}','${yr}','${jmfForBtn.id}')" title="Start new test entry for ${m.mixNo}" style="font-weight:700;color:#1f3864;background:#e8f0fb;border:1px solid #b8cef0;padding:2px 9px;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:12px;line-height:1.5">${m.mixNo} &#x2197;</button>`;
         const jobNoCell=idx===0
-          ?`<td rowspan="${mixes.length}" style="font-weight:700;vertical-align:top;padding-top:9px;white-space:nowrap;border-right:2px solid #d0d8ea">${jn} ${actionBtns}</td>
+          ?`<td rowspan="${mixes.length}" style="font-weight:700;vertical-align:top;padding-top:9px;white-space:nowrap;border-right:2px solid #d0d8ea">${jn}${specBadge}<br>${actionBtns}</td>
             <td rowspan="${mixes.length}" style="vertical-align:top;padding-top:9px;font-size:12px;border-right:1px solid #e8edf5">${job.jobName}</td>`
           :'';
         return`<tr style="${idx===mixes.length-1?'border-bottom:2px solid #d0d8ea':''}">
