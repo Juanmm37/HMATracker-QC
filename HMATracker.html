@@ -2097,7 +2097,7 @@ function printCoreLotReport(mixKey,mixLabel,lot){
   const jobRec=db.coreRecords[coreJobNo];
   const jobName=jobRec?.jobName||coreJobNo;
   const lotData=jobRec?.mixes?.[mixKey]?.lots?.[lot]||{};
-  const NSUB=9;
+  const NSUB=12;
   const rows=Array.from({length:NSUB},(_,i)=>{
     const sub=String(i+1);const cell=lotData[sub];
     if(!cell||(!cell.avgThk&&!cell.a))return{sub,empty:true};
@@ -2168,7 +2168,7 @@ function _renderMixSection(mix,jobMixes){
   const sid=mixKey.replace(/\W/g,'_');
   const mixData=db.coreRecords[coreJobNo]?.mixes?.[mixKey]||{lots:{}};
   const lots=Object.keys(mixData.lots).sort((a,b)=>Number(a)-Number(b));
-  const NSUB=9;
+  const NSUB=12;
   const isEditingHere=coreActiveMix===mixKey;
   const isReportHere=coreLotReport?.mixNo===mixKey;
   const subH=Array.from({length:NSUB},(_,i)=>`<th style="text-align:center;min-width:100px;font-size:11px;padding:4px 2px;color:#555;font-weight:700">Sub-${i+1}</th>`).join('');
