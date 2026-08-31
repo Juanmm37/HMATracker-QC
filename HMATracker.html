@@ -2017,6 +2017,13 @@ function saveCoreCell(){
   coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;
   saveCoreRecords();renderView();
 }
+function deleteCoreLot(mixKey,lot){
+  if(!confirm(`Delete all data for Lot ${lot}? This cannot be undone.`))return;
+  if(db.coreRecords[coreJobNo]?.mixes?.[mixKey]?.lots)delete db.coreRecords[coreJobNo].mixes[mixKey].lots[lot];
+  if(coreActiveMix===mixKey&&coreActiveLot===lot){coreActiveMix=null;coreActiveLot=null;coreActiveSub=null;}
+  if(coreLotReport?.mixNo===mixKey&&coreLotReport?.lot===lot)coreLotReport=null;
+  saveCoreRecords();renderView();
+}
 function deleteCoreSub(){
   if(!coreJobNo||!coreActiveMix||!coreActiveLot||!coreActiveSub)return;
   if(!confirm(`Delete Sub-lot ${coreActiveSub} data from Lot ${coreActiveLot}?`))return;
