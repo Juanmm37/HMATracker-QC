@@ -1017,7 +1017,7 @@ function renderStep2(){
     <div class="form-group"><label>Extracted AC%</label><input type="number" step="0.01" id="e-ac-content" value="${entryData.acContent||''}" placeholder="auto-calculated" readonly onkeydown="gradHeaderKeydown(event)"></div>
   </div>
   <div id="ac-status-bar" class="ac-bar pending"><span id="ac-status-text">Enter total mass and dry mass to calculate AC%</span></div>
-  <div class="info-note" style="margin-top:8px;margin-bottom:10px">AC% = (Total − Dry) / Total × 100 &nbsp;|&nbsp; Accept: &lt;0.30% diff &nbsp;|&nbsp; Border: 0.30–0.50% &nbsp;|&nbsp; Reject: &gt;0.50%</div>
+  ${(()=>{const _sp=getJobSpec(entryData.contractNo);const _ac=_sp?.ac||OPSS310_SPEC.ac;return`<div class="info-note" style="margin-top:8px;margin-bottom:10px">AC% = (Total − Dry) / Total × 100 &nbsp;|&nbsp; Accept: &lt;${_ac.accept}% diff &nbsp;|&nbsp; Border: ${_ac.accept}–${_ac.reject}% &nbsp;|&nbsp; Reject: &gt;${_ac.reject}%${_sp?` &nbsp;<span style="background:#7c3aed;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px">Custom spec</span>`:''}</div>`})()}
   <div class="divider"></div>
   <div class="section-title" style="font-size:13px;margin-bottom:6px">Sieve analysis — cumulative mass retained (g)</div>
   <div class="info-note" style="margin-bottom:8px"><span class="entry-col">Blue column = Technician enters cumulative retained (g).</span> % Passing is calculated automatically.</div>
