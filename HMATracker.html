@@ -2991,6 +2991,7 @@ async function extractFromPDF(input){
     const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|heic|heif|webp)$/i.test(file.name);
     if(!isPDF && !isImage){ showPdfStatus('error','Unsupported file type. Please use a PDF or an image (JPG, PNG, HEIC, WebP).'); return; }
+    if(isPDF) _pendingJmfPdf=file;
     if(isPDF && file.size > 32*1024*1024){ showPdfStatus('error','PDF is too large ('+Math.round(file.size/1024/1024)+'MB — limit is 32MB). Try exporting as JPEG from Preview instead: File → Export → Format: JPEG → Quality: High. A JPEG will be much smaller and works great.'); return; }
     if(isImage && file.size > 20*1024*1024){ showPdfStatus('error','Image is too large ('+Math.round(file.size/1024/1024)+'MB). In Preview: File → Export → Format: JPEG → Quality: High, then upload that file.'); return; }
 
