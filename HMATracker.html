@@ -1052,7 +1052,23 @@ function getDLS(mixType){
   return'9.5';
 }
 function isKeySieve(sieve,dls){const s=String(parseFloat(sieve));return s===String(parseFloat(dls))||s==='4.75'||s==='0.6'||s==='0.075';}
-function getGradTol(sieve,isSurface,dls){if(dls&&!isKeySieve(sieve,dls))return null;const s=parseFloat(sieve);if(s>=4.75)return isSurface?5.0:7.0;if(s>=0.6)return isSurface?3.5:4.5;if(s>=0.075)return 2.0;return null;}
+function getJobSpec(contractNo){
+  if(!contractNo)return null;
+  const parts=contractNo.split('-');const yr=parts[0]&&parts[0].length===2?'20'+parts[0]:parts[0];
+  const jobs=yr?getJobRegistry(yr):[];
+  const job=jobs.find(j=>j.jobNo===contractNo);
+  return job?.opssSpec?.type==='custom'?job.opssSpec:null;
+}
+function getGradTol(sieve,isSurface,dls,spec){
+  if(dls&&!isKeySieve(sieve,dls))return null;
+  const s=parseFloat(sieve);
+  const row=spec?(isSurface?spec.gradSurface:spec.gradBinder):null;
+  if(row){if(s>=4.75)return row.dls;if(s>=0.6)return row.mid;if(s>=0.075)return row.fine;return null;}
+  if(s>=4.75)return isSurface?{accept:5.0,reject:7.5}:{accept:7.0,reject:10.0};
+  if(s>=0.6)return isSurface?{accept:3.5,reject:5.0}:{accept:4.5,reject:6.0};
+  if(s>=0.075)return{accept:2.0,reject:3.0};
+  return null;
+}
 
 // Global capture-phase: prevent ArrowUp/Down from changing number input values — fires
 // before the browser's native spin-button handler so e.preventDefault() actually wins.
