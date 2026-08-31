@@ -1990,7 +1990,7 @@ function recalcCoreCell(){
   const c=parseFloat(document.getElementById('cv-c')?.value)||0;
   const vol=b>c?b-c:0;setText('cv-vol',vol>0?vol.toFixed(1):'—');
   const gmbC=a>0&&vol>0?a/vol:0;setText('cv-gmb',gmbC>0?roundUp(gmbC,3):'—');
-  const gmm=parseFloat(document.getElementById('cv-gmm')?.textContent)||0;
+  const gmm=parseFloat(document.getElementById('cv-gmm')?.value)||0;
   if(gmbC>0&&gmm>0){
     const av=(1-gmbC/gmm)*100;
     setHTML('cv-av',`<span style="background:${av>=3&&av<=5?'#c6efce':av>=2&&av<=6?'#ffeb9c':'#ffc7ce'};padding:2px 6px;border-radius:4px;color:#333">${roundUp(av,1)}%</span>`);
