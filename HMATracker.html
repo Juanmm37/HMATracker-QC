@@ -1169,7 +1169,8 @@ function step2Next(){
   const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;const dls=getDLS(entryData.mixType);
   const massOrig=parseFloat(document.getElementById('e-mass-orig').value)||0;const massDry=parseFloat(document.getElementById('e-mass-dry').value)||0;const totalDry=massDry>0?massDry:massOrig;
   const cumRetained={};const gradActual={},gradStatus={};
-  sieves.forEach(s=>{const cr=parseFloat(document.getElementById('cr-'+s)?.value)||0;cumRetained[s]=cr;if(totalDry>0){const pctPass=100-(cr/totalDry*100);gradActual[s]=pctPass.toFixed(2);if(jmf&&jmf.gradation&&jmf.gradation[s]){const diff=Math.abs(pctPass-parseFloat(jmf.gradation[s]));const tol=getGradTol(s,isSurface,dls);if(tol)gradStatus[s]=diff<tol?'acceptable':diff<=tol*1.5?'borderline':'rejectable';}}});
+  const _spec=getJobSpec(entryData.contractNo);
+  sieves.forEach(s=>{const cr=parseFloat(document.getElementById('cr-'+s)?.value)||0;cumRetained[s]=cr;if(totalDry>0){const pctPass=100-(cr/totalDry*100);gradActual[s]=pctPass.toFixed(2);if(jmf&&jmf.gradation&&jmf.gradation[s]){const diff=Math.abs(pctPass-parseFloat(jmf.gradation[s]));const tol=getGradTol(s,isSurface,dls,_spec);if(tol)gradStatus[s]=diff<tol.accept?'acceptable':diff<=tol.reject?'borderline':'rejectable';}}});
   entryData={...entryData,cumRetained,gradActual,gradStatus,massOrig,massDry,
     acContent:massOrig>0&&massDry>0?((massOrig-massDry)/massOrig*100).toFixed(2):'',
     jmfAC:document.getElementById('e-jmf-ac').value};
