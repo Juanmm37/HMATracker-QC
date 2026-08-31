@@ -1896,7 +1896,7 @@ function renderJMFForm(){
     <button class="btn btn-primary" onclick="saveJMF()">✓ Save Mix Design</button>
   </div></div>`;
 }
-function cancelJmfEdit(){db.jmfs=db.jmfs.filter(j=>j.id!=='__temp__');editingJmf=null;renderView();}
+function cancelJmfEdit(){db.jmfs=db.jmfs.filter(j=>j.id!=='__temp__');editingJmf=null;_pendingJmfPdf=null;renderView();}
 function setJmfFamily(fam){
   let cur=editingJmf==='new'||editingJmf==='__temp__'?(db.jmfs.find(j=>j.id==='__temp__')||{}):db.jmfs.find(j=>j.id===editingJmf)||{};
   if(editingJmf==='new'){db.jmfs=db.jmfs.filter(j=>j.id!=='__temp__');db.jmfs.push({...cur,testFamily:fam,id:'__temp__'});editingJmf='__temp__';}
