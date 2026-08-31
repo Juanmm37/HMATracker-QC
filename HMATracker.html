@@ -2203,7 +2203,7 @@ function _renderMixSection(mix,jobMixes){
       const cC=comp!==null?(comp>=92?'#1a7a1a':comp>=90?'#8a6a00':'#c00000'):'#333';
       return`<tr>
         <td style="text-align:center;font-weight:700">${sub}</td>
-        <td style="text-align:center">${cell.date||'—'}</td>
+        <td style="text-align:center">${formatCoreDate(cell.date)}</td>
         <td style="text-align:center">${parseFloat(cell.avgThk)||0?cell.avgThk+' mm':'—'}</td>
         <td style="text-align:center">${gmbC?roundUp(gmbC,3):'—'}</td>
         <td style="text-align:center">${gmm?gmm.toFixed(3):'—'}</td>
