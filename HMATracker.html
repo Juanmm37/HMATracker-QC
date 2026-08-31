@@ -845,6 +845,7 @@ function editRecord(id){
     cumRetained:r.cumRetained||{},gradActual:r.gradActual||{},gradStatus:r.gradStatus||{},
     massOrig:r.massOrig,massDry:r.massDry,acContent:r.acContent,jmfAC:r.jmfAC,
     vol3Data:_vol3,notes:r.notes||'',
+    showCore:!!(r.hasCore||r.coreData?.a),
   };
   entryStep=1;currentView='entry';
   document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',i===1);});
