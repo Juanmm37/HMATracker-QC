@@ -568,6 +568,8 @@ async function loadFromSupabase(){
   const coreRow=allNotes.find(n=>n.category==='__core_records__');
   db.coreNoteId=coreRow?coreRow.id:null;
   try{db.coreRecords=coreRow?.note?JSON.parse(coreRow.note):{};}catch(e){db.coreRecords={};}
+  // Migrate old structure (top-level lots) to new (mixes > lots)
+  Object.keys(db.coreRecords).forEach(jn=>{const r=db.coreRecords[jn];if(r.lots&&!r.mixes){r.mixes={};delete r.lots;}});
   db.flaskTareNoteId=flaskRow?flaskRow.id:null;
   db.jobRegNoteId=jrEditsRow?jrEditsRow.id:null;
   try{db.jobRegistryEdits=jrEditsRow?.note?JSON.parse(jrEditsRow.note):{};}catch(e){db.jobRegistryEdits={};}
