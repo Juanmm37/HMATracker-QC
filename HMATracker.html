@@ -2040,6 +2040,7 @@ async function saveCoreRecords(){
   }
 }
 function printCoreLotReport(mixKey,mixLabel,lot){
+  const logoSrc=document.getElementById('login-logo')?.src||'';
   const jobRec=db.coreRecords[coreJobNo];
   const jobName=jobRec?.jobName||coreJobNo;
   const lotData=jobRec?.mixes?.[mixKey]?.lots?.[lot]||{};
