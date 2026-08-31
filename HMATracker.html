@@ -2199,7 +2199,7 @@ function _renderMixSection(mix,jobMixes){
       const c=lotData[String(i+1)];if(!c||(!c.a&&!c.b))return null;
       const ca=parseFloat(c.a)||0,cb=parseFloat(c.b)||0,cc=parseFloat(c.c)||0;
       const vol=cb>cc?cb-cc:0;const g=ca>0&&vol>0?ca/vol:0;
-      const gmm=getCoreGmm(lot,String(i+1));return g>0&&gmm>0?(g/gmm)*100:null;
+      const gmm=getCoreGmm(lot,String(i+1))||parseFloat(c.gmmManual)||0;return g>0&&gmm>0?(g/gmm)*100:null;
     }).filter(v=>v!==null);
     const avgThkR=thkV.length?(thkV.reduce((a,b)=>a+b,0)/thkV.length).toFixed(1):null;
     const avgCmpR=cmpV.length?cmpV.reduce((a,b)=>a+b,0)/cmpV.length:null;
