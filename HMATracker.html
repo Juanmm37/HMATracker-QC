@@ -1206,6 +1206,27 @@ function renderStep3(){
     <tr><td class="prop" style="font-weight:600">VMA (%)</td><td class="avg-cell" id="res-vma">—</td></tr>
     <tr><td class="prop" style="font-weight:600">VFA (%)</td><td class="avg-cell" id="res-vfa">—</td></tr>
     ${isSGC?`<tr><td class="prop" style="font-weight:600">%Gmm @ Nini</td><td class="avg-cell" id="res-nini">—</td></tr><tr><td class="prop" style="font-weight:600">%Gmm @ Ndes</td><td class="avg-cell" id="res-ndes">—</td></tr>${isNmax?'<tr><td class="prop" style="font-weight:600;color:#8a6000">%Gmm @ Nmax</td><td class="avg-cell" id="res-nmax" style="color:#8a6000">—</td></tr>':''}`:`<tr><td class="prop" style="font-weight:700;color:#1f3864">Corr. stability (N)</td><td class="avg-cell" id="res-corr-stab" style="font-weight:700;color:#1f3864">—</td></tr><tr><td class="prop" style="font-weight:600">Avg flow (0.25mm)</td><td class="avg-cell" id="res-flow">—</td></tr>`}`;
+  const cd=entryData.vol3Data?.coreData||{};
+  const lotLabel=entryData.lot||entryData.subLot?`<span style="font-size:11px;font-weight:400;color:#7a9fd4;margin-left:8px">Lot ${entryData.lot||'—'} / Sub-lot ${entryData.subLot?parseInt(entryData.subLot,10):'—'}</span>`:'';
+  const coreSection=entryData.showCore?`<div style="margin-top:14px;padding:14px 16px;border:2px solid #b8cef0;border-radius:8px;background:#f5f8ff">
+    <div style="font-weight:700;color:#1f3864;font-size:13px;margin-bottom:12px">⬡ COMPACTION CORE${lotLabel}</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Thickness measurements (mm)</div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px">
+        ${[1,2,3,4].map(k=>`<label style="display:flex;align-items:center;gap:4px">T${k} <input type="number" step="0.1" id="core-t${k}" value="${cd['t'+k]||''}" placeholder="—" oninput="recalcCore()" style="width:68px;text-align:center;padding:3px 4px;border:1px solid #ccc;border-radius:4px;font-size:12px"></label>`).join('')}
+        <span style="font-weight:700;color:#1f3864;margin-left:6px">Avg: <span id="core-tavg" style="font-size:13px">—</span> mm</span>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table class="lab-table" style="max-width:420px"><tbody>
+      <tr><td class="prop" style="font-weight:700;color:#1f3864">Dry mass in air — A (g)</td><td><input type="number" step="0.1" id="core-a" value="${cd.a||''}" placeholder="e.g. 2145.3" oninput="recalcCore()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+      <tr><td class="prop" style="font-weight:700;color:#1f3864">SSD mass — B (g)</td><td><input type="number" step="0.1" id="core-b" value="${cd.b||''}" placeholder="e.g. 2147.1" oninput="recalcCore()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+      <tr><td class="prop" style="font-weight:700;color:#1f3864">Mass in water — C (g)</td><td><input type="number" step="0.1" id="core-c" value="${cd.c||''}" placeholder="e.g. 1264.8" oninput="recalcCore()" style="width:100%;text-align:center;padding:3px 4px;font-size:12px"></td></tr>
+      <tr style="background:#f0f4f8"><td class="prop" style="color:#555">Volume — B−C (cm³)</td><td class="calc" id="core-vol">—</td></tr>
+      <tr><td class="prop" style="font-weight:700">Gmb (core)</td><td class="calc" id="core-gmb" style="font-weight:700;font-size:13px">—</td></tr>
+      <tr style="background:#f0f4f8"><td class="prop" style="color:#666;font-style:italic">Gmm (from loose mix)</td><td class="calc" id="core-gmm" style="color:#666;font-style:italic">—</td></tr>
+      <tr><td class="prop" style="font-weight:700">Air voids — core (%)</td><td class="calc" id="core-av" style="font-weight:700">—</td></tr>
+    </tbody></table></div>
+  </div>`:'';
   return`<div class="card">
   <div class="step-indicator">Step 3 of 3</div>
   <div class="section-title">Volumetrics &nbsp;<span class="badge badge-${fam==='Marshall'?'ms':fam==='SMA'?'sma':'sp'}">${fam}</span></div>
@@ -1214,6 +1235,12 @@ function renderStep3(){
   <div style="overflow-x:auto"><table class="lab-table"><thead><tr><th class="prop" style="width:200px">Property</th>${briqCols}<th class="avg-cell" style="min-width:80px">Average</th></tr></thead><tbody>${brdRows}${sgcRows}${marshalRows}</tbody></table></div>
   <div style="overflow-x:auto;margin-top:14px"><table class="lab-table" style="width:100%"><tbody>${mrdRows}</tbody></table></div>
   <div style="margin-top:14px"><table class="lab-table" style="max-width:360px"><tbody>${sumRows}</tbody></table></div>
+  <div style="margin-top:14px">
+    <button onclick="toggleCore()" style="font-size:12px;padding:5px 16px;border:1px solid ${entryData.showCore?'#1f3864':'#b8cef0'};border-radius:6px;background:${entryData.showCore?'#1f3864':'#fff'};color:${entryData.showCore?'#fff':'#1f3864'};cursor:pointer;font-weight:600">
+      ${entryData.showCore?'▾ Core data':'⬡ Add core data'}
+    </button>
+  </div>
+  ${coreSection}
   <div class="form-group" style="margin-top:16px"><label style="display:block;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Notes / comments</label><textarea id="e-notes" rows="3" style="width:100%;border:1px solid #d0d7e3;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box" placeholder="Field adjustments, observations, or anything worth noting…">${entryData.notes||''}</textarea></div>
   <div class="row" style="margin-top:14px">
     <button class="btn" onclick="saveVol3();entryStep=2;renderView()">← Back</button>
