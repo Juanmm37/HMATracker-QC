@@ -1446,7 +1446,9 @@ async function calcAndSave(){
     avgFlow:_avgFlow||null,
     corrStab:_corrStab||null,
     notes:document.getElementById('e-notes')?.value?.trim()||entryData.notes||'',
-    vol3Data:entryData.vol3Data||null
+    vol3Data:entryData.vol3Data||null,
+    coreData:(()=>{const cd=entryData.vol3Data?.coreData;if(!cd)return null;const a=parseFloat(cd.a)||0,b=parseFloat(cd.b)||0,c=parseFloat(cd.c)||0,vol=b>c?b-c:0;const gmbCore=a>0&&vol>0?parseFloat(roundUp(a/vol,3)):0;const ts=[cd.t1,cd.t2,cd.t3,cd.t4].map(v=>parseFloat(v)||0).filter(v=>v>0);const avgThk=ts.length?(ts.reduce((a,b)=>a+b,0)/ts.length):0;return{...cd,gmbCore:gmbCore||null,avgThickness:avgThk?parseFloat(avgThk.toFixed(1)):null};})(),
+    hasCore:!!(entryData.vol3Data?.coreData?.a)
   };
   // ── Save to Supabase ──────────────────────────────────────────────────────
   const _year=parseInt((record.dateSampled||record.date||'').slice(0,4))||new Date().getFullYear();
