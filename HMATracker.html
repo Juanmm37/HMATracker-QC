@@ -1136,15 +1136,17 @@ function tableKeydown(e){
 }
 function recalcGrad(){
   const sieves=getSieves(entryData.testFamily);const jmf=entryData.jmf;const isSurface=jmf?(jmf.courseType||'surface')==='surface':true;const dls=getDLS(entryData.mixType);
+  const spec=getJobSpec(entryData.contractNo);
   const massOrig=parseFloat(document.getElementById('e-mass-orig').value)||0;
   const massDry=parseFloat(document.getElementById('e-mass-dry').value)||0;
   const jmfAC=parseFloat(document.getElementById('e-jmf-ac').value)||0;
   const acBar=document.getElementById('ac-status-bar');const acText=document.getElementById('ac-status-text');const acInput=document.getElementById('e-ac-content');
+  const acSpec=spec?.ac||OPSS310_SPEC.ac;
   if(massOrig>0&&massDry>0&&massDry<massOrig){
     const acPct=(massOrig-massDry)/massOrig*100;acInput.value=acPct.toFixed(2);
     if(jmfAC>0){const diff=acPct-jmfAC;const abs=Math.abs(diff);const sign=diff>=0?'+':'';
-      if(abs<0.30){acBar.className='ac-bar ok';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✓ ACCEPTABLE`;}
-      else if(abs<=0.50){acBar.className='ac-bar border';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ⚠ BORDERLINE`;}
+      if(abs<acSpec.accept){acBar.className='ac-bar ok';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✓ ACCEPTABLE`;}
+      else if(abs<=acSpec.reject){acBar.className='ac-bar border';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ⚠ BORDERLINE`;}
       else{acBar.className='ac-bar fail';acText.innerHTML=`<strong>AC: ${acPct.toFixed(2)}% | Mix Design: ${jmfAC.toFixed(2)}% | Diff: ${sign}${diff.toFixed(2)}%</strong> &nbsp; ✗ REJECTABLE`;}
     }else{acBar.className='ac-bar pending';acText.textContent=`AC: ${acPct.toFixed(2)}% — enter Mix Design target to see status`;}
   }else{acBar.className='ac-bar pending';acText.textContent='Enter masses to calculate AC%';acInput.value='';}
@@ -1155,8 +1157,8 @@ function recalcGrad(){
     if(totalDry>0){
       const pctPass=100-(cr/totalDry*100);if(passCell)passCell.textContent=pctPass.toFixed(1)+'%';
       const jmfVal=jmf&&jmf.gradation&&jmf.gradation[s]?parseFloat(jmf.gradation[s]):null;
-      if(jmfVal!==null&&diffCell&&statCell){const diff=pctPass-jmfVal,abs=Math.abs(diff),tol=getGradTol(s,isSurface,dls);diffCell.textContent=(diff>=0?'+':'')+diff.toFixed(1)+'%';
-        if(tol){if(abs<tol){diffCell.className='cell-pass';statCell.className='cell-pass';statCell.textContent='OK';}else if(abs<=tol*1.5){diffCell.className='cell-border';statCell.className='cell-border';statCell.textContent='BORDER';}else{diffCell.className='cell-fail';statCell.className='cell-fail';statCell.textContent='REJECT';}}
+      if(jmfVal!==null&&diffCell&&statCell){const diff=pctPass-jmfVal,abs=Math.abs(diff),tol=getGradTol(s,isSurface,dls,spec);diffCell.textContent=(diff>=0?'+':'')+diff.toFixed(1)+'%';
+        if(tol){if(abs<tol.accept){diffCell.className='cell-pass';statCell.className='cell-pass';statCell.textContent='OK';}else if(abs<=tol.reject){diffCell.className='cell-border';statCell.className='cell-border';statCell.textContent='BORDER';}else{diffCell.className='cell-fail';statCell.className='cell-fail';statCell.textContent='REJECT';}}
         else{diffCell.className='';statCell.className='cell-na';statCell.textContent='—';}
       }else{if(diffCell){diffCell.className='cell-na';diffCell.textContent='—';}if(statCell){statCell.className='cell-na';statCell.textContent='—';}}
     }else{if(passCell)passCell.textContent='—';if(diffCell){diffCell.className='cell-na';diffCell.textContent='—';}if(statCell){statCell.className='cell-na';statCell.textContent='—';}}
