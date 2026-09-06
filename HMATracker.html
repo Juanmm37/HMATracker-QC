@@ -1687,7 +1687,7 @@ function printRecord(id){
       <div class="info-row"><span class="il">Mix number:</span><span class="iv">${r.mixNo}</span></div>
       <div class="info-row"><span class="il">PGAC type:</span><span class="iv">${(jmf||r.jmf)?.binder||'—'}</span></div>
       <div class="info-row"><span class="il">Mix design no.:</span><span class="iv">${(jmf||r.jmf)?.mixDesignNo||'—'}</span></div>
-      <div class="info-row"><span class="il">Gsb blend:</span><span class="iv">${(jmf||r.jmf)?.gsb!=null&&(jmf||r.jmf)?.gsb!==''?parseFloat((jmf||r.jmf).gsb).toFixed(3):'—'}</span></div>
+      ${(()=>{const _jg=(jmf||r.jmf)?.gsb;const _go=r.vol3Data?.gsbOverride;const _ovr=_go&&_jg!=null&&_jg!==''&&parseFloat(_go)!==parseFloat(_jg);const _val=_ovr?parseFloat(_go).toFixed(3):(_jg!=null&&_jg!==''?parseFloat(_jg).toFixed(3):'—');return`<div class="info-row"><span class="il">Gsb blend:</span><span class="iv">${_val}${_ovr?` <span style="font-size:10px;font-weight:700;color:#92400e;background:#fef3c7;border:1px solid #f59e0b;border-radius:3px;padding:1px 4px">overridden</span> <span style="font-size:10px;color:#888">JMF: ${parseFloat(_jg).toFixed(3)}</span>`:''}</span></div>`;})()}
       <div class="info-row"><span class="il">Lot / Sub-lot:</span><span class="iv">${r.lot&&r.subLot?r.lot+'-'+parseInt(r.subLot):r.lot||r.subLot||'—'}</span></div>
       <div class="info-row"><span class="il">Sample #:</span><span class="iv">${r.sampleId||'—'}</span></div>
       <div class="info-row"><span class="il">Ticket no.:</span><span class="iv">${r.ticketNo||'—'}</span></div>
