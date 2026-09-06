@@ -867,11 +867,27 @@ function editRecord(id){
   renderView();
 }
 
+function renderEntryContextBar(){
+  const fam=entryData.testFamily;
+  if(!fam&&!entryData.sampleId&&!entryData.contractNo)return'';
+  const famBadge=fam?`<span class="badge badge-${fam==='Marshall'?'ms':fam==='SMA'?'sma':'sp'}" style="font-size:11px">${fam}</span>`:'';
+  const items=[
+    entryData.sampleId?`<span><span style="color:#666;font-size:11px">Lab #</span> <strong>${entryData.sampleId}</strong></span>`:'',
+    entryData.contractNo?`<span><span style="color:#666;font-size:11px">Contract</span> <strong>${entryData.contractNo}</strong></span>`:'',
+    entryData.mixNo?`<span><span style="color:#666;font-size:11px">Mix</span> <strong>${entryData.mixNo}</strong></span>`:'',
+    entryData.mixType?`<span style="color:#444;font-size:12px">${entryData.mixType}</span>`:'',
+    (entryData.lot||entryData.subLot)?`<span><span style="color:#666;font-size:11px">Lot</span> <strong>${entryData.lot||'—'}${entryData.subLot?'-'+entryData.subLot:''}</strong></span>`:'',
+  ].filter(Boolean);
+  if(!items.length&&!famBadge)return'';
+  return`<div style="background:#f0f4ff;border:1px solid #c7d7f5;border-radius:6px;padding:7px 14px;margin-bottom:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px">${famBadge}${items.join('<span style="color:#c7d7f5">|</span>')}</div>`;
+}
+
 function renderEntry(){
   if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No Mix Designs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add Mix Designs first</button></div></div>`;
-  if(entryStep===1)return renderStep1();
-  if(entryStep===2)return renderStep2();
-  if(entryStep===3){const html=renderStep3();setTimeout(()=>{recalcVol();if(entryData.showCore)recalcCore();},0);return html;}
+  const bar=renderEntryContextBar();
+  if(entryStep===1)return bar+renderStep1();
+  if(entryStep===2)return bar+renderStep2();
+  if(entryStep===3){const html=bar+renderStep3();setTimeout(()=>{recalcVol();if(entryData.showCore)recalcCore();},0);return html;}
   return'';
 }
 
