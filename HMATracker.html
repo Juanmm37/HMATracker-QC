@@ -884,6 +884,7 @@ function renderEntryContextBar(){
 }
 
 function renderEntry(){
+  if(isViewOnly())return`<div class="card"><div class="empty-state" style="padding:40px 20px"><div style="font-size:36px;margin-bottom:12px">🔒</div><div style="font-size:15px;font-weight:700;color:#555;margin-bottom:6px">View only</div><div style="font-size:13px;color:#888">Test entry is not available for this account.<br>Contact the lab to add or modify test records.</div></div></div>`;
   if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No Mix Designs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add Mix Designs first</button></div></div>`;
   const bar=renderEntryContextBar();
   if(entryStep===1)return bar+renderStep1();
