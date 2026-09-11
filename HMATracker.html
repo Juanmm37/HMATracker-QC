@@ -1754,8 +1754,8 @@ function renderJMF(){
     <td style="font-size:11px">${fmtDate(j.designDate)}</td>
     <td style="white-space:nowrap">
       ${j.pdfUrl?`<button class="btn btn-sm" onclick="window.open('${j.pdfUrl}','_blank')" title="View PDF" style="background:#e8f5e9;border-color:#a5d6a7;color:#1b5e20;margin-right:2px">📄</button>`:''}
-      <button class="btn btn-sm" onclick="editJMF('${j.id}')" title="Edit">✏️</button>
-      <button onclick="deleteJMF('${j.id}')" title="Delete" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:13px;font-weight:700;margin-left:2px">✕</button>
+      ${!isViewOnly()?`<button class="btn btn-sm" onclick="editJMF('${j.id}')" title="Edit">✏️</button>`:''}
+      ${!isViewOnly()?`<button onclick="deleteJMF('${j.id}')" title="Delete" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:13px;font-weight:700;margin-left:2px">✕</button>`:''}
     </td>
   </tr>`).join('');
   return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
