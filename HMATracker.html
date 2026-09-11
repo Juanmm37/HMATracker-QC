@@ -1759,7 +1759,7 @@ function renderJMF(){
     </td>
   </tr>`).join('');
   return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-    <button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add Mix Design</button>
+    ${!isViewOnly()?`<button class="btn btn-primary" onclick="editingJmf='new';renderView()">+ Add Mix Design</button>`:''}
     <span style="font-size:12px;color:#666;background:#f0f4ff;border:1px solid #c8d4e8;border-radius:12px;padding:3px 12px">${db.jmfs.length} mix design${db.jmfs.length===1?'':'s'} on file</span>
     <button class="btn" onclick="printMixDesignLibrary()" style="margin-left:auto;background:#f0f4ff;color:#1f3864;border:1px solid #c8d4e8;font-size:12px;padding:5px 14px">🖨 Print</button>
   </div>
