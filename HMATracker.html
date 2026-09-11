@@ -207,6 +207,7 @@ const _db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 let db={jmfs:[],records:[],contracts:[],productionNotes:[],contractMixDesigns:[],flaskTareNoteId:null,flaskTares:null,jobRegistryEdits:{},jobRegNoteId:null,coreRecords:{},coreNoteId:null};
 let jobRegEditing=null;
 let currentUser=null; // {id, name, role} from users table
+function isViewOnly(){return currentUser?.role==='plant';}
 let currentView='jobreg';
 let coreJobNo=null,coreActiveMix=null,coreActiveLot=null,coreActiveSub=null,coreLotReport=null;
 let acReportFamily='Superpave';
