@@ -1348,6 +1348,7 @@ function recalcVol(){
   setText('res-gmb',gmbAvg>0?gmbAvg.toFixed(3):'—');
 
   // MRD — compute from raw measurements + flask tares (4 flasks)
+  const fw=getFlaskSet(document.getElementById('mrd-flask-lab')?.value||'production');
   const gmms=[];
   for(let k=1;k<=4;k++){
     const fA=parseFloat(fw['f'+k+'a'])||0;
