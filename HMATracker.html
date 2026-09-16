@@ -1196,17 +1196,29 @@ function step2Next(){
 }
 
 function marshallVCF(vol){if(!vol||vol<=0)return 1.00;if(vol<=470)return 1.19;if(vol<=482)return 1.14;if(vol<=495)return 1.09;if(vol<=508)return 1.04;if(vol<=522)return 1.00;if(vol<=535)return 0.96;if(vol<=546)return 0.93;if(vol<=559)return 0.89;if(vol<=573)return 0.86;return 0.83;}
-function getFlaskWeights(){
+function getFlaskSet(lab){
   const empty={f1a:'',f1w:'',f2a:'',f2w:'',f3a:'',f3w:'',f4a:'',f4w:'',calibDate:''};
-  if(db.flaskTares)return db.flaskTares;
-  try{return JSON.parse(localStorage.getItem('hma_flask_weights'))||empty;}catch(e){return empty;}}
+  let tares=db.flaskTares;
+  if(!tares){try{tares=JSON.parse(localStorage.getItem('hma_flask_weights'));}catch(e){}}
+  if(!tares)return empty;
+  if('f1a' in tares)return lab==='production'?tares:empty; // old flat format → treat as production
+  return tares[lab]||empty;
+}
+function getFlaskWeights(){return getFlaskSet('production');}
 function toggleFlaskEdit(){const el=document.getElementById('flask-edit-form');if(el)el.style.display=el.style.display==='none'?'block':'none';}
-async function saveFlaskTares(){
-  const fw={f1a:document.getElementById('ft-f1a')?.value||'',f1w:document.getElementById('ft-f1w')?.value||'',f2a:document.getElementById('ft-f2a')?.value||'',f2w:document.getElementById('ft-f2w')?.value||'',f3a:document.getElementById('ft-f3a')?.value||'',f3w:document.getElementById('ft-f3w')?.value||'',f4a:document.getElementById('ft-f4a')?.value||'',f4w:document.getElementById('ft-f4w')?.value||'',calibDate:document.getElementById('ft-calib-date')?.value||''};
-  const json=JSON.stringify(fw);
-  db.flaskTares=fw;
+async function saveFlaskTares(lab){
+  const p=lab==='production'?'fp':'fm';
+  const fw={f1a:document.getElementById(p+'-f1a')?.value||'',f1w:document.getElementById(p+'-f1w')?.value||'',
+    f2a:document.getElementById(p+'-f2a')?.value||'',f2w:document.getElementById(p+'-f2w')?.value||'',
+    f3a:document.getElementById(p+'-f3a')?.value||'',f3w:document.getElementById(p+'-f3w')?.value||'',
+    f4a:document.getElementById(p+'-f4a')?.value||'',f4w:document.getElementById(p+'-f4w')?.value||'',
+    calibDate:document.getElementById(p+'-calib-date')?.value||''};
+  let tares=db.flaskTares;
+  if(!tares||'f1a' in tares){const old=(tares&&'f1a' in tares)?tares:{};tares={production:lab==='production'?fw:old,mixDesign:lab==='mixDesign'?fw:{f1a:'',f1w:'',f2a:'',f2w:'',f3a:'',f3w:'',f4a:'',f4w:'',calibDate:''}};}
+  else{tares={...tares,[lab]:fw};}
+  db.flaskTares=tares;
+  const json=JSON.stringify(tares);
   localStorage.setItem('hma_flask_weights',json);
-  // Upsert into production_notes using a sentinel category='__flask_tares__'
   let dbErr=null;
   if(db.flaskTareNoteId){
     const r=await _db.from('production_notes').update({note:json,note_date:'1900-01-01',last_modified_by:currentUser?.id||null}).eq('id',db.flaskTareNoteId);
