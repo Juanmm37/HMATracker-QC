@@ -1280,8 +1280,8 @@ function renderStep3(){
         ?`<div style="font-size:11px;color:#666;display:flex;gap:18px;flex-wrap:wrap">${[1,2,3,4].map(k=>{const a=fw['f'+k+'a'],w=fw['f'+k+'w'];return(a||w)?`<span>Flask ${k}: air <strong>${a||'—'}g</strong> / water <strong>${w||'—'}g</strong></span>`:''}).filter(Boolean).join('')}</div>`
         :`<div style="font-size:11px;color:#c0392b;font-weight:600">⚠ No tare weights for ${_labLabel} — click Edit tares to enter them</div>`}
       <div id="flask-edit-form" style="display:none;margin-top:12px">
-        ${_flaskEditSection('production','fp',fwProd,'blue')}
-        ${_flaskEditSection('mixDesign','fm',fwMD,'purple')}
+        ${_feSection('production','fp',fwProd,'blue')}
+        ${_feSection('mixDesign','fm',fwMD,'purple')}
       </div>
     </td></tr>
     <tr><td class="prop" style="font-size:11px;color:#888;width:160px">Field</td>${[1,2,3,4].map(k=>`<td style="text-align:center;font-weight:700;font-size:12px;padding:4px">Flask ${k}</td>`).join('')}<td class="avg-cell" style="font-weight:700;font-size:12px">Avg</td></tr>
