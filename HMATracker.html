@@ -1405,7 +1405,8 @@ function recalcVol(){
 }
 function saveVol3(){
   const fam=entryData.testFamily;const isSGC=(fam==='Superpave'||fam==='SMA');const nBriq=isSGC?2:3;
-  const fw=getFlaskWeights();
+  const _selLab=document.getElementById('mrd-flask-lab')?.value||'production';
+  const fw=getFlaskSet(_selLab);
   const d={brd:[],gmb:[],hini:[],hdes:[],mrd:[],gmm1:'',gmm2:'',gmm3:'',gmm4:''};
   for(let i=0;i<nBriq;i++){
     const a1=document.getElementById('b'+i+'-a1')?.value||'';
