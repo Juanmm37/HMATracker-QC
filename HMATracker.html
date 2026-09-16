@@ -1206,16 +1206,9 @@ function getFlaskSet(lab){
 }
 function getFlaskWeights(){return getFlaskSet('production');}
 function toggleFlaskEdit(){const el=document.getElementById('flask-edit-form');if(el)el.style.display=el.style.display==='none'?'block':'none';}
-async function saveFlaskTares(lab){
-  const p=lab==='production'?'fp':'fm';
-  const fw={f1a:document.getElementById(p+'-f1a')?.value||'',f1w:document.getElementById(p+'-f1w')?.value||'',
-    f2a:document.getElementById(p+'-f2a')?.value||'',f2w:document.getElementById(p+'-f2w')?.value||'',
-    f3a:document.getElementById(p+'-f3a')?.value||'',f3w:document.getElementById(p+'-f3w')?.value||'',
-    f4a:document.getElementById(p+'-f4a')?.value||'',f4w:document.getElementById(p+'-f4w')?.value||'',
-    calibDate:document.getElementById(p+'-calib-date')?.value||''};
-  let tares=db.flaskTares;
-  if(!tares||'f1a' in tares){const old=(tares&&'f1a' in tares)?tares:{};tares={production:lab==='production'?fw:old,mixDesign:lab==='mixDesign'?fw:{f1a:'',f1w:'',f2a:'',f2w:'',f3a:'',f3w:'',f4a:'',f4w:'',calibDate:''}};}
-  else{tares={...tares,[lab]:fw};}
+async function saveFlaskTares(){
+  const readSet=p=>({f1a:document.getElementById(p+'-f1a')?.value||'',f1w:document.getElementById(p+'-f1w')?.value||'',f2a:document.getElementById(p+'-f2a')?.value||'',f2w:document.getElementById(p+'-f2w')?.value||'',f3a:document.getElementById(p+'-f3a')?.value||'',f3w:document.getElementById(p+'-f3w')?.value||'',f4a:document.getElementById(p+'-f4a')?.value||'',f4w:document.getElementById(p+'-f4w')?.value||'',calibDate:document.getElementById(p+'-calib-date')?.value||''});
+  const tares={production:readSet('fp'),mixDesign:readSet('fm')};
   db.flaskTares=tares;
   const json=JSON.stringify(tares);
   localStorage.setItem('hma_flask_weights',json);
