@@ -1275,6 +1275,7 @@ function renderStep3(){
       <div id="flask-edit-form" style="display:none;margin-top:12px">
         ${_feSection('production','fp',fwProd,'blue')}
         ${_feSection('mixDesign','fm',fwMD,'purple')}
+        <button onclick="saveFlaskTares()" style="font-size:12px;background:#1f3864;color:#fff;border:none;border-radius:4px;padding:5px 18px;cursor:pointer;font-weight:600">✓ Save all tare weights</button>
       </div>
     </td></tr>
     <tr><td class="prop" style="font-size:11px;color:#888;width:160px">Field</td>${[1,2,3,4].map(k=>`<td style="text-align:center;font-weight:700;font-size:12px;padding:4px">Flask ${k}</td>`).join('')}<td class="avg-cell" style="font-weight:700;font-size:12px">Avg</td></tr>
