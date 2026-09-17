@@ -2476,7 +2476,7 @@ function startEntryFromJobReg(jobNo,mixNo,year,jmfId){
     contractNo:jobNo,
     location:job.jobName,
     season,
-    job:'',
+    job:(job.jobName||'').match(/MTO #([\w-]+)/)?.[1]||'',
     dateSampled:new Date().toISOString().split('T')[0],
     dateTested:new Date().toISOString().split('T')[0],
   };
