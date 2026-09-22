@@ -1484,17 +1484,23 @@ async function calcAndSave(){
   else if(fam==='SMA'){niniCount=parseInt(document.getElementById('sma-nini')?.value)||7;ndesCount=parseInt(document.getElementById('sma-ndes')?.value)||75;niniLimit=89.0;}
   // Read computed Gmb/Gmm from vol3Data (populated by saveVol3 above)
   const gmms=[1,2,3,4].map(k=>parseFloat(entryData.vol3Data?.['gmm'+k])||0).filter(v=>v>0);
-  const gmmAvg=gmms.length?gmms.reduce((a,b)=>a+b,0)/gmms.length:0;
+  // Use avgRounded (same as recalcVol) so saved values match what the entry form displayed
+  const gmmAvg=gmms.length?avgRounded(gmms,3):0;
   const briquettes=[];
   const _corrStab=parseFloat(entryData.vol3Data?.corrStab)||parseFloat(entryData.vol3Data?.avgStab)||0;const _avgFlow=parseFloat(entryData.vol3Data?.avgFlow)||0;
   for(let i=0;i<nBriq;i++){const gmb=parseFloat(entryData.vol3Data?.gmb?.[i])||0;const b={gmb};if(isSGC){b.hini=parseFloat(document.getElementById('b'+i+'-hini')?.value)||0;b.hdes=parseFloat(document.getElementById('b'+i+'-hdes')?.value)||0;b.hnmax=parseFloat(entryData.vol3Data?.hnmax?.[i])||0;}else{b.stab=i===0?_corrStab:0;b.flow=i===0?_avgFlow:0;}briquettes.push(b);}
-  const gmbAvg=briquettes.filter(b=>b.gmb>0).reduce((s,b)=>s+b.gmb,0)/Math.max(briquettes.filter(b=>b.gmb>0).length,1);
+  const _gmbArr=briquettes.filter(b=>b.gmb>0).map(b=>b.gmb);
+  const gmbAvg=_gmbArr.length?avgRounded(_gmbArr,3):0;
   const acPct=parseFloat(document.getElementById('e-acpct')?.value)||parseFloat(entryData.acContent)||0;
   const airVoids=gmmAvg>0&&gmbAvg>0?(1-gmbAvg/gmmAvg)*100:0;
   const vma=gsb>0?(1-gmbAvg*(1-acPct/100)/gsb)*100:0;const vfa=vma>0?(vma-airVoids)/vma*100:0;
   let niniPct=null,ndesPct=null,niniStatus=null,nmaxPct=null;
-  if(isSGC&&gmmAvg>0){const validB=briquettes.filter(b=>b.hini>0&&b.hdes>0&&b.gmb>0);if(validB.length){const avgHi=validB.reduce((s,b)=>s+b.hini,0)/validB.length,avgHd=validB.reduce((s,b)=>s+b.hdes,0)/validB.length;niniPct=gmbAvg/gmmAvg*(avgHd/avgHi)*100;ndesPct=gmbAvg/gmmAvg*100;niniStatus=niniPct<=(niniLimit||89.0)?'acceptable':niniPct<=NINOTE5?'note5':'rejectable';}
-    if(entryData.isNmax){const validN=briquettes.filter(b=>b.hnmax>0&&b.hdes>0&&b.gmb>0);if(validN.length){const avgHn=validN.reduce((s,b)=>s+b.hnmax,0)/validN.length,avgHd=validN.reduce((s,b)=>s+b.hdes,0)/validN.length;nmaxPct=gmbAvg*(avgHd/avgHn)/gmmAvg*100;}}
+  if(isSGC&&gmmAvg>0){const validB=briquettes.filter(b=>b.hini>0&&b.hdes>0&&b.gmb>0);if(validB.length){
+    // Compute per-specimen then average — same as recalcVol
+    const _np=[],_ndp=[];for(const b of validB){_np.push(parseFloat(roundUp(b.gmb/gmmAvg*(b.hdes/b.hini)*100,1)));_ndp.push(parseFloat(roundUp(b.gmb/gmmAvg*100,1)));}
+    niniPct=_np.length?avgRounded(_np,1):null;ndesPct=_ndp.length?avgRounded(_ndp,1):null;
+    niniStatus=(niniPct||0)<=(niniLimit||89.0)?'acceptable':(niniPct||0)<=NINOTE5?'note5':'rejectable';}
+    if(entryData.isNmax){const validN=briquettes.filter(b=>b.hnmax>0&&b.hdes>0&&b.gmb>0);if(validN.length){const _nxp=[];for(const b of validN)_nxp.push(parseFloat(roundUp(b.gmb*(b.hdes/b.hnmax)/gmmAvg*100,1)));nmaxPct=_nxp.length?avgRounded(_nxp,1):null;}}
   }
   const _saveSpec=getJobSpec(entryData.contractNo);const _acSpec=_saveSpec?.ac||OPSS310_SPEC.ac;
   const jmfAC=parseFloat(entryData.jmfAC)||0;const acDiff=Math.abs(acPct-jmfAC);const acStatus=jmfAC>0?(acDiff<_acSpec.accept?'acceptable':acDiff<=_acSpec.reject?'borderline':'rejectable'):'acceptable';
