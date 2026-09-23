@@ -2493,7 +2493,7 @@ function startEntryFromJobReg(jobNo,mixNo,year,jmfId){
   const testFamily=(jmf&&jmf.testFamily)||inferredFamily;
   // Navigate to entry view with pre-filled data (bypass showView reset)
   currentView='entry';entryStep=1;editingRecordId=null;
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','cores','records','jmf','acreport'][i]==='entry');});
+  {const _v3=['jobreg','entry','cores','records','jmf','acreport'];let _i=0;document.querySelectorAll('.nav-btn').forEach(b=>{if(b.id==='syncNowBtn')return;b.classList.toggle('active',_v3[_i++]==='entry');});}
   entryData={
     testFamily,
     mixType:jmf?jmf.mixType:'',
