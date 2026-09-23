@@ -19,6 +19,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;background:#f0f3
 .nav-btn{padding:7px 18px;border-radius:5px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,255,255,0.60);font-family:inherit;transition:all 0.15s;letter-spacing:0.01em}
 .nav-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
 .nav-btn.active{background:#fff;color:#1f3864}
+#syncNowBtn{margin-left:auto;width:38px;height:38px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.08);padding:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;line-height:1;transition:background 0.2s,border-color 0.2s,transform 0.1s;flex-shrink:0}
+#syncNowBtn:hover{background:rgba(255,255,255,0.22);border-color:rgba(255,255,255,0.7);transform:scale(1.10)}
+#syncNowBtn:active{transform:scale(0.94)}
+#syncNowBtn.syncing .sync-icon{display:inline-block;animation:spin 0.75s linear infinite}
+#syncNowBtn.done{border-color:#4ade80;color:#4ade80}
 .content{padding:24px 28px;flex:1}
 .section-title{font-size:13px;font-weight:800;margin-bottom:12px;color:#1f3864;text-transform:uppercase;letter-spacing:0.05em}
 .card{background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(31,56,100,0.06)}
