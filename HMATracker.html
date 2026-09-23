@@ -161,6 +161,9 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#1f3864}
   <button class="nav-btn" onclick="showView('records')">Test Records</button>
   <button class="nav-btn" onclick="showView('jmf')">Mix Design Library</button>
   <button class="nav-btn" onclick="showView('acreport')">AC Report</button>
+  <button id="sync-btn" onclick="syncData()" title="Sync — reload latest data from server" style="margin-left:auto;margin-right:6px;background:transparent;border:2px solid rgba(255,255,255,0.35);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:border-color .2s,transform .1s" onmouseover="this.style.borderColor='rgba(255,255,255,0.75)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.35)'">
+    <svg id="sync-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.05-3.36L10 6h5V1l-1.35 1.35z" fill="white"/></svg>
+  </button>
 </div>
 <div class="content" id="main-content"></div>
 </div>
