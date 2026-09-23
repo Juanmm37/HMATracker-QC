@@ -884,7 +884,7 @@ function editRecord(id){
     showCore:!!(r.hasCore||r.coreData?.a),
   };
   entryStep=1;currentView='entry';
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',i===1);});
+  {const _v2=['jobreg','entry','cores','records','jmf','acreport'];let _i=0;document.querySelectorAll('.nav-btn').forEach(b=>{if(b.id==='syncNowBtn')return;b.classList.toggle('active',_v2[_i++]==='entry');});}
   renderView();
 }
 
