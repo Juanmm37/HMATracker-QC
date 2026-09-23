@@ -645,7 +645,7 @@ async function syncNow(){
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showView(v){
   currentView=v;
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['jobreg','entry','cores','records','jmf','acreport'][i]===v);});
+  const _views=['jobreg','entry','cores','records','jmf','acreport'];let _vi=0;document.querySelectorAll('.nav-btn').forEach(b=>{if(b.id==='syncNowBtn')return;b.classList.toggle('active',_views[_vi++]===v);});
   if(v!=='entry'){entryStep=1;entryData={};editingRecordId=null;}
   renderView();
 }
