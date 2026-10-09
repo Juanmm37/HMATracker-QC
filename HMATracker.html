@@ -632,7 +632,13 @@ async function syncNow(){
   const btn=document.getElementById('syncNowBtn');
   if(btn){btn.disabled=true;btn.classList.add('syncing');btn.classList.remove('done');}
   try{
+    // Step 1: Push job registry edits so other users see our latest data
+    if(db.jobRegistryEdits&&Object.keys(db.jobRegistryEdits).filter(k=>!k.startsWith('_')).length){
+      await saveJobRegistryEdits();
+    }
+    // Step 2: Pull — get the latest records, JMFs, job registry, and notes from all users
     await loadFromSupabase();
+    // Step 3: Refresh display
     renderView();
   }finally{
     if(btn){
