@@ -1742,7 +1742,6 @@ function printRecord(id){
       <div class="info-row"><span class="il">AC content:</span><span class="iv" style="color:${acStatusColor}">${r.acContent}%${jmfAC>0?' (JMF: '+jmfAC.toFixed(2)+'%)':''}${stBadge(r.acStatus)}</span></div>
       <div class="info-row"><span class="il">Air voids:</span><span class="iv" style="color:${avColor}">${r.airVoids}%${stBadge(r.avStatus)}</span></div>
       <div class="info-row"><span class="il">VMA:</span><span class="iv">${r.vma}%${r.jmfVMA?' (Mix Design: '+r.jmfVMA+'%)':''}</span></div>
-      <div class="info-row"><span class="il">VFA:</span><span class="iv">${r.vfa}%</span></div>
       <div class="info-row"><span class="il">Gmb:</span><span class="iv">${r.gmb}</span></div>
       <div class="info-row"><span class="il">Gmm:</span><span class="iv">${r.gmm||'—'}</span></div>
       ${r.niniPct?`<div class="info-row"><span class="il">%Gmm Nini (N=${r.niniCount}):</span><span class="iv">${r.niniPct}%</span></div>`:''}
