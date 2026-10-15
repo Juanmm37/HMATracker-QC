@@ -888,6 +888,8 @@ function editRecord(id){
     massOrig:r.massOrig,massDry:r.massDry,acContent:r.acContent,jmfAC:r.jmfAC,
     vol3Data:_vol3,notes:r.notes||'',
     showCore:!!(r.hasCore||r.coreData?.a),
+    isOvernight:r.isOvernight||false,
+    isNmax:r.isNmax||false,
   };
   entryStep=1;currentView='entry';
   {const _v2=['jobreg','entry','cores','records','jmf','acreport'];let _i=0;document.querySelectorAll('.nav-btn').forEach(b=>{if(b.id==='syncNowBtn')return;b.classList.toggle('active',_v2[_i++]==='entry');});}
