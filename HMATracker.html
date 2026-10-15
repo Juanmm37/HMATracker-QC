@@ -916,7 +916,7 @@ function renderEntry(){
   if(!db.jmfs.length)return`<div class="card"><div class="empty-state">No Mix Designs yet.<br><br><button class="btn btn-primary" onclick="showView('jmf')">Add Mix Designs first</button></div></div>`;
   const bar=renderEntryContextBar();
   if(entryStep===1)return bar+renderStep1();
-  if(entryStep===2)return bar+renderStep2();
+  if(entryStep===2){const html=bar+renderStep2();setTimeout(()=>{recalcGrad();},0);return html;}
   if(entryStep===3){const html=bar+renderStep3();setTimeout(()=>{recalcVol();if(entryData.showCore)recalcCore();},0);return html;}
   return'';
 }
