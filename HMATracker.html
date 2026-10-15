@@ -1728,7 +1728,7 @@ function printRecord(id){
       <div class="info-row"><span class="il">Date tested:</span><span class="iv">${fmtPrintDate(r.dateTested)}</span></div>
       <div class="info-row"><span class="il">Contract no.:</span><span class="iv">${r.contractNo||'—'}</span></div>
       ${r.job?`<div class="info-row"><span class="il">MTO Contract:</span><span class="iv">${r.job}</span></div>`:''}
-      <div class="info-row"><span class="il">Job Name:</span><span class="iv">${(r.location||'—').substring(0,22)}</span></div>
+      <div class="info-row"><span class="il">Job Name:</span><span class="iv" style="word-break:break-word;white-space:normal">${r.location||'—'}</span></div>
       <div class="info-row"><span class="il">Mix type:</span><span class="iv">${r.mixType}</span></div>
       <div class="info-row"><span class="il">Mix number:</span><span class="iv">${r.mixNo}</span></div>
       <div class="info-row"><span class="il">PGAC type:</span><span class="iv">${(jmf||r.jmf)?.binder||'—'}</span></div>
